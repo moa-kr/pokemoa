@@ -776,7 +776,7 @@
         '<span class="s-meta">' +
         '<span class="status-badge ' + (policyOnlyBrand(s.brand) ? "policy" : s.status) + '">' + sLabel + "</span>" +
         (s.emart
-          ? '<span class="chip chip-relay">' + (s.emartState === "in" ? "실시간 " + s.emartQty + "개" : s.emartState === "undisclosed" ? "수량 비공개" : "품절") + '</span>' +
+          ? '<span class="chip chip-relay">' + (s.emartState === "in" ? "실시간 " + s.emartQty + "개" : s.emartState === "undisclosed" ? "매장 문의" : "0개") + '</span>' +
             (s.emartClosed ? '<span class="chip chip-closed">오늘 휴무</span>'
               : (s.emartOutside ? '<span class="chip chip-hours">영업시간 외</span>' : ""))
           : (s.offline

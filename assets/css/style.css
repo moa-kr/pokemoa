@@ -2052,6 +2052,10 @@ button { font: inherit; color: inherit; cursor: pointer; }
   top: auto;
   right: auto;
   width: min(320px, calc(100% - 24px));
+  /* 내용이 길어도(이마트 카드 상품 9종) 지도 밖으로 넘치지 않게 카드 안에서 스크롤한다 */
+  max-height: calc(100% - 24px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
   z-index: 620;
   padding: 12px 13px;
   border-radius: 14px;
@@ -4395,3 +4399,7 @@ body.figure-mode .demo-notice .notice-figure { display: block; }
 .emart-stock .is-na { background: #f4f6fa; }
 .emart-stock .is-na .es-name,
 .emart-stock .is-na .es-qty { color: #9aa5b8; font-weight: 600; }
+@media (max-width: 679px) {
+  /* 좁은 화면에서는 카드가 지도를 다 덮지 않도록 재고표 높이를 줄인다(카드 안에서 스크롤) */
+  .emart-stock { max-height: 168px; }
+}
