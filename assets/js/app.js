@@ -246,7 +246,8 @@
     sourceLabel: "",
     ticker: null,
     collapseTimer: null,
-    emartTimer: null
+    emartTimer: null,
+    emartSeen: false
   };
 
   function bpMeta(id) { return D.brandMeta[id] || { label: id, color: "#1b2a4a" }; }
@@ -434,11 +435,13 @@
       if (BP_EMART[id]) { bpSet(id, 0, "이마트 점포 확인 중", "run"); return; }
       bpSet(id, 0, "매장 탐색 중", "run");
     });
-    /* 이마트 응답이 끝내 오지 않으면 진행률이 98%에 멈추지 않도록 25초 뒤 문구를 정리한다 */
+    /* 이마트 응답이 끝내 오지 않으면 진행률이 98%에 멈추지 않도록 25초 뒤 문구를 정리한다.
+       한 번이라도 응답(진행·완료)이 온 뒤에는 건드리지 않는다. */
+    bp.emartSeen = false;
     clearTimeout(bp.emartTimer);
     bp.emartTimer = setTimeout(function () {
       var r = bp.rows.emart;
-      if (r && r.state === "run") bpSet("emart", 100, "응답 없음 · 이마트 점포 미확인", "err");
+      if (!bp.emartSeen && r && r.state === "run") bpSet("emart", 100, "응답 없음 · 이마트 점포 미확인", "err");
     }, 25000);
     if (bpEl) bpEl.setAttribute("data-state", "running");
   }
@@ -560,11 +563,9 @@
     var pct = Math.min(40, Math.round(40 * (d.resolved || 0) / total));
     var found = d.found || {};
     BP_BRANDS.forEach(function (id) {
-      if (BP_EMART[id]) {
-        /* 이마트는 편의점 장소 검색과 별도로 점포 목록을 확인한다 */
-        if (!bp.rows.emart || bp.rows.emart.state !== "run") bpSet(id, 0, "이마트 점포 확인 중", "run");
-        return;
-      }
+      /* 이마트는 편의점 장소 검색과 별도 수명으로 돈다 — 여기서 손대지 않는다
+         (검색이 늦게 끝날 때 이마트 행을 다시 0%로 되돌리면 완료된 행이 사라진다) */
+      if (BP_EMART[id]) return;
       var n = found[id] || 0;
       bpSet(id, pct, n
         ? (policyOnlyBrand(id) ? "위치 " + n + "곳 확인 중" : "매장 " + n + "곳 찾는 중")
@@ -616,6 +617,7 @@
   document.addEventListener("pokemoa:emart-progress", function (e) {
     var d = e.detail || {};
     if (!bp.rows.emart) return;
+    bp.emartSeen = true;
     if (d.phase === "stores") {
       var pct = d.done ? 25 : 6;
       bpSet("emart", pct, d.done
@@ -632,6 +634,7 @@
   document.addEventListener("pokemoa:emart-done", function (e) {
     var d = e.detail || {};
     if (!bp.rows.emart) return;
+    bp.emartSeen = true;
     if (!d.stores || !d.stores.length) {
       bpSet("emart", 100, d.ok === false
         ? "응답 없음 · 이마트 점포 미확인"
@@ -724,7 +727,7 @@
       mcParts.push('<span class="mc">미조회 ' + Math.max(0, counts.check - offlineN - policyN - emartUnN) + "</span>");
       if (policyN) mcParts.push('<span class="mc">위치안내 ' + policyN + "</span>");
       if (emartN) mcParts.push('<span class="mc">이마트 ' + emartN + (emartClosedN ? " · 휴무 " + emartClosedN : "") + "</span>");
-      if (emartUnN) mcParts.push('<span class="mc">이마트 비공개 ' + emartUnN + "</span>");
+      if (emartUnN) mcParts.push('<span class="mc">비공개 ' + emartUnN + "</span>");
       mcParts.push('<span class="mc">없음 ' + counts.none + "</span>");
       mapCountEl.innerHTML = mcParts.join("");
     }

@@ -746,6 +746,8 @@ window.PokeMoaMap = (function () {
   function match(s) {
     /* 피규어(GS25 단독) 모드에서는 이마트 카드·배지가 절대 나오지 않게 한다 */
     if (s.emart && figureOnlyMode()) return false;
+    /* 이마트 실시간 재고 카드와 같은 자리의 대형마트 마커는 감춘다(중복 표시 방지) */
+    if (s.hiddenByEmart) return false;
     if (!st.showOffline && isOfflineBrand(s.brand)) return false;
     if (st.brand !== "all" && s.brand !== st.brand) return false;
     if (s.distance > st.radius) return false;
@@ -1056,6 +1058,7 @@ window.PokeMoaMap = (function () {
       emart: blankCount(), mart: blankCount(), artbox: blankCount(), vending: blankCount(), cardshop: blankCount() };
     (st.all || []).forEach(function (s) {
       if (s.distance > st.radius) return;
+      if (s.hiddenByEmart) return;
       if (st.stockOnly && s.status !== "in") return;
       if (!st.showOffline && isOfflineBrand(s.brand)) return;
       /* 이마트는 자기 칸에만 세고 편의점 4사 '전체' 집계에는 넣지 않는다(재고 기준이 다르다) */
@@ -1744,6 +1747,13 @@ window.PokeMoaMap = (function () {
       s.distance = st.center ? meters(st.center, s) : s.distance;
       st.all.push(s);
     });
+    /* 카카오 장소 검색이 잡은 '대형마트' 마커가 같은 이마트 점포일 수 있다 — 같은 자리에
+       마커를 두 개 그리면 목록·클러스터에 같은 이름이 두 번 나오므로, 이마트 실시간 재고
+       카드가 있는 자리의 대형마트 마커는 감춘다(카카오 마커가 없는 점포는 그대로 표시). */
+    (st.all || []).forEach(function (s) {
+      if (s.emart || s.brand !== "mart") return;
+      s.hiddenByEmart = list.some(function (e) { return meters(s, e) <= 250; });
+    });
     st.emart = {
       ok: !!payload.ok,
       count: list.length,
@@ -1758,6 +1768,7 @@ window.PokeMoaMap = (function () {
   function clearEmart() {
     if (st.all && st.all.length) {
       st.all = st.all.filter(function (s) { return !s.emart; });
+      st.all.forEach(function (s) { delete s.hiddenByEmart; });
     }
     st.emartPayload = null;
     st.emart = null;
