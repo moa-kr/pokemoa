@@ -1944,6 +1944,9 @@ window.POKEMOA_DATA = (function () {
     cu: { label: "CU", short: "CU", color: "#5aa72c", ink: "#ffffff", soft: "#ecf7e6" },
     seven: { label: "세븐일레븐", short: "세븐일레븐", color: "#d33a2c", ink: "#ffffff", soft: "#fdeceb" },
     emart24: { label: "이마트24", short: "이마트24", color: "#f5b100", ink: "#3f2c00", soft: "#fff5dd" },
+    /* 이마트(대형마트) — 이마트24(편의점)와 다른 브랜드다. 노란 사인에 검은 글자가 기본이라
+       이마트24(#f5b100)와 헷갈리지 않도록 조금 더 진한 노랑(#ffc400)을 쓴다. */
+    emart: { label: "이마트", short: "이마트", color: "#ffc400", ink: "#2b2200", soft: "#fff8d9" },
     mart: { label: "대형마트", short: "대형마트", color: "#1f6feb", ink: "#ffffff", soft: "#e6effd" },
     artbox: { label: "아트박스", short: "아트박스", color: "#ff4d8d", ink: "#ffffff", soft: "#ffe9f1" },
     vending: { label: "공식 자판기", short: "자판기", color: "#7c4dff", ink: "#ffffff", soft: "#f0eaff" },

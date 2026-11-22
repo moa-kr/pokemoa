@@ -102,6 +102,9 @@ window.PokeMoaMap = (function () {
     relay: null,        /* 실시간 재고 조회 요약 { ok, sources, at, count } */
     relayPayload: null, /* 마지막 조회 응답 — 지도 매장을 새로 그린 뒤에도 다시 얹는다 */
     relayAt: "",
+    emart: null,        /* 이마트 실시간 재고 요약 { ok, count, at, stat } */
+    emartPayload: null, /* 마지막 이마트 조회 결과 — 지도 매장을 새로 그린 뒤에도 다시 얹는다 */
+    emartSeq: 0,        /* 이마트 조회 순번 — 늦게 도착한 이전 응답을 버린다 */
     started: false,     /* 첫 자동 조회를 했는지 — 첫 화면은 진행률 패널을 띄우지 않는다 */
     programAt: 0,       /* 코드로 지도를 마지막으로 옮긴 시각(setView·fitRing·panTo·확대) */
     dragTimer: null,    /* 드래그 후 재조회 대기 타이머 */
@@ -496,6 +499,14 @@ window.PokeMoaMap = (function () {
       html = '<span class="pm-pill status-check is-policy" style="--brand:' + b.color + '">' +
         '<i class="pm-dot" style="background:#8aa0bd"></i>' +
         "<span>" + b.short + " · 위치 안내</span></span>";
+    } else if (s.emart) {
+      /* 이마트(대형마트) — 이마트 앱 점포 재고를 직접 조회한 값. 상태 점 색으로 재고/비공개/품절을 가른다. */
+      var eDot = s.emartState === "in" ? '<i class="pm-dot is-in"></i>'
+        : s.emartState === "undisclosed" ? '<i class="pm-dot" style="background:#c9a227"></i>'
+        : '<i class="pm-dot" style="background:#9aa7b8"></i>';
+      var eTail = s.emartClosed ? " · 휴무" : (s.emartOutside ? " · 영업시간 외" : "");
+      html = '<span class="pm-pill status-' + s.status + ' is-emart" style="' + brandVar + '">' +
+        eDot + "<b>" + b.short + "</b><span>" + s.emartLabel + eTail + "</span></span>";
     } else if (s.relay) {
       /* 실제 조회가 성공했고 재고 0으로 확인 — 차분한 회색 '없음' */
       html = '<span class="pm-pill status-none is-relay-none" style="--brand:' + b.color + '">' +
@@ -554,7 +565,7 @@ window.PokeMoaMap = (function () {
   }
 
   function brandOrder(b) {
-    return ({ gs25: 0, cu: 1, seven: 2, emart24: 3 })[b] || 9;
+    return ({ gs25: 0, cu: 1, seven: 2, emart24: 3, emart: 4 })[b] || 9;
   }
 
   /* 같은 화면 칸(px)에 들어온 매장을 한 묶음으로 모은다 — proj가 없으면 좌표 스케일로 대신한다 */
@@ -714,6 +725,7 @@ window.PokeMoaMap = (function () {
   }
 
   function placeLabel(s) {
+    if (s.emart) return s.emartLabel;
     if (s.brand === "vending") return "공식 설치 지점";
     if (s.brand === "cardshop") return "공인 카드샵";
     if (s.brand === "mart" || s.brand === "artbox") return "매장 확인 (방문·문의)";
@@ -732,6 +744,8 @@ window.PokeMoaMap = (function () {
   }
 
   function match(s) {
+    /* 피규어(GS25 단독) 모드에서는 이마트 카드·배지가 절대 나오지 않게 한다 */
+    if (s.emart && figureOnlyMode()) return false;
     if (!st.showOffline && isOfflineBrand(s.brand)) return false;
     if (st.brand !== "all" && s.brand !== st.brand) return false;
     if (s.distance > st.radius) return false;
@@ -811,7 +825,67 @@ window.PokeMoaMap = (function () {
     return "카카오맵 장소 검색으로 찾은 <b>" + label + "</b>입니다. 완구코너 포켓몬 카드 정가 판매와 재고는 매장에 문의해 확인하세요.";
   }
 
+  /* ------------------------------------------------ 이마트(대형마트) 카드 */
+  /* 이마트 앱 점포 재고를 상품별로 그대로 보여 준다 — 수량 비공개·미취급도 숨기지 않는다. */
+  function emartStockRows(s) {
+    return (s.products || []).map(function (p) {
+      var cls = p.state === "in" ? "is-in"
+        : p.state === "undisclosed" ? "is-undisclosed"
+        : p.state === "soldout" ? "is-none" : "is-na";
+      var sub = [p.kind || "", p.price ? "정가 " + Number(p.price).toLocaleString("ko-KR") + "원" : ""]
+        .filter(Boolean).join(" · ");
+      return '<li class="es-row ' + cls + '">' +
+        '<span class="es-name">' + escapeHtml(p.short) +
+          (sub ? '<i>' + escapeHtml(sub) + "</i>" : "") + "</span>" +
+        '<span class="es-qty">' + escapeHtml(p.stateLabel) + "</span></li>";
+    }).join("");
+  }
+
+  function renderEmartCard(s) {
+    if (!el.card) return;
+    var meta = D.brandMeta.emart || { label: "이마트", short: "이마트", color: "#ffc400", ink: "#2b2200" };
+    var dist = s.distance < 1000 ? Math.round(s.distance) + "m" : (s.distance / 1000).toFixed(1) + "km";
+    var subBits = [];
+    if (s.name.indexOf(meta.label) !== 0) subBits.push(meta.label);
+    if (s.street) subBits.push(s.street);
+    subBits.push(dist);
+    var navLink = "https://map.naver.com/p/search/" + encodeURIComponent(s.name);
+    var chips = ['<span class="chip chip-relay">이마트 앱 실시간</span>'];
+    if (s.emartClosed) {
+      chips.push('<span class="chip chip-closed">오늘 휴무</span>');
+    } else if (s.emartOutside) {
+      chips.push('<span class="chip chip-hours">영업시간 외</span>');
+    }
+    if (s.emartHours) chips.push('<span class="chip">' + escapeHtml(s.emartHours) + '</span>');
+    if (s.observed) chips.push('<span class="chip">조회 ' + escapeHtml(s.observed) + '</span>');
+    if (s.phone) chips.push('<span class="chip">' + escapeHtml(s.phone) + '</span>');
+    el.card.hidden = false;
+    el.card.innerHTML =
+      '<div class="pm-card-head">' +
+      '<span class="pm-card-brand" style="background:' + meta.color + ';color:' + (meta.ink || "#2b2200") + '">' + meta.short + '</span>' +
+      '<div class="pm-card-title"><strong>' + escapeHtml(s.name) + '</strong>' +
+      '<span>' + escapeHtml(subBits.join(" · ")) + '</span></div>' +
+      '<button type="button" class="pm-card-close" aria-label="닫기">×</button>' +
+      '</div>' +
+      '<div class="pm-card-meta">' +
+      '<span class="status-badge ' + s.status + '">' + escapeHtml(placeLabel(s)) + '</span>' +
+      chips.join("") +
+      '</div>' +
+      '<ul class="emart-stock">' + emartStockRows(s) + '</ul>' +
+      '<p class="pm-card-note">이마트 앱이 보여 주는 <b>점포 전산 재고</b>를 같은 API로 직접 조회했습니다(조회 ' +
+        escapeHtml(s.observed) + '). 이마트 앱도 수량을 약 10분 단위로 갱신하니 방문 전 앱·매장 전화로 한 번 더 확인하세요.' +
+        (s.emartClosed ? ' 오늘은 <b>휴점일(' + escapeHtml(s.emartHoliday || "오늘") + ')</b>이라 매장에서 살 수 없습니다.' : "") +
+        (s.emartOutside ? ' 지금은 영업시간(' + escapeHtml(s.emartHours || "매장 문의") + ')이 아닙니다.' : "") +
+        '</p>' +
+      '<a class="btn btn-sm btn-dark pm-card-link" target="_blank" rel="noopener" href="' + navLink + '">네이버 지도에서 보기</a>';
+    el.card.querySelector(".pm-card-close").addEventListener("click", function (e) {
+      e.stopPropagation();
+      closeCard();
+    });
+  }
+
   function renderCard(s) {
+    if (s && s.emart) { renderEmartCard(s); return; }
     if (!el.card) return;
     var meta = D.brandMeta[s.brand] || { label: s.brand, color: "#1b2a4a", short: "?" };
     var dist = s.distance < 1000 ? Math.round(s.distance) + "m" : (s.distance / 1000).toFixed(1) + "km";
@@ -905,6 +979,9 @@ window.PokeMoaMap = (function () {
         ? "주변 GS25 매장을 찾는 중입니다 (최대 매장 조회 중 · 최대 25~30초 걸릴 수 있어요)"
         : "주변 편의점 4사·오프라인 매장을 찾는 중입니다 (최대 매장 조회 중 · 최대 25~30초 걸릴 수 있어요)", action: false };
     }
+    /* 이마트 실시간 재고 — 편의점 조회(relay) 설정과 상관없이 이 점포 값은 늘 직접 조회한다 */
+    var emartNote = (st.emart && st.emart.count && !figureOnlyMode())
+      ? "이마트 " + st.emart.count + "곳" : "";
     /* 실시간 재고 조회로 실제 수량을 받았으면 그 사실을 먼저 알린다 */
     if (st.relay && st.relay.count) {
       var names = [];
@@ -916,16 +993,26 @@ window.PokeMoaMap = (function () {
       return {
         kind: "relay",
         text: "실시간 재고 · " + (names.length ? names.join("·") + " " : "") + st.relay.count +
-          "곳 확인 · 조회 " + relayTimeLabel(st.relayAt),
+          "곳 확인" + (emartNote ? " · " + emartNote : "") +
+          " · 조회 " + relayTimeLabel(st.relayAt),
+        action: false
+      };
+    }
+    if (st.emart && st.emart.count && !figureOnlyMode()) {
+      return {
+        kind: "relay",
+        text: "이마트 실시간 점포 재고 " + st.emart.count + "곳 · 조회 " + relayTimeLabel(st.emart.at),
         action: false
       };
     }
     if (st.source === "live") {
       var cap = st.radius >= 20000 ? MAX_MARKERS_20 : st.radius >= 5000 ? MAX_MARKERS_5 : MAX_MARKERS;
-      var convN = 0, offN = 0;
+      var convN = 0, offN = 0, emartN = 0;
       (st.all || []).forEach(function (s) {
         if (s.distance > st.radius) return;
-        if (isOfflineBrand(s.brand)) offN += 1; else convN += 1;
+        if (s.emart) emartN += 1;
+        else if (isOfflineBrand(s.brand)) offN += 1;
+        else convN += 1;
       });
       if (figureOnlyMode()) {
         /* 피규어 모드에서는 GS25 만 그리므로 CU·세븐·이마트24·오프라인 곳수를 세지 않는다 */
@@ -939,6 +1026,7 @@ window.PokeMoaMap = (function () {
         ? "매장 위치 · 카카오맵 주변 매장 " + st.all.length + "곳 중 가까운 " + cap + "곳 표시"
         : "매장 위치 · 편의점 4사 " + convN + "곳";
       if (offN) txt += " · 오프라인 " + offN + "곳";
+      if (emartN) txt += " · 이마트 " + emartN + "곳";
       txt += " · 재고는 ‘선택 지역 찾기’ 후";
       return { kind: "live", text: txt, action: false };
     }
@@ -965,11 +1053,19 @@ window.PokeMoaMap = (function () {
   function blankCount() { return { total: 0, in: 0, check: 0, none: 0 }; }
   function brandCounts() {
     var out = { all: blankCount(), gs25: blankCount(), cu: blankCount(), seven: blankCount(), emart24: blankCount(),
-      mart: blankCount(), artbox: blankCount(), vending: blankCount(), cardshop: blankCount() };
+      emart: blankCount(), mart: blankCount(), artbox: blankCount(), vending: blankCount(), cardshop: blankCount() };
     (st.all || []).forEach(function (s) {
       if (s.distance > st.radius) return;
       if (st.stockOnly && s.status !== "in") return;
       if (!st.showOffline && isOfflineBrand(s.brand)) return;
+      /* 이마트는 자기 칸에만 세고 편의점 4사 '전체' 집계에는 넣지 않는다(재고 기준이 다르다) */
+      if (s.emart) {
+        if (figureOnlyMode()) return;
+        var erow = out.emart;
+        erow.total += 1;
+        erow[s.status] += 1;
+        return;
+      }
       /* 오프라인 판매처는 자기 칩 카운트에만 넣고 편의점 '전체' 집계에는 넣지 않는다 */
       if (isOfflineBrand(s.brand)) {
         var orow = out[s.brand];
@@ -1349,6 +1445,10 @@ window.PokeMoaMap = (function () {
     st.fetchedRadius = radius;
     st.fetchedBand = radiusBand(radius);
 
+    /* 이마트 점포 재고 — 카카오 지도와 무관하게 브라우저가 직접 조회한다(스냅샷·지도 실패에도 동작).
+       피규어(GS25 단독) 모드에서는 아예 부르지 않는다(v=125). */
+    loadEmart(seq);
+
     var softTimer = setTimeout(function () {
       if (seq !== st.seq) return;
       if (st.source === "live") return;
@@ -1413,6 +1513,8 @@ window.PokeMoaMap = (function () {
     /* 지도 매장을 새로 그리면 이전 조회 결과가 사라지므로, 마지막 응답을 곧바로 다시 얹는다.
        (새 조회가 오면 그 값이 이 자리를 대신한다) */
     if (st.relayPayload) applyRelay(st.relayPayload);
+    /* 이마트 재고도 같은 이유로 지도 매장을 새로 그린 뒤 다시 얹는다 */
+    if (st.emartPayload) applyEmart(st.emartPayload);
     /* 진행률 패널용 — 매장 탐색 단계가 끝났고, 이제 재고 조회 단계로 넘어간다 */
     emit("pokemoa:search-done", {
       source: st.source,
@@ -1492,7 +1594,9 @@ window.PokeMoaMap = (function () {
   /* 브랜드 이름 표기 흔들림(emart24 / 이마트24 / 7-ELEVEN …)을 하나로 맞춘다 */
   function normBrandKey(b) {
     var k = String(b || "").toLowerCase().replace(/[\s_-]/g, "");
-    if (k === "emart24" || k === "emart" || k === "이마트24") return "emart24";
+    /* 'emart'(대형마트)는 'emart24'(편의점)와 다른 브랜드다 — 'emart' 를 편의점으로 묶으면
+       대형마트 매장과 이마트24 매장이 같은 점포로 잘못 이어진다(v=125). */
+    if (k === "emart24" || k === "이마트24") return "emart24";
     if (k === "seven" || k === "7eleven" || k === "7-eleven" || k === "세븐일레븐") return "seven";
     if (k === "gs25" || k === "지에스25") return "gs25";
     if (k === "cu") return "cu";
@@ -1624,6 +1728,70 @@ window.PokeMoaMap = (function () {
     if (st.selectedId && !st.all.some(function (s) { return s.id === st.selectedId; })) closeCard();
     renderMarkers();
     pushData();
+  }
+
+  /* ---------------------------------------- 이마트(대형마트) 실시간 재고 반영 */
+  /* 이마트 점포 재고는 브라우저가 api-eapp.emart.com 을 직접 부른다(relay 불필요).
+     응답 점포를 지도 매장 목록에 brand="emart" 로 얹고, 상품별 상태(재고 있음/품절/
+     수량 비공개/취급 안 함)와 휴무·영업시간을 그대로 보존한다. */
+  function applyEmart(payload) {
+    clearEmart();
+    if (!payload) return 0;
+    st.emartPayload = payload;
+    var list = (payload.stores || []).slice();
+    list.forEach(function (s) {
+      s.source = "emart";
+      s.distance = st.center ? meters(st.center, s) : s.distance;
+      st.all.push(s);
+    });
+    st.emart = {
+      ok: !!payload.ok,
+      count: list.length,
+      at: payload.at || new Date(),
+      stat: payload.stat || null
+    };
+    renderMarkers();
+    pushData();
+    return list.length;
+  }
+
+  function clearEmart() {
+    if (st.all && st.all.length) {
+      st.all = st.all.filter(function (s) { return !s.emart; });
+    }
+    st.emartPayload = null;
+    st.emart = null;
+  }
+
+  /* 이마트 조회 시작 — 늦게 도착한 이전 응답은 seq 로 버린다 */
+  function loadEmart(seq) {
+    if (!window.PokeMoaEmart || !window.PokeMoaEmart.query || !st.center) return;
+    if (figureOnlyMode()) { clearEmart(); return; }
+    var my = ++st.emartSeq;
+    var center = { lat: st.center.lat, lng: st.center.lng };
+    var radius = st.radius;
+    emit("pokemoa:emart-progress", { phase: "stores", done: 0, total: 1 });
+    window.PokeMoaEmart.query(center, radius, {
+      progress: function (p) {
+        if (my !== st.emartSeq || seq !== st.seq || figureOnlyMode()) return;
+        emit("pokemoa:emart-progress", p);
+      }
+    }).then(function (res) {
+      if (my !== st.emartSeq || seq !== st.seq || figureOnlyMode()) return;
+      applyEmart(res);
+      emit("pokemoa:emart-done", res);
+    }).catch(function (err) {
+      if (my !== st.emartSeq || seq !== st.seq) return;
+      applyEmart({ ok: false, stores: [], at: new Date(), error: String((err && err.message) || err) });
+      emit("pokemoa:emart-done", { ok: false, stores: [], error: String((err && err.message) || err) });
+    });
+  }
+
+  /* 모드 전환 등으로 다시 조회가 필요할 때(피규어 → 카드) 현재 중심·반경으로 재조회 */
+  function refreshEmart() {
+    if (!st.center) return;
+    if (figureOnlyMode()) { clearEmart(); renderMarkers(); pushData(); return; }
+    loadEmart(st.seq);
   }
 
   /* ---------------------------------------------------------- 공개 API */
@@ -1946,6 +2114,9 @@ window.PokeMoaMap = (function () {
     getVisible: function () { return st.visible.slice(); },
     applyRelay: applyRelay,
     clearRelay: clearRelay,
+    applyEmart: applyEmart,
+    clearEmart: clearEmart,
+    refreshEmart: refreshEmart,
     invalidate: function () { if (st.ready && st.map.relayout) { try { st.map.relayout(); } catch (e) {} } }
   };
   return API;

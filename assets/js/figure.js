@@ -357,6 +357,13 @@
       if (window.PokeMoaMap.closeCard) window.PokeMoaMap.closeCard();
       window.PokeMoaMap.clearRelay();
       window.PokeMoaMap.setBrand(next === "figure" ? "gs25" : (state.brandBefore || "all"));
+      /* 이마트(대형마트) 실시간 재고는 카드 모드 전용 — 피규어 모드에서는 지우고,
+         카드 모드로 돌아오면 현재 중심·반경으로 다시 조회한다(v=125). */
+      if (next === "figure") {
+        if (window.PokeMoaMap.clearEmart) window.PokeMoaMap.clearEmart();
+      } else if (window.PokeMoaMap.refreshEmart) {
+        window.PokeMoaMap.refreshEmart();
+      }
     }
     /* 피규어 모드는 '가까운 거리순'이 읽기 쉽다 — 카드 모드의 정렬은 기억해 두었다가 돌려준다 */
     var sortEl = $("#sortSelect");

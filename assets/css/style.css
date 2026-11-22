@@ -2515,7 +2515,8 @@ button { font: inherit; color: inherit; cursor: pointer; }
 /* 편의점 4사별 현황 요약 바 */
 .brand-summary {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  /* 전체 + 편의점 4사 + 이마트(대형마트) = 6칸 */
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 8px;
   padding: 12px 14px;
   background: #fff;
@@ -2747,7 +2748,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .pm-card-products .p-tag { font-size: 11.5px; padding: 4px 9px; }
 
 @media (max-width: 979px) {
-  .brand-summary { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  .brand-summary { grid-template-columns: repeat(6, minmax(0, 1fr)); }
 }
 @media (max-width: 679px) {
   .brand-summary {
@@ -4332,3 +4333,65 @@ body.figure-mode .map-legend [data-legend="offline"] { display: none; }
 body.figure-mode .demo-notice .notice-long,
 body.figure-mode .demo-notice .notice-short { display: none; }
 body.figure-mode .demo-notice .notice-figure { display: block; }
+
+/* =========================================================================
+   v=125 이마트(대형마트) 실시간 점포 재고 — 이마트 앱 점포 재고를 직접 조회한 값
+   ========================================================================= */
+.chip.chip-closed { background: #fdecec; border: 1px solid #f4c9c9; color: #a32020; font-weight: 800; }
+.chip.chip-hours { background: #f2f4f8; border: 1px solid #dde3ee; color: #46536b; font-weight: 700; }
+.store-item .s-meta .chip-closed,
+.store-item .s-meta .chip-hours { font-size: 10px; padding: 3px 8px; }
+.store-item.is-emart .s-name { font-weight: 700; }
+
+/* 지도 말풍선 — 이마트는 재고/비공개/품절을 점 색으로 구분한다 */
+.pm-pill.is-emart { letter-spacing: -0.2px; }
+.pm-pill.is-emart.status-check { border-color: rgba(201, 162, 39, 0.45); }
+
+/* 매장 카드 — 카드 상품별 재고 목록 */
+.emart-stock {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 9px 0 0;
+  border-top: 1px solid var(--line);
+  display: grid;
+  gap: 4px;
+  max-height: 232px;
+  overflow-y: auto;
+}
+.emart-stock .es-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 5px 8px;
+  border-radius: 8px;
+  background: #f7f9fc;
+  font-size: 12.5px;
+}
+.emart-stock .es-name {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  font-weight: 700;
+  color: var(--ink);
+}
+.emart-stock .es-name i {
+  font-style: normal;
+  font-weight: 500;
+  font-size: 10.5px;
+  color: var(--muted-2);
+}
+.emart-stock .es-qty {
+  white-space: nowrap;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-2);
+}
+.emart-stock .is-in { background: var(--green-soft); }
+.emart-stock .is-in .es-qty { color: var(--green); }
+.emart-stock .is-undisclosed { background: var(--amber-soft); }
+.emart-stock .is-undisclosed .es-qty { color: var(--amber); }
+.emart-stock .is-none .es-qty { color: var(--grey); }
+.emart-stock .is-na { background: #f4f6fa; }
+.emart-stock .is-na .es-name,
+.emart-stock .is-na .es-qty { color: #9aa5b8; font-weight: 600; }
