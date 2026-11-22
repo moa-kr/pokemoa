@@ -891,12 +891,42 @@
     return site;
   }
 
-  /* 미리보기 iframe · 어드민 미리보기 주소 · localhost 는 통계에서 뺍나다. */
+  /* 미리보기 iframe · 어드민 미리보기 주소 · localhost · 내 기기 제외(moa_notrack) 는 통계에서 뺍니다. */
+  const OPTOUT_KEY = "moa:analytics:optout";
+  function showOptoutToast(msg) {
+    try {
+      const run = () => {
+        if (!document.body) return;
+        const el = document.createElement("div");
+        el.textContent = msg;
+        el.style.cssText = "position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:99999;background:#0f172a;color:#ffd400;border:1px solid rgba(255,212,0,.45);padding:10px 16px;border-radius:999px;font-size:13px;font-weight:700;box-shadow:0 8px 24px rgba(0,0,0,.35);pointer-events:none;white-space:nowrap;";
+        document.body.appendChild(el);
+        setTimeout(() => { try { el.remove(); } catch (e) {} }, 4000);
+      };
+      if (document.body) run();
+      else document.addEventListener("DOMContentLoaded", run, { once: true });
+    } catch (e) {}
+  }
+
   function trackingBlocked() {
     try {
       if (window.parent && window.parent !== window) return "preview-iframe";
       const params = new URLSearchParams(location.search || "");
       if (params.has("moa_preview")) return "preview";
+      if (params.has("moa_notrack")) {
+        const val = params.get("moa_notrack");
+        if (val === "0" || val === "off" || val === "false") {
+          try { localStorage.removeItem(OPTOUT_KEY); } catch (e) {}
+          showOptoutToast("이 기기의 방문 통계 제외가 해제되었습니다");
+        } else {
+          try { localStorage.setItem(OPTOUT_KEY, "1"); } catch (e) {}
+          showOptoutToast("✓ 이 기기는 이제 방문 통계에서 제외됩니다");
+          return "optout";
+        }
+      }
+      try {
+        if (localStorage.getItem(OPTOUT_KEY) === "1") return "optout";
+      } catch (e) {}
       if (location.protocol === "file:") return "local";
       const host = String(location.hostname || "").toLowerCase();
       if (!host || host === "localhost" || host === "127.0.0.1" || host === "::1" || host === "[::1]") return "local";
