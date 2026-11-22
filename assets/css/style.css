@@ -593,6 +593,11 @@ button { font: inherit; color: inherit; cursor: pointer; }
     border-radius: 10px;
   }
 }
+/* 360~375px(아이폰 mini·SE 등) — 카드 안쪽 폭 300~315px 에 3열이 들어가도록 92×184 슬롯 */
+@media (max-width: 375px) {
+  .affiliate .affiliate-slot { flex: 0 0 92px; width: 92px; height: 184px; }
+  .affiliate .affiliate-slot iframe { transform: scale(0.7666667); }
+}
 /* 359px 이하(≈320px) — 안쪽 폭 320-36-24=260px 에 3열이 들어가도록 80×160 슬롯 */
 @media (max-width: 359px) {
   .affiliate { padding: 12px; }
