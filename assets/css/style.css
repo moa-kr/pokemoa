@@ -566,15 +566,39 @@ button { font: inherit; color: inherit; cursor: pointer; }
   border-radius: 12px;
   background: #fff;
 }
-/* 좁은 화면(≈320px)에서도 가로 넘침 없이 두 위젯씩 유지 */
-@media (max-width: 359px) {
+/* v4.45 — 모바일(≤480px)에서도 120×240 위젯 3개가 한 줄(3열)
+   390px 화면: 안쪽 폭 390-36(wrap)-28(카드 여백)=326px, 슬롯 100×3 + 6×2 = 312px → 잘림·가로 스크롤 없이 들어갑니다.
+   슬롯 상자를 100×200 으로 고정하고 내부 iframe 은 0.8333 배율로 줄여 원래 비율(120×240)을 그대로 유지합니다. */
+@media (max-width: 480px) {
   .affiliate { padding: 14px; }
-  .affiliate .affiliate-widget { gap: 8px; }
-  .affiliate .affiliate-slot { flex-basis: 118px; width: 118px; }
+  .affiliate .affiliate-widget {
+    flex-wrap: nowrap;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 6px;
+    padding: 4px 0 0;
+  }
+  .affiliate .affiliate-slot {
+    flex: 0 0 100px;
+    width: 100px;
+    height: 200px;
+    border-radius: 10px;
+  }
+  .affiliate .affiliate-slot iframe {
+    width: 120px;
+    height: 240px;
+    max-width: none;
+    transform: scale(0.8333333);
+    transform-origin: top left;
+    border-radius: 10px;
+  }
 }
-/* 3개 슬롯 구간(≈360~430px): 한 줄에 두 개씩, 세 번째는 가운데로 */
-@media (min-width: 360px) and (max-width: 430px) {
-  .affiliate .affiliate-widget { gap: 10px; row-gap: 12px; }
+/* 359px 이하(≈320px) — 안쪽 폭 320-36-24=260px 에 3열이 들어가도록 80×160 슬롯 */
+@media (max-width: 359px) {
+  .affiliate { padding: 12px; }
+  .affiliate .affiliate-widget { gap: 6px; }
+  .affiliate .affiliate-slot { flex: 0 0 80px; width: 80px; height: 160px; }
+  .affiliate .affiliate-slot iframe { transform: scale(0.6666667); }
 }
 .affiliate .affiliate-disclosure {
   display: block;
