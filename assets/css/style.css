@@ -570,13 +570,14 @@ button { font: inherit; color: inherit; cursor: pointer; }
    390px 화면: 안쪽 폭 390-36(wrap)-28(카드 여백)=326px, 슬롯 100×3 + 6×2 = 312px → 잘림·가로 스크롤 없이 들어갑니다.
    슬롯 상자를 100×200 으로 고정하고 내부 iframe 은 0.8333 배율로 줄여 원래 비율(120×240)을 그대로 유지합니다. */
 @media (max-width: 480px) {
-  .affiliate { padding: 14px; }
+  .affiliate { padding: 12px; }
   .affiliate .affiliate-widget {
     flex-wrap: nowrap;
     justify-content: center;
     align-items: flex-start;
     gap: 6px;
     padding: 4px 0 0;
+    overflow: hidden;
   }
   .affiliate .affiliate-slot {
     flex: 0 0 100px;
