@@ -726,6 +726,11 @@ window.PokeMoaMap = (function () {
 
   function isOfflineBrand(b) { return OFFLINE_IDS.indexOf(b) >= 0; }
 
+  /* 팜사이즈 원더 피규어(GS25 단독) 모드 — 지도에 GS25 만 그리므로 상태 문구도 GS25 기준으로 쓴다 */
+  function figureOnlyMode() {
+    return !!(document.body && document.body.classList && document.body.classList.contains("figure-mode"));
+  }
+
   function match(s) {
     if (!st.showOffline && isOfflineBrand(s.brand)) return false;
     if (st.brand !== "all" && s.brand !== st.brand) return false;
@@ -861,7 +866,9 @@ window.PokeMoaMap = (function () {
       progress = 34;
     } else if (st.loading.data) {
       phase = "data";
-      msg = "주변 편의점 4사·오프라인 매장을 찾는 중... (최대 매장 조회 중 · 최대 25~30초 걸릴 수 있어요)";
+      msg = figureOnlyMode()
+        ? "주변 GS25 매장을 찾는 중... (최대 매장 조회 중 · 최대 25~30초 걸릴 수 있어요)"
+        : "주변 편의점 4사·오프라인 매장을 찾는 중... (최대 매장 조회 중 · 최대 25~30초 걸릴 수 있어요)";
       progress = 72;
     } else {
       phase = "done";
@@ -894,7 +901,9 @@ window.PokeMoaMap = (function () {
       };
     }
     if (st.loading.data && !(st.relay && st.relay.count)) {
-      return { kind: "busy", text: "주변 편의점 4사·오프라인 매장을 찾는 중입니다 (최대 매장 조회 중 · 최대 25~30초 걸릴 수 있어요)", action: false };
+      return { kind: "busy", text: figureOnlyMode()
+        ? "주변 GS25 매장을 찾는 중입니다 (최대 매장 조회 중 · 최대 25~30초 걸릴 수 있어요)"
+        : "주변 편의점 4사·오프라인 매장을 찾는 중입니다 (최대 매장 조회 중 · 최대 25~30초 걸릴 수 있어요)", action: false };
     }
     /* 실시간 재고 조회로 실제 수량을 받았으면 그 사실을 먼저 알린다 */
     if (st.relay && st.relay.count) {
@@ -918,6 +927,14 @@ window.PokeMoaMap = (function () {
         if (s.distance > st.radius) return;
         if (isOfflineBrand(s.brand)) offN += 1; else convN += 1;
       });
+      if (figureOnlyMode()) {
+        /* 피규어 모드에서는 GS25 만 그리므로 CU·세븐·이마트24·오프라인 곳수를 세지 않는다 */
+        var gsN = 0;
+        (st.all || []).forEach(function (s) {
+          if (s.brand === "gs25" && s.distance <= st.radius) gsN += 1;
+        });
+        return { kind: "live", text: "매장 위치 · GS25 " + gsN + "곳 · 재고는 ‘재고 조회’ 후", action: false };
+      }
       var txt = st.all.length > cap
         ? "매장 위치 · 카카오맵 주변 매장 " + st.all.length + "곳 중 가까운 " + cap + "곳 표시"
         : "매장 위치 · 편의점 4사 " + convN + "곳";
