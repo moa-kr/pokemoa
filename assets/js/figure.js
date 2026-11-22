@@ -347,6 +347,11 @@
     var strip = $("#figureStrip");
     if (strip) strip.hidden = next !== "figure";
     setSideTitle(next === "figure");
+    /* 4사 현황 요약은 피규어 모드에서 GS25 카드만 남기므로(CSS) 읽어 주는 이름도 바꿔 준다 */
+    var sumEl = $("#brandSummary");
+    if (sumEl) {
+      sumEl.setAttribute("aria-label", next === "figure" ? "GS25 매장·재고 현황" : "편의점 4사별 현황");
+    }
 
     if (window.PokeMoaMap) {
       if (window.PokeMoaMap.closeCard) window.PokeMoaMap.closeCard();

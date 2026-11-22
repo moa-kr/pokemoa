@@ -4252,3 +4252,79 @@ body:not(.figure-mode) .figure-progress { display: none !important; }
   .collab-badge { margin-left: 0; }
   .collab-summary span { margin-left: 0; }
 }
+
+/* ============================================================ v=122 (2026-11-22)
+   지도 탭 두 가지 정리
+   ① 다섯 개 상태 안내는 기본으로 접어 두고 ‘안내 보기’로 펼친다.
+   ② 팜사이즈 원더 피규어(GS25 단독) 모드에서는 4사 요약·오프라인 필터 대신 GS25 만 보인다.
+      카드 모드로 돌아오면 두 규칙 모두 풀려 기존 화면 그대로입니다(숨김은 CSS 만, hidden 속성·설정값은 건드리지 않음). */
+
+/* ① 상태 안내 접기 — 예전 .status-guide 를 <details> 안에 그대로 두었다 */
+.status-guide-fold {
+  margin-top: 18px;
+  padding: 0 14px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+}
+.status-guide-fold > summary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 0;
+  cursor: pointer;
+  list-style: none;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+.status-guide-fold > summary::-webkit-details-marker { display: none; }
+.status-guide-fold .sgf-title { font-weight: 800; color: var(--ink-2); }
+.status-guide-fold .sgf-count {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--muted-2);
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--paper);
+  font-variant-numeric: tabular-nums;
+}
+.status-guide-fold .sgf-more {
+  margin-left: auto;
+  font-size: 11.5px;
+  font-weight: 800;
+  color: var(--blue);
+  white-space: nowrap;
+}
+.status-guide-fold .sgf-more::after { content: " ＋"; }
+.status-guide-fold[open] .sgf-more::after { content: " －"; }
+.status-guide-fold[open] > summary { padding-bottom: 4px; }
+.status-guide-fold .status-guide { margin-top: 4px; padding-bottom: 12px; }
+.status-guide-fold .status-guide div { background: var(--paper); border-color: transparent; }
+
+/* ② 피규어 모드 = GS25 단독 상품 — 4사 요약은 GS25 카드 하나만 */
+body.figure-mode #brandSummary { grid-template-columns: minmax(0, 1fr); }
+body.figure-mode #brandSummary .bs-card:not([data-brand="gs25"]) { display: none !important; }
+body.figure-mode #brandSummary .bs-card {
+  min-width: 0;
+  flex: 1 1 auto;
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+/* 모바일에서 5장을 옆으로 넘기던 스크롤·오른쪽 페이드도 한 장이면 필요 없다 */
+body.figure-mode #brandSummary {
+  display: grid;
+  overflow: visible;
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+/* 피규어 모드에서는 오프라인 판매처 필터를 감춘다 — 지도에는 GS25 매장만 그린다 */
+body.figure-mode #offlineBar { display: none !important; }
+/* 범례에서도 세븐일레븐·오프라인 항목은 피규어 모드에 없으므로 감춘다 */
+body.figure-mode .map-legend [data-legend="seven"],
+body.figure-mode .map-legend [data-legend="offline"] { display: none; }
+
+/* 노란 안내 배너 문구도 GS25 기준으로 바꿔 준다 */
+.notice-figure { display: none; }
+body.figure-mode .demo-notice .notice-long,
+body.figure-mode .demo-notice .notice-short { display: none; }
+body.figure-mode .demo-notice .notice-figure { display: block; }

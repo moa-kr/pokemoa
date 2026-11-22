@@ -1857,6 +1857,9 @@
     brandSummary.addEventListener("click", function (e) {
       var btn = e.target.closest(".bs-card");
       if (!btn) return;
+      /* 피규어(GS25 단독) 모드에서는 GS25 카드 하나만 보이므로, 눌러도 ‘전체(4사)’로
+         풀리지 않게 막는다 — 카드 모드로 돌아오면 평소처럼 동작한다. */
+      if (document.body.classList.contains("figure-mode")) return;
       var next = btn.getAttribute("data-brand");
       if (!next) return;
       if (next !== "all" && next === filterState.brand) next = "all";

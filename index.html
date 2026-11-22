@@ -37,7 +37,7 @@
 <meta name="twitter:image:alt" content="포켓몬카드모아 — 내 주변 편의점 재고 · 인기 카드 시세 · 도감">
 <meta name="theme-color" content="#101f3c">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%23101f3c'/%3E%3Crect x='7' y='7' width='7.5' height='7.5' rx='2.2' fill='%23ffcb05'/%3E%3Crect x='17.5' y='7' width='7.5' height='7.5' rx='2.2' fill='%23ffcb05' opacity='.7'/%3E%3Crect x='7' y='17.5' width='7.5' height='7.5' rx='2.2' fill='%23ffcb05' opacity='.7'/%3E%3Crect x='17.5' y='17.5' width='7.5' height='7.5' rx='2.2' fill='%23ffcb05'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="assets/css/style.css?v=121">
+<link rel="stylesheet" href="assets/css/style.css?v=122">
 <!-- 카카오맵 JavaScript SDK — autoload=false로 불러 두고 map.js가 kakao.maps.load()로 초기화합니다.
      JavaScript 키 도메인에는 https://moa-kr.github.io 만 등록되어 있어, 그 밖의 주소(미등록 프리뷰)에서는
      지도 대신 내장 좌표 스냅샷 안내가 표시됩니다. -->
@@ -530,6 +530,7 @@
       <span class="demo-icon" aria-hidden="true">i</span>
       <div class="notice-long"><b>매장 위치·이름은 카카오맵 실제 장소 정보</b>이고, 재고는 GS25·CU·이마트24 앱에서 조회한 값만 표시합니다. 세븐일레븐은 매장 위치만 안내합니다. 방문 전 앱이나 매장 전화로 한 번 더 확인하세요.</div>
       <div class="notice-short"><b>위치는 카카오맵 실제 정보</b>, 재고는 앱 조회값만 표시합니다(세븐일레븐은 위치만). 방문 전 앱에서 확인하세요.</div>
+      <div class="notice-figure"><b>지금은 GS25 단독 상품</b>이라 지도에는 <b>GS25 매장만</b> 표시합니다. 재고는 우리동네GS 조회값만 보여 주니 방문 전 앱에서 한 번 더 확인하세요.</div>
     </div>
 
     <!-- ------------------------------------------------ 찾을 상품 고르기 (카드 / GS25 피규어) -->
@@ -727,8 +728,8 @@
           <span><i class="l-in"></i>재고 있음</span>
           <span><i class="l-none"></i>없음</span>
           <span><i class="l-check"></i>미조회</span>
-          <span><i class="l-policy"></i>세븐 위치만</span>
-          <span><i class="l-offline"></i>오프라인 판매처</span>
+          <span data-legend="seven"><i class="l-policy"></i>세븐 위치만</span>
+          <span data-legend="offline"><i class="l-offline"></i>오프라인 판매처</span>
         </div>
       </div>
 
@@ -760,13 +761,22 @@
       <button type="button" class="btn btn-dark btn-sm" data-modal="inquiry" data-inquiry-type="재고·매장 정보 오류" data-copy="inquiryBtn">문의하기</button>
     </div>
 
-    <div class="status-guide" data-section="map-status">
-      <div><b data-copy="status1Title">재고 있음</b><span data-copy="status1Desc">조회한 시점에 수량 1개 이상이 확인된 매장입니다.</span></div>
-      <div><b data-copy="status3Title">없음</b><span data-copy="status3Desc">조회한 시점에 재고 0으로 확인된 매장입니다. 아직 입고 전일 수도 있습니다.</span></div>
-      <div><b data-copy="status2Title">미조회</b><span data-copy="status2Desc">이번 조회에서 수량을 받지 못한 매장입니다. 위치만 표시합니다.</span></div>
-      <div><b data-copy="status5Title">오프라인 판매처</b><span data-copy="status5Desc">대형마트·아트박스·공식 자판기·카드샵은 위치만 표시합니다(재고는 안내하지 않습니다).</span></div>
-      <div><b>세븐일레븐 위치 안내</b><span>세븐일레븐은 앱에서만 재고를 알려 줍니다. 이 사이트는 <b>매장 위치만</b> 안내합니다.</span></div>
-    </div>
+    <!-- 다섯 개 상태 안내는 기본으로 접어 둡니다(v=122) — 요약 줄의 ‘안내 보기’를 누르면 펼쳐집니다.
+         어드민의 섹션 토글(data-section="map-status")과 문구 키(status1Title …)는 그대로 살아 있습니다. -->
+    <details class="status-guide-fold" id="mapStatusGuide" data-section="map-status">
+      <summary>
+        <span class="sgf-title">지도 표시 안내</span>
+        <span class="sgf-count">5개</span>
+        <span class="sgf-more">안내 보기</span>
+      </summary>
+      <div class="status-guide">
+        <div><b data-copy="status1Title">재고 있음</b><span data-copy="status1Desc">조회한 시점에 수량 1개 이상이 확인된 매장입니다.</span></div>
+        <div><b data-copy="status3Title">없음</b><span data-copy="status3Desc">조회한 시점에 재고 0으로 확인된 매장입니다. 아직 입고 전일 수도 있습니다.</span></div>
+        <div><b data-copy="status2Title">미조회</b><span data-copy="status2Desc">이번 조회에서 수량을 받지 못한 매장입니다. 위치만 표시합니다.</span></div>
+        <div><b data-copy="status5Title">오프라인 판매처</b><span data-copy="status5Desc">대형마트·아트박스·공식 자판기·카드샵은 위치만 표시합니다(재고는 안내하지 않습니다).</span></div>
+        <div><b>세븐일레븐 위치 안내</b><span>세븐일레븐은 앱에서만 재고를 알려 줍니다. 이 사이트는 <b>매장 위치만</b> 안내합니다.</span></div>
+      </div>
+    </details>
 
     <div data-section="map-channels">
     <h3 class="mt-24" style="font-size:15px;margin-bottom:10px;" data-copy="mapChannelsTitle">실제 재고를 확인하는 공식 채널</h3>
@@ -1594,16 +1604,16 @@
   </div>
 </template>
 
-<script src="assets/js/data.js?v=121"></script>
-<script src="assets/js/map.js?v=121"></script>
-<script src="assets/js/app.js?v=121"></script>
+<script src="assets/js/data.js?v=122"></script>
+<script src="assets/js/map.js?v=122"></script>
+<script src="assets/js/app.js?v=122"></script>
 <!-- GS25 팜사이즈 원더 피규어 — 안내 팝업·상품 전환·주변 GS25 재고 조회 (data.js 의 figure) -->
-<script src="assets/js/figure.js?v=121"></script>
+<script src="assets/js/figure.js?v=122"></script>
 <!-- 공식 콜라보 — assets/data/collabs.json 을 읽어 일정·소식 > 공식 콜라보 칸을 그립니다. -->
-<script src="assets/js/collabs.js?v=121" defer></script>
+<script src="assets/js/collabs.js?v=122" defer></script>
 <!-- 모아 어드민(moa-kr/moa-admin)이 커밋하는 assets/config/site-config.json 을 화면에 적용합니다.
      공지 바·팝업·탭/섹션 순서와 노출·문구가 이 파일 값으로 바뀝니다. -->
-<script src="assets/js/site-config-loader.js?v=121" defer
+<script src="assets/js/site-config-loader.js?v=122" defer
         data-config="assets/config/site-config.json"
         data-track-site="pokemoa"
         data-tab-container=".main-nav"
