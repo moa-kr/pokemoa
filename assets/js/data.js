@@ -713,7 +713,7 @@ window.POKEMOA_DATA = (function () {
     { id: "jeonnam-suncheon", name: "전남 · 순천", short: "전남 순천", label: "순천시", province: "전남", district: "순천", lat: 34.95055, lng: 127.4873, zoom: 15, allow20: true },
     { id: "jeonnam-yeosu", name: "전남 · 여수", short: "전남 여수", label: "여수시", province: "전남", district: "여수", lat: 34.75463, lng: 127.65986, zoom: 15, allow20: true },
     { id: "jeonnam-mokpo", name: "전남 · 목포", short: "전남 목포", label: "목포시", province: "전남", district: "목포", lat: 34.79033, lng: 126.38475, zoom: 15, allow20: true },
-    { id: "pohang-north", name: "경북 · 포항 · 북구 (환호동)", short: "경북 포항 북구", label: "환호동", province: "경북", district: "포항 · 북구", lat: 36.0662, lng: 129.394, zoom: 15, allow20: true },
+    { id: "pohang-north", name: "경북 · 포항 · 북구", short: "경북 포항 북구", label: "환호동", province: "경북", district: "포항 · 북구", lat: 36.0662, lng: 129.394, zoom: 15, allow20: true },
     { id: "pohang-south", name: "경북 · 포항 · 남구", short: "경북 포항 남구", label: "이동", province: "경북", district: "포항 · 남구", lat: 36.03273, lng: 129.33032, zoom: 15, allow20: true },
     { id: "gyeongbuk-gyeongju", name: "경북 · 경주", short: "경북 경주", label: "성건동", province: "경북", district: "경주", lat: 35.85571, lng: 129.19366, zoom: 15, allow20: true },
     { id: "gyeongbuk-gumi", name: "경북 · 구미", short: "경북 구미", label: "원평동", province: "경북", district: "구미", lat: 36.12686, lng: 128.34196, zoom: 15, allow20: true },

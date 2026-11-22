@@ -1252,7 +1252,7 @@
   }
 
   function optionLabel(r) {
-    /* "경북 · 포항 · 북구 (환호동)" → "포항 · 북구 (환호동)" */
+    /* "경북 · 포항 · 북구" → "포항 · 북구" */
     var prefix = r.province + " · ";
     return r.name.indexOf(prefix) === 0 ? r.name.slice(prefix.length) : r.name;
   }
