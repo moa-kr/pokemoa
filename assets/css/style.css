@@ -537,10 +537,10 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .affiliate .affiliate-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .affiliate small { font-size: 11px; color: var(--muted-2); }
 
-/* 실제 제휴 배너 (쿠팡 파트너스 위젯 iframe 120×240 × 2열, 가운데 정렬) */
+/* 실제 제휴 배너 (쿠팡 파트너스 위젯 iframe 120×240, 넓은 화면 3열 · 좁은 화면 2+1 가운데 정렬) */
 .affiliate .affiliate-widget {
   display: flex;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   justify-content: center;
   align-items: center;
   gap: 12px;
@@ -566,11 +566,15 @@ button { font: inherit; color: inherit; cursor: pointer; }
   border-radius: 12px;
   background: #fff;
 }
-/* 좁은 화면(≈320px)에서도 가로 넘침 없이 두 위젯 유지 */
+/* 좁은 화면(≈320px)에서도 가로 넘침 없이 두 위젯씩 유지 */
 @media (max-width: 359px) {
   .affiliate { padding: 14px; }
   .affiliate .affiliate-widget { gap: 8px; }
   .affiliate .affiliate-slot { flex-basis: 118px; width: 118px; }
+}
+/* 3개 슬롯 구간(≈360~430px): 한 줄에 두 개씩, 세 번째는 가운데로 */
+@media (min-width: 360px) and (max-width: 430px) {
+  .affiliate .affiliate-widget { gap: 10px; row-gap: 12px; }
 }
 .affiliate .affiliate-disclosure {
   display: block;
