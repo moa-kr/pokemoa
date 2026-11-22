@@ -169,11 +169,6 @@
     "trendsTitle": "등급 회사를 고르고 인증서·카드 번호로 조회",
     "trendsLead": "<b>PSA · CGC · BRG · BGS</b> 가운데 회사를 먼저 고른 뒤 등급카드 넘버(인증서 번호 또는 카드 번호)를 넣으면, 번호를 복사해 그 회사의 팝 리포트·인증서 조회 페이지로 바로 넘겨 줍니다. 팝수는 회사별로 따로 집계되므로 보고 싶은 회사를 먼저 골라야 합니다.",
     "scheduleSubNews": "카드 뉴스·소식",
-    "scheduleSubCollab": "공식 콜라보",
-    "collabEyebrow": "공식 콜라보",
-    "collabTitle": "대한민국 공식 포켓몬 콜라보",
-    "collabDesc": "포켓몬코리아·브랜드 공식 공지와 보도로 확인한 <b>2026년 11월 기준 콜라보</b>입니다. 진행 중·마감을 날짜로 구분하고, 굿즈 가격과 공식 출처를 함께 적었습니다. 재고 소진 시 조기 종료될 수 있습니다.",
-    "collabLink": "포켓몬코리아 라이선스 상품 ↗",
     "scheduleSubCal": "발매·재입고 일정",
     "scheduleTimelineTitle": "30th CELEBRATION 추첨·발매 타임라인",
     "scheduleTimelineSub": "2026-09 ~ 2026-11 · 공식 공지 기준 · <b>오늘 이후 일정만 표시</b> (지난 기록은 접어 둡니다)",
@@ -190,10 +185,15 @@
     "scheduleWeekTh1": "요일",
     "scheduleWeekTh2": "볼 곳",
     "scheduleWeekTh3": "할 일",
-    "scheduleWeekTh4": "구분"
+    "scheduleWeekTh4": "구분",
+    "scheduleSubCollab": "공식 콜라보",
+    "collabEyebrow": "공식 콜라보",
+    "collabTitle": "대한민국 공식 포켓몬 콜라보",
+    "collabDesc": "포켓몬코리아·브랜드 공식 공지와 보도로 확인한 <b>2026년 11월 기준 콜라보</b>입니다. 진행 중·마감을 날짜로 구분하고, 굿즈 가격과 공식 출처를 함께 적었습니다. 재고 소진 시 조기 종료될 수 있습니다.",
+    "collabLink": "포켓몬코리아 라이선스 상품 ↗"
   },
   "banner": {
-    "enabled": true,
+    "enabled": false,
     "text": "편의점 데이터 확인 중",
     "linkUrl": "",
     "linkLabel": "",
@@ -271,98 +271,98 @@
         "id": "figure",
         "label": "GS25 팜사이즈 원더 피규어 소개",
         "visible": true,
-        "order": 3.5,
+        "order": 4,
         "tab": "home"
       },
       {
         "id": "pricing",
         "label": "70,000원에 살 수 있는 곳, 채널별 조건까지",
         "visible": true,
-        "order": 4,
+        "order": 5,
         "tab": "home"
       },
       {
         "id": "boxes",
         "label": "30th 말고 다른 박스, 정가로 사는 곳",
         "visible": true,
-        "order": 5,
+        "order": 6,
         "tab": "home"
       },
       {
         "id": "offline",
         "label": "마트·아트박스·자판기·카드샵에서 정가로 사는 곳",
         "visible": true,
-        "order": 6,
+        "order": 7,
         "tab": "home"
       },
       {
         "id": "trend",
         "label": "지금 가장 많이 찾는 4개 세트",
         "visible": true,
-        "order": 7,
+        "order": 8,
         "tab": "home"
       },
       {
         "id": "tips",
         "label": "헛걸음을 줄이는 세 가지 순서",
         "visible": true,
-        "order": 8,
+        "order": 9,
         "tab": "home"
       },
       {
         "id": "issues",
         "label": "카드 뉴스·소식",
         "visible": true,
-        "order": 9,
+        "order": 10,
         "tab": "schedule"
       },
       {
         "id": "releases",
         "label": "발매·재입고 일정",
         "visible": true,
-        "order": 10,
+        "order": 11,
         "tab": "schedule"
       },
       {
         "id": "market",
         "label": "PSA 거래 내역 조회",
         "visible": true,
-        "order": 11,
+        "order": 12,
         "tab": "guide"
       },
       {
         "id": "resellLinks",
         "label": "리셀 · 해외 실거래 시세",
         "visible": true,
-        "order": 12,
+        "order": 13,
         "tab": "guide"
       },
       {
         "id": "rates",
         "label": "환율 위젯",
         "visible": true,
-        "order": 13,
+        "order": 14,
         "tab": "guide"
       },
       {
         "id": "cards",
         "label": "수록 카드와 레어도",
         "visible": true,
-        "order": 14,
+        "order": 15,
         "tab": "guide"
       },
       {
         "id": "faq",
         "label": "구매 전에 가장 많이 묻는 것들",
         "visible": true,
-        "order": 15,
+        "order": 16,
         "tab": "guide"
       },
       {
         "id": "pop",
         "label": "팝수 조회",
         "visible": true,
-        "order": 16,
+        "order": 17,
         "tab": "trends"
       }
     ]
@@ -392,7 +392,7 @@
   ],
   "meta": {
     "updatedBy": "moa-admin (@Acewoni)",
-    "updatedAt": "2026-11-20T15:07:08.496Z",
+    "updatedAt": "2026-11-22T15:25:10.285Z",
     "note": "모아 어드민이 관리하는 공통 설정 파일입니다. 형식: https://moa-kr.github.io/moa-admin/SCHEMA.md"
   }
 }
