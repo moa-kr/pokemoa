@@ -993,7 +993,8 @@
 
   function relayCheck(url) {
     var ctrl = new AbortController();
-    var timer = setTimeout(function () { ctrl.abort(); }, 6500);
+    /* v4.45 — LTE에서 중계 /health 응답이 6초를 넘겨 일시적으로 「응답 없음」으로 보이던 것을 줄이려고 12초까지 기다린다. */
+    var timer = setTimeout(function () { ctrl.abort(); }, 12000);
     return fetch(url + "/health", { signal: ctrl.signal, mode: "cors", cache: "no-store" })
       .then(function (res) {
         if (!res.ok) throw new Error("HTTP " + res.status);
@@ -1050,8 +1051,8 @@
     bpRelayStart(!!manual);
     var ctrl = new AbortController();
     /* v1.8 — 중계 서버가 3km 안 매장을 최대한 모으느라 27초까지 쓸 수 있다(서버 전체 마감 27초).
-       클라이언트는 그보다 넉넉한 32초까지 기다린다. */
-    var timer = setTimeout(function () { ctrl.abort(); }, 32000);
+       클라이언트는 그보다 넉넉하게 기다린다(v4.45: 32초 → 40초 — 느린 LTE에서 중간에 끊겨 「응답 없음」이 뜨던 것을 줄인다). */
+    var timer = setTimeout(function () { ctrl.abort(); }, 40000);
     /* 검색어는 '포켓몬카드' — '포켓몬'으로 넣으면 CU가 과자(빼빼로)만 잡아 카드 상품이 0건이 된다. */
     var radiusM = mstate && mstate.radius ? Math.round(mstate.radius) : 3000;
     var url = relay.url + "/api/nearby?lat=" + lat + "&lng=" + lng +
