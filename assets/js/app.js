@@ -3715,25 +3715,66 @@
     });
   }
 
-  /* -------------------------------------- 일정·소식 서브탭 (일정/뉴스) */
+  /* -------------------------- 일정·소식 탭 (대분류 3개 + 카드 소분류 2개) */
   function initSubTabs() {
-    var btns = $$(".sub-tab");
-    if (!btns.length) return;
-    btns.forEach(function (b) {
+    var mainBtns = $$(".sub-tabs-main .sub-tab");
+    var innerBtns = $$(".sub-tabs-inner .sub-tab");
+    if (!mainBtns.length) return;
+
+    var MAIN_PANELS = { card: "subtabCard", go: "subtabGo", collab: "subtabCollab" };
+    var INNER_PANELS = { news: "subtabNews", cal: "subtabCal" };
+    var state = { main: "card", inner: "news" };
+
+    function setPressed(btns, attr, activeKey) {
+      btns.forEach(function (b) {
+        var on = b.getAttribute(attr) === activeKey;
+        b.classList.toggle("is-active", on);
+        b.setAttribute("aria-selected", on ? "true" : "false");
+      });
+    }
+
+    function apply() {
+      setPressed(mainBtns, "data-subtab", state.main);
+      setPressed(innerBtns, "data-subtab2", state.inner);
+      Object.keys(MAIN_PANELS).forEach(function (key) {
+        var panel = document.getElementById(MAIN_PANELS[key]);
+        if (panel) panel.hidden = key !== state.main;
+      });
+      Object.keys(INNER_PANELS).forEach(function (key) {
+        var panel = document.getElementById(INNER_PANELS[key]);
+        if (panel) panel.hidden = key !== state.inner;
+      });
+    }
+
+    mainBtns.forEach(function (b) {
       b.addEventListener("click", function () {
-        var key = b.getAttribute("data-subtab");
-        btns.forEach(function (o) {
-          var on = o.getAttribute("data-subtab") === key;
-          o.classList.toggle("is-active", on);
-          o.setAttribute("aria-selected", on ? "true" : "false");
-        });
-        [["cal", "subtabCal"], ["news", "subtabNews"], ["collab", "subtabCollab"]].forEach(function (pair) {
-          var panel = document.getElementById(pair[1]);
-          if (panel) panel.hidden = pair[0] !== key;
-        });
-        trackEvent("schedule_subtab", { tab: key });
+        state.main = b.getAttribute("data-subtab") || "card";
+        apply();
+        trackEvent("schedule_subtab", { tab: state.main });
       });
     });
+
+    innerBtns.forEach(function (b) {
+      b.addEventListener("click", function () {
+        state.inner = b.getAttribute("data-subtab2") || "news";
+        apply();
+        trackEvent("schedule_subtab", { tab: state.inner });
+      });
+    });
+
+    apply();
+
+    /* 주소의 #issues · #releases 로 들어오면 카드 대분류의 해당 칸을 연다. */
+    var hash = (location.hash || "").replace("#", "");
+    if (hash === "releases") {
+      state.main = "card";
+      state.inner = "cal";
+      apply();
+    } else if (hash === "issues" || hash === "collabs" || hash === "pokemongo") {
+      state.main = hash === "collabs" ? "collab" : hash === "pokemongo" ? "go" : "card";
+      state.inner = "news";
+      apply();
+    }
   }
 
   /* --------------------------------------------------------------- 초기화 */
@@ -3761,7 +3802,7 @@
     if (h === "stores" || h === "boxStores") return "home";
     if (h === "cards") return "guide";
     if (h === "pop") return "trends";
-    if (h === "issues" || h === "releases") return "schedule";
+    if (h === "issues" || h === "releases" || h === "collabs" || h === "pokemongo") return "schedule";
     return panels[h] ? h : "";
   }
 

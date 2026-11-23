@@ -37,7 +37,7 @@
 <meta name="twitter:image:alt" content="포켓몬카드모아 — 내 주변 편의점 재고 · 인기 카드 시세 · 도감">
 <meta name="theme-color" content="#101f3c">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%23101f3c'/%3E%3Crect x='7' y='7' width='7.5' height='7.5' rx='2.2' fill='%23ffcb05'/%3E%3Crect x='17.5' y='7' width='7.5' height='7.5' rx='2.2' fill='%23ffcb05' opacity='.7'/%3E%3Crect x='7' y='17.5' width='7.5' height='7.5' rx='2.2' fill='%23ffcb05' opacity='.7'/%3E%3Crect x='17.5' y='17.5' width='7.5' height='7.5' rx='2.2' fill='%23ffcb05'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="assets/css/style.css?v=132">
+<link rel="stylesheet" href="assets/css/style.css?v=133">
 <!-- 카카오맵 JavaScript SDK — autoload=false로 불러 두고 map.js가 kakao.maps.load()로 초기화합니다.
      JavaScript 키 도메인에는 https://moa-kr.github.io 만 등록되어 있어, 그 밖의 주소(미등록 프리뷰)에서는
      지도 대신 내장 좌표 스냅샷 안내가 표시됩니다. -->
@@ -841,15 +841,22 @@
   <div class="wrap">
     <div class="map-page-head">
       <span class="eyebrow" data-copy="scheduleEyebrow">일정 · 소식</span>
-      <h1 id="schedule-title" data-copy="scheduleTitle">카드 소식과 발매·재입고 일정</h1>
-      <p data-copy-html="scheduleLead">먼저 <b>카드 뉴스·소식</b>에서 공식 공지와 신규팩 발매 소식을 확인하고, <b>발매·재입고 일정</b>에서 추첨 회차별 예정·종료 일정을 보세요. 포켓몬스토어 추첨은 회차마다 응모·발표·결제·배송 날짜가 따로 있습니다. 편의점·영화관·뷰티·패션 브랜드와 함께하는 <b>공식 콜라보</b>는 세 번째 칸에 모았습니다.</p>
+      <h1 id="schedule-title" data-copy="scheduleTitle">카드·포켓몬 GO 일정과 소식</h1>
+      <p data-copy-html="scheduleLead">대분류 세 칸입니다. <b>카드 일정·소식</b>은 카드 뉴스·소식과 발매·재입고 일정을, <b>포켓몬 GO 일정·소식</b>은 포켓몬 GO 공식 알림으로 확인한 진행 중·예정 일정을, <b>공식 콜라보</b>는 편의점·영화관·뷰티·패션 브랜드 협업을 모았습니다.</p>
     </div>
 
-    <!-- 기본으로 열리는 서브탭은 카드 뉴스·소식(news)입니다. -->
-    <div class="sub-tabs" role="tablist" aria-label="일정·소식 구분">
-      <button type="button" class="sub-tab is-active" id="subtabBtnNews" data-subtab="news" role="tab" aria-selected="true" aria-controls="subtabNews" data-copy="scheduleSubNews">카드 뉴스·소식</button>
-      <button type="button" class="sub-tab" id="subtabBtnCal" data-subtab="cal" role="tab" aria-selected="false" aria-controls="subtabCal" data-copy="scheduleSubCal">발매·재입고 일정</button>
+    <!-- 대분류 3개: 카드 일정·소식(기본) / 포켓몬 GO 일정·소식 / 공식 콜라보 -->
+    <div class="sub-tabs sub-tabs-main" role="tablist" aria-label="일정·소식 대분류">
+      <button type="button" class="sub-tab is-active" id="subtabBtnCard" data-subtab="card" role="tab" aria-selected="true" aria-controls="subtabCard" data-copy="scheduleMainCard">카드 일정·소식</button>
+      <button type="button" class="sub-tab" id="subtabBtnGo" data-subtab="go" role="tab" aria-selected="false" aria-controls="subtabGo" data-copy="scheduleMainGo">포켓몬 GO 일정·소식</button>
       <button type="button" class="sub-tab" id="subtabBtnCollab" data-subtab="collab" role="tab" aria-selected="false" aria-controls="subtabCollab" data-copy="scheduleSubCollab">공식 콜라보</button>
+    </div>
+
+    <div class="subtab-body" id="subtabCard" role="tabpanel" aria-labelledby="subtabBtnCard">
+    <!-- 카드 대분류 안의 소분류 — 기존 카드 뉴스·소식 / 발매·재입고 일정 -->
+    <div class="sub-tabs sub-tabs-inner" role="tablist" aria-label="카드 일정·소식 구분">
+      <button type="button" class="sub-tab is-active" id="subtabBtnNews" data-subtab2="news" role="tab" aria-selected="true" aria-controls="subtabNews" data-copy="scheduleSubNews">카드 뉴스·소식</button>
+      <button type="button" class="sub-tab" id="subtabBtnCal" data-subtab2="cal" role="tab" aria-selected="false" aria-controls="subtabCal" data-copy="scheduleSubCal">발매·재입고 일정</button>
     </div>
 
     <div class="subtab-body" id="subtabCal" role="tabpanel" aria-labelledby="subtabBtnCal" hidden>
@@ -986,6 +993,56 @@
       </div>
       <div class="release-grid" id="releaseGrid"></div>
     </section>
+    </div>
+    </div>
+
+    <!-- 포켓몬 GO — 데이터는 assets/data/pokemongo.json (assets/js/pokemongo.js 가 그립니다).
+         새 일정은 pokemongo.json 의 items 배열에 한 건 추가하면 자동으로 표시됩니다. -->
+    <div class="subtab-body" id="subtabGo" role="tabpanel" aria-labelledby="subtabBtnGo" hidden>
+    <section class="section" id="pgoSection" aria-labelledby="pgo-title" data-section="pokemongo">
+      <div class="section-head">
+        <div>
+          <span class="eyebrow" data-copy="pgoEyebrow">포켓몬 GO</span>
+          <h2 id="pgo-title" data-copy="pgoTitle">지금 진행 중인 포켓몬 GO 일정·소식</h2>
+          <p data-copy-html="pgoDesc">포켓몬 GO 공식 알림(pokemongo.com/ko)으로 확인한 <b>2026년 11월 하순~12월 일정</b>입니다. 시각은 모두 한국시간이고, 기간이 지나면 자동으로 '종료'로 바뀝니다. 날짜·장소를 정할 때는 공식 알림을 한 번 더 확인해 주세요.</p>
+        </div>
+        <a class="head-link" href="https://pokemongo.com/ko/news" target="_blank" rel="noopener" data-copy="pgoLink">포켓몬 GO 공식 알림 ↗</a>
+      </div>
+      <div class="pgo-filter">
+        <div class="pgo-filter-row" id="pgoStatusRow" data-label="상태" role="group" aria-label="진행 상태로 거르기"></div>
+        <div class="pgo-filter-row" id="pgoTypeRow" data-label="유형" role="group" aria-label="유형으로 거르기"></div>
+      </div>
+      <div class="pgo-summary" id="pgoSummary">일정을 불러오는 중…</div>
+      <ul class="pgo-list" id="pgoList"><li class="pgo-empty">일정을 불러오는 중…</li></ul>
+      <p class="pgo-note" id="pgoSrc"></p>
+    </section>
+
+    <div class="panel-card mt-16">
+      <h3 data-copy="pgoLinksTitle">포켓몬 GO 바로가기</h3>
+      <p class="panel-sub" data-copy-html="pgoLinksSub">일정 확인처와 현장에서 바로 쓰는 링크입니다.</p>
+      <div class="link-cards">
+        <a class="link-card" href="https://pokemongo.com/ko/news" target="_blank" rel="noopener">
+          <span class="lc-icon">📣</span>
+          <span><strong>공식 알림 (한국어)</strong><small>이벤트·레이드·점검 공지 1차 확인처</small></span>
+          <span class="lc-go">↗</span>
+        </a>
+        <a class="link-card" href="https://pokemongo.com/map" target="_blank" rel="noopener">
+          <span class="lc-icon">🗺️</span>
+          <span><strong>슈퍼 메가 레이드 지도</strong><small>11/28 픽시 레이드 데이 장소 확인</small></span>
+          <span class="lc-go">↗</span>
+        </a>
+        <a class="link-card" href="https://pokemongo.com/ko/seasons/twilight-trails" target="_blank" rel="noopener">
+          <span class="lc-icon">🌗</span>
+          <span><strong>황혼의 여정 시즌</strong><small>12/1 10:00 종료 · 로테이션 확인</small></span>
+          <span class="lc-go">↗</span>
+        </a>
+        <a class="link-card" href="https://store.pokemongo.com/" target="_blank" rel="noopener">
+          <span class="lc-icon">🛒</span>
+          <span><strong>Pokémon GO Web Store</strong><small>11/30 13:00까지 포켓코인 2배</small></span>
+          <span class="lc-go">↗</span>
+        </a>
+      </div>
+    </div>
     </div>
 
     <!-- 공식 콜라보 — 데이터는 assets/data/collabs.json (assets/js/collabs.js 가 그립니다).
@@ -1684,17 +1741,19 @@
   </div>
 </template>
 
-<script src="assets/js/data.js?v=132"></script>
-<script src="assets/js/emart.js?v=132"></script>
-<script src="assets/js/map.js?v=132"></script>
-<script src="assets/js/app.js?v=132"></script>
+<script src="assets/js/data.js?v=133"></script>
+<script src="assets/js/emart.js?v=133"></script>
+<script src="assets/js/map.js?v=133"></script>
+<script src="assets/js/app.js?v=133"></script>
 <!-- GS25 팜사이즈 원더 피규어 — 안내 팝업·상품 전환·주변 GS25 재고 조회 (data.js 의 figure) -->
-<script src="assets/js/figure.js?v=132"></script>
+<script src="assets/js/figure.js?v=133"></script>
 <!-- 공식 콜라보 — assets/data/collabs.json 을 읽어 일정·소식 > 공식 콜라보 칸을 그립니다. -->
-<script src="assets/js/collabs.js?v=132" defer></script>
+<script src="assets/js/collabs.js?v=133" defer></script>
+<!-- 포켓몬 GO — assets/data/pokemongo.json 을 읽어 일정·소식 > 포켓몬 GO 칸을 그립니다. -->
+<script src="assets/js/pokemongo.js?v=133" defer></script>
 <!-- 모아 어드민(moa-kr/moa-admin)이 커밋하는 assets/config/site-config.json 을 화면에 적용합니다.
      공지 바·팝업·탭/섹션 순서와 노출·문구가 이 파일 값으로 바뀝니다. -->
-<script src="assets/js/site-config-loader.js?v=132" defer
+<script src="assets/js/site-config-loader.js?v=133" defer
         data-config="assets/config/site-config.json"
         data-track-site="pokemoa"
         data-tab-container=".main-nav"

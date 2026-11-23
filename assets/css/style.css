@@ -4433,3 +4433,118 @@ body.figure-mode .demo-notice .notice-figure { display: block; }
   /* 좁은 화면에서는 카드가 지도를 다 덮지 않도록 재고표 높이를 줄인다(카드 안에서 스크롤) */
   .emart-stock { max-height: 168px; }
 }
+
+
+/* ============================================================
+   일정·소식 대분류 (카드 일정·소식 / 포켓몬 GO 일정·소식 / 공식 콜라보)  v=133 (2026-11-23)
+   + 포켓몬 GO 칸 (assets/data/pokemongo.json · assets/js/pokemongo.js)
+   ============================================================ */
+.sub-tabs-main { margin-top: 6px; }
+.sub-tabs-main .sub-tab { padding: 10px 16px; font-size: 13px; }
+.sub-tabs-main .sub-tab.is-active { box-shadow: 0 6px 16px rgba(16, 31, 60, 0.18); }
+.sub-tabs-inner { margin: -4px 0 14px; gap: 6px; }
+.sub-tabs-inner .sub-tab {
+  padding: 6px 13px; border-width: 1.2px; font-size: 12px;
+  background: var(--paper); color: var(--ink-2);
+}
+.sub-tabs-inner .sub-tab.is-active { background: var(--navy-2); border-color: var(--navy-2); color: #fff; }
+
+.pgo-filter { display: grid; gap: 8px; margin: 0 0 14px; }
+.pgo-filter-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.pgo-filter-label {
+  flex: 0 0 auto; margin-right: 2px;
+  font-size: 10.5px; font-weight: 800; letter-spacing: 0.06em; color: var(--muted-2);
+  text-transform: uppercase;
+}
+.pgo-chip {
+  padding: 6px 12px;
+  border: 1.5px solid var(--line);
+  border-radius: 999px;
+  background: #fff;
+  font: inherit; font-size: 12px; font-weight: 800; letter-spacing: -0.02em;
+  color: var(--ink-2); cursor: pointer;
+}
+.pgo-chip.is-soft { border-width: 1px; background: var(--paper); font-weight: 700; }
+.pgo-chip:hover { border-color: var(--navy); }
+.pgo-chip.is-on { background: var(--navy); border-color: var(--navy); color: #fff; }
+
+.pgo-summary {
+  display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: baseline;
+  margin: 0 0 12px; padding: 10px 14px;
+  background: var(--paper); border: 1px solid var(--line); border-radius: 12px;
+  font-size: 12.5px; color: var(--ink-2);
+}
+.pgo-summary b { color: var(--navy); font-variant-numeric: tabular-nums; }
+.pgo-summary span { margin-left: auto; font-size: 11px; color: var(--muted); }
+
+.pgo-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; grid-template-columns: 1fr; }
+.pgo-card {
+  display: flex; flex-direction: column; gap: 8px;
+  padding: 16px;
+  background: #fff; border: 1px solid var(--line); border-radius: 16px;
+  box-shadow: var(--shadow-sm);
+}
+.pgo-card.is-ongoing { border-color: #d9e3f5; }
+.pgo-card.is-ended { background: #fbfbfc; }
+.pgo-card.is-ended .pgo-title { color: var(--ink-2); }
+
+.pgo-top { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.pgo-type {
+  padding: 3px 9px; border-radius: 7px;
+  background: var(--navy); color: var(--yellow);
+  font-size: 11.5px; font-weight: 900; letter-spacing: -0.02em;
+}
+.pgo-today {
+  padding: 3px 8px; border-radius: 999px;
+  background: var(--yellow-soft); color: #7a5a00;
+  font-size: 10.5px; font-weight: 900;
+}
+.pgo-src { font-size: 10.5px; font-weight: 800; color: var(--muted-2); }
+.pgo-src.is-official { color: var(--blue); }
+.pgo-badge {
+  margin-left: auto;
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 10px; border-radius: 999px;
+  font-size: 11px; font-weight: 900;
+  background: var(--green-soft); color: var(--green);
+}
+.pgo-badge.is-upcoming { background: var(--yellow-soft); color: #7a5a00; }
+.pgo-badge.is-ended { background: var(--grey-soft); color: var(--muted); }
+.pgo-dday { font-weight: 800; opacity: 0.75; font-variant-numeric: tabular-nums; }
+
+.pgo-title { margin: 0; font-size: 15.5px; line-height: 1.35; letter-spacing: -0.02em; }
+.pgo-period {
+  margin: 0; font-size: 11.5px; font-weight: 800; color: var(--navy-3);
+  font-variant-numeric: tabular-nums;
+}
+.pgo-summary-text { margin: 0; }
+.pgo-points { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; }
+.pgo-points li {
+  position: relative; padding-left: 11px;
+  font-size: 12.5px; color: var(--ink-2); line-height: 1.55;
+}
+.pgo-points li::before {
+  content: ""; position: absolute; left: 0; top: 7px;
+  width: 4px; height: 4px; border-radius: 50%; background: var(--yellow);
+}
+.pgo-links {
+  display: flex; flex-wrap: wrap; gap: 10px;
+  margin-top: auto; padding-top: 10px; border-top: 1px dashed var(--line);
+}
+.pgo-links a { font-size: 11.5px; font-weight: 800; color: var(--blue); }
+.pgo-empty {
+  padding: 22px 16px; text-align: center;
+  background: #fff; border: 1px dashed var(--line); border-radius: 16px;
+  font-size: 12.5px; color: var(--muted);
+}
+.pgo-note { margin: 14px 0 0; font-size: 11px; color: var(--muted-2); line-height: 1.6; }
+
+@media (min-width: 900px) {
+  .pgo-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 480px) {
+  .sub-tabs-main .sub-tab { padding: 9px 13px; font-size: 12.5px; }
+  .pgo-card { padding: 14px; }
+  .pgo-title { font-size: 14.5px; }
+  .pgo-badge, .pgo-summary span { margin-left: 0; }
+}
