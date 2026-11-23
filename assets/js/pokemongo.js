@@ -45,6 +45,16 @@
   function dateOnly(v) {
     return typeof v === "string" && v.length >= 10 ? v.slice(0, 10) : "";
   }
+  function stamp(date, time) {
+    var d = dateOnly(date);
+    if (!d) return "";
+    return d + "T" + (time || "00:00");
+  }
+  function addDays(key, n) {
+    var d = new Date(key + "T00:00:00");
+    d.setDate(d.getDate() + n);
+    return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
+  }
   function daysBetween(fromKey, toKey) {
     var a = new Date(fromKey + "T00:00:00");
     var b = new Date(toKey + "T00:00:00");
@@ -167,8 +177,8 @@
 
   function sortKey(item, today, nowMin) {
     var status = statusOf(item, today, nowMin);
-    var start = dateOnly(item.startDate) || "9999-99-99";
-    var end = dateOnly(item.endDate) || "9999-99-99";
+    var start = stamp(item.startDate, item.startTime) || "9999-99-99T99:99";
+    var end = stamp(item.endDate, item.endTime) || "9999-99-99T99:99";
     return { status: status, start: start, end: end };
   }
 
@@ -185,8 +195,15 @@
     });
 
     if (summaryEl) {
+      var weekEnd = addDays(today, 7);
+      var thisWeek = 0;
+      all.forEach(function (it) {
+        if (statusOf(it, today, nowMin) !== "upcoming") return;
+        var s = dateOnly(it.startDate);
+        if (s >= today && s <= weekEnd) thisWeek++;
+      });
       summaryEl.innerHTML = "진행 중 <b>" + counts.ongoing + "</b>건 · 예정 <b>" + counts.upcoming +
-        "</b>건 · 종료 <b>" + counts.ended + "</b>건 <span>기준 " +
+        "</b>건 (이번 주 시작 <b>" + thisWeek + "</b>건) · 종료 <b>" + counts.ended + "</b>건 <span>기준 " +
         escapeHtml((data.basisDate || today).slice(5).replace("-", "/")) + " · 한국시간</span>";
     }
 

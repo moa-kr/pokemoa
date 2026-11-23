@@ -2,59 +2,253 @@
   "schemaVersion": 1,
   "site": "pokemoa",
   "basisDate": "2026-11-23",
-  "updatedAt": "2026-11-23T19:20:00+09:00",
+  "updatedAt": "2026-11-23T19:55:00+09:00",
   "timezone": "Asia/Seoul",
   "title": "포켓몬 GO 일정·소식",
-  "lead": "포켓몬 GO 공식 알림(pokemongo.com/ko)으로 확인한 2026년 11월 하순~12월 일정입니다. 시각은 모두 한국시간이고, 날짜가 지나면 자동으로 '종료'로 바뀝니다.",
+  "lead": "포켓몬 GO 공식 알림(pokemongo.com/ko)과 게임 내 일정을 한국시간으로 정리했습니다. 진행 중·예정·종료는 날짜로 자동으로 바뀝니다.",
   "categories": [
     { "key": "season", "label": "시즌" },
     { "key": "event", "label": "이벤트" },
+    { "key": "weekly", "label": "정기" },
     { "key": "raid", "label": "레이드" },
+    { "key": "max", "label": "맥스배틀" },
     { "key": "pass", "label": "패스·배틀" },
     { "key": "news", "label": "소식" }
   ],
   "items": [
     {
-      "id": "season-twilight-trails",
-      "title": "황혼의 여정 시즌 마지막 주",
-      "type": "season",
-      "typeLabel": "시즌",
-      "startDate": "2026-09-08",
+      "id": "into-the-wild-eternatus",
+      "title": "커다란 발자국 — 무한다이노 귀환 (오늘 종료)",
+      "type": "event",
+      "typeLabel": "이벤트",
+      "startDate": "2026-11-16",
       "startTime": "10:00",
-      "endDate": "2026-12-01",
-      "endTime": "10:00",
-      "periodLabel": "2026-09-08 10:00 ~ 12-01 10:00 (한국시간)",
+      "endDate": "2026-11-23",
+      "endTime": "20:00",
+      "periodLabel": "2026-11-16 10:00 ~ 11-23 20:00 (한국시간)",
       "sourceLabel": "공식",
-      "summary": "팔데아지방 포켓몬(오라티프·마피티프 등)과 메가찌르호크·메가샹델라가 처음 나온 시즌입니다. 시즌이 끝나면 야생·알·필드리서치 구성이 다음 시즌 것으로 통째로 바뀝니다.",
+      "summary": "지금까지 등장한 다이맥스 포켓몬이 총출동하고, 무한다이노(무한다이맥스)가 파워스폿을 점령한 이벤트입니다. 오늘(11/23) 20:00에 끝납니다.",
       "highlights": [
-        "시즌 종료: 12월 1일(화) 10:00 — 이 시각에 다음 시즌이 바로 시작됩니다",
-        "GO패스 메이저 마일스톤 보너스(교환 사탕XL·선물 한도·산책향로 2배 등)도 시즌과 함께 종료",
-        "시즌 마지막 이벤트가 '황혼의 소원'(11/24~11/30)입니다"
+        "오늘 20:00 종료 — 맥스 파티클 8배·수집 상한 2,400개 혜택은 오늘까지",
+        "무한다이노는 이벤트당 1마리만 포획 가능(이미 잡았다면 무한다이노 사탕 보상)",
+        "GO패스: 커다란 발자국 보상 수령은 11월 25일 20:00까지",
+        "11/21 06:00~11/22 11:00 일일 리모트 레이드 상한 30회였음"
       ],
       "links": [
-        { "label": "공식 시즌 페이지", "url": "https://pokemongo.com/ko/seasons/twilight-trails" }
+        { "label": "공식 공지", "url": "https://pokemongo.com/ko/news/dynamax-trails-eternamax-eternatus-2026" }
       ]
     },
     {
-      "id": "season-next-start",
-      "title": "새 시즌 시작 — 이름은 아직 미발표",
-      "type": "season",
-      "typeLabel": "시즌",
-      "startDate": "2026-12-01",
-      "startTime": "10:00",
-      "endDate": null,
-      "endTime": "",
-      "periodLabel": "2026-12-01 10:00 시작 (한국시간) · 종료일 미정",
-      "sourceLabel": "공식",
-      "summary": "황혼의 여정이 끝나는 12월 1일 10:00에 다음 시즌이 시작됩니다. 11월 23일 기준으로 시즌 이름과 로테이션(야생·알·레이드)은 아직 공식 발표되지 않았습니다.",
+      "id": "max-monday-nov-23",
+      "title": "맥스 먼데이 — 다이맥스 냐스퍼",
+      "type": "max",
+      "typeLabel": "맥스배틀",
+      "startDate": "2026-11-23",
+      "startTime": "06:00",
+      "endDate": "2026-11-23",
+      "endTime": "21:00",
+      "periodLabel": "2026-11-23 06:00 ~ 21:00 (한국시간)",
+      "sourceLabel": "게임 내 공지",
+      "summary": "월요일 하루, 파워스폿이 늘고 갱신이 빨라지는 맥스 먼데이입니다. 이번 주 보스는 다이맥스 냐스퍼이고, 이번 주 내내 맥스배틀에서 만날 수 있습니다.",
       "highlights": [
-        "새 시즌 커뮤니티 데이는 12월 12~13일(12월 커뮤니티 데이)로 이미 확정",
-        "12월 5일 맥스배틀 데이 · 12월 19일 레이드 데이 · 12월 26일 부화데이도 다음 시즌 일정",
-        "시즌 발표가 나오면 이 카드에 반영합니다"
+        "다이맥스 냐스퍼 등장 기간 11/23 ~ 11/29 (11/30부터는 다이맥스 프리지오)",
+        "맥스배틀 운영 시간 06:00~21:00, 파워스폿 추가 등장",
+        "맥스 파티클을 모아 두면 다음 맥스배틀 데이(12/5)에 쓰기 좋습니다"
       ],
       "links": [
-        { "label": "공식 시즌 페이지", "url": "https://pokemongo.com/ko/seasons/twilight-trails" },
-        { "label": "다음 시즌 일정 공지", "url": "https://pokemongo.com/ko/news/save-the-date-s25" }
+        { "label": "일정 달력(한국시간)", "url": "https://www.kakao.gg/games/pokemongo/schedule" }
+      ]
+    },
+    {
+      "id": "raid-5star-cresselia-darkrai",
+      "title": "5성 레이드 — 크레세리아 · 다크라이 (오늘 밤 교체)",
+      "type": "raid",
+      "typeLabel": "레이드",
+      "startDate": "",
+      "startTime": "",
+      "endDate": "2026-11-24",
+      "endTime": "22:00",
+      "periodLabel": "~ 2026-11-24 22:00 (한국시간)",
+      "sourceLabel": "게임 내 공지",
+      "summary": "에스퍼 타입 크레세리아와 악 타입 다크라이가 5성 레이드에 함께 나옵니다. 11월 24일 22:00에 테오키스 4폼으로 교체됩니다.",
+      "highlights": [
+        "크레세리아 100% CP 1,633 (날씨 부스트 2,041)",
+        "다크라이 100% CP 2,136 (날씨 부스트 2,671)",
+        "둘 다 색이 다른 모습 등장",
+        "레이드 아워는 수요일 18:00 — 이번 주는 11/25 테오키스"
+      ],
+      "links": [
+        { "label": "레이드 보스 목록", "url": "https://www.kakao.gg/games/pokemongo/raids" }
+      ]
+    },
+    {
+      "id": "raid-mega-darkrai",
+      "title": "메가 레이드 — 메가다크펫 (오늘 밤 교체)",
+      "type": "raid",
+      "typeLabel": "레이드",
+      "startDate": "",
+      "startTime": "",
+      "endDate": "2026-11-24",
+      "endTime": "22:00",
+      "periodLabel": "~ 2026-11-24 22:00 (한국시간)",
+      "sourceLabel": "게임 내 공지",
+      "summary": "메가다크펫이 메가 레이드 보스로 나옵니다. 11월 25일부터는 메가메타그로스로 바뀝니다.",
+      "highlights": [
+        "메가다크펫 100% CP 1,313 (날씨 부스트 1,642)",
+        "색이 다른 모습 등장",
+        "잡으면 다크펫, 메가 에너지로 메가진화 강화"
+      ],
+      "links": [
+        { "label": "레이드 보스 목록", "url": "https://www.kakao.gg/games/pokemongo/raids" }
+      ]
+    },
+    {
+      "id": "weekly-raid-hour-nov-25",
+      "title": "레이드 아워 — 테오키스 4가지 모습 (수 18:00)",
+      "type": "weekly",
+      "typeLabel": "정기",
+      "startDate": "2026-11-25",
+      "startTime": "18:00",
+      "endDate": "2026-11-25",
+      "endTime": "19:00",
+      "periodLabel": "2026-11-25(수) 18:00 ~ 19:00 (한국시간)",
+      "sourceLabel": "게임 내 공지",
+      "summary": "수요일 저녁 한 시간, 체육관의 5성 레이드가 한 종류로 몰립니다. 이번 주는 테오키스 노말·디펜스·어택·스피드폼이 한꺼번에 열립니다.",
+      "highlights": [
+        "도감에 없는 폼부터 잡는 편이 효율적",
+        "레이드 아워는 매주 수요일 18:00~19:00",
+        "12월 레이드 아워 대상은 새 시즌 공지 후 확정"
+      ],
+      "links": [
+        { "label": "일정 달력(한국시간)", "url": "https://www.kakao.gg/games/pokemongo/schedule" }
+      ]
+    },
+    {
+      "id": "weekly-spotlight-nov-26",
+      "title": "스포트라이트 아워 — 음뱃 · 포획 사탕 2배 (목 18:00)",
+      "type": "weekly",
+      "typeLabel": "정기",
+      "startDate": "2026-11-26",
+      "startTime": "18:00",
+      "endDate": "2026-11-26",
+      "endTime": "19:00",
+      "periodLabel": "2026-11-26(목) 18:00 ~ 19:00 (한국시간)",
+      "sourceLabel": "게임 내 공지",
+      "summary": "목요일 저녁 한 시간 동안 음뱃이 집중 등장하고, 포획 사탕을 2배로 받습니다. 진화·강화용 사탕을 모으기 좋은 시간입니다.",
+      "highlights": [
+        "음뱃 대량 발생 + 포획 사탕 2배",
+        "색이 다른 음뱃도 노려볼 수 있습니다",
+        "스포트라이트 아워는 매주 목요일 18:00~19:00"
+      ],
+      "links": [
+        { "label": "일정 달력(한국시간)", "url": "https://www.kakao.gg/games/pokemongo/schedule" }
+      ]
+    },
+    {
+      "id": "weekly-cadence-guide",
+      "title": "매주 반복되는 일정 — 월·수·목 루틴",
+      "type": "weekly",
+      "typeLabel": "정기",
+      "startDate": "",
+      "startTime": "",
+      "endDate": null,
+      "endTime": "",
+      "periodLabel": "매주 반복 (한국시간)",
+      "sourceLabel": "게임 내 공지",
+      "summary": "포켓몬 GO의 주간 리듬입니다. 요일만 기억해 두면 놓치기 어렵습니다.",
+      "highlights": [
+        "월요일 06:00~21:00 맥스 먼데이 — 파워스폿 추가·갱신 단축, 주간 다이맥스 보스 공개",
+        "수요일 18:00~19:00 레이드 아워 — 5성 보스 한 종류 집중",
+        "목요일 18:00~19:00 스포트라이트 아워 — 특정 포켓몬 대량 발생 + 보너스",
+        "12월의 각 주간 대상은 아직 공지 전(요일 cadence만 유지)"
+      ],
+      "links": [
+        { "label": "일정 달력(한국시간)", "url": "https://www.kakao.gg/games/pokemongo/schedule" }
+      ]
+    },
+    {
+      "id": "raid-5star-deoxys",
+      "title": "5성 레이드 — 테오키스 4가지 모습 (11/25~12/1)",
+      "type": "raid",
+      "typeLabel": "레이드",
+      "startDate": "2026-11-25",
+      "startTime": "06:00",
+      "endDate": "2026-12-01",
+      "endTime": "22:00",
+      "periodLabel": "2026-11-25 06:00 ~ 12-01 22:00 (한국시간)",
+      "sourceLabel": "게임 내 공지",
+      "summary": "테오키스 노말폼·디펜스폼·어택폼·스피드폼이 5성 레이드에 함께 등장합니다. 레이드 보스는 매일 06:00에 교체됩니다.",
+      "highlights": [
+        "레이드 아워 11/25(수) 18:00~19:00 — 네 모습 집중",
+        "에스퍼 타입 — 악·벌레·고스트 공격이 약점",
+        "색이 다른 모습은 공식 발표 전"
+      ],
+      "links": [
+        { "label": "레이드 보스 목록", "url": "https://www.kakao.gg/games/pokemongo/raids" }
+      ]
+    },
+    {
+      "id": "raid-mega-metagross",
+      "title": "메가 레이드 — 메가메타그로스 (11/25~12/1)",
+      "type": "raid",
+      "typeLabel": "레이드",
+      "startDate": "2026-11-25",
+      "startTime": "06:00",
+      "endDate": "2026-12-01",
+      "endTime": "22:00",
+      "periodLabel": "2026-11-25 06:00 ~ 12-01 22:00 (한국시간)",
+      "sourceLabel": "게임 내 공지",
+      "summary": "메가다크펫 다음 메가 레이드 보스는 메가메타그로스입니다. 강철·에스퍼 타입 메가진화로 레이드 인원 구성에 쓰기 좋습니다.",
+      "highlights": [
+        "11/25 06:00부터 메가다크펫과 교체",
+        "메가 에너지를 모아 메가레벨을 올릴 수 있습니다"
+      ],
+      "links": [
+        { "label": "레이드 보스 목록", "url": "https://www.kakao.gg/games/pokemongo/raids" }
+      ]
+    },
+    {
+      "id": "raid-tiers-1-3-current",
+      "title": "1·3성 레이드 보스 (이번 주)",
+      "type": "raid",
+      "typeLabel": "레이드",
+      "startDate": "",
+      "startTime": "",
+      "endDate": "2026-11-25",
+      "endTime": "06:00",
+      "periodLabel": "11/23 기준 · 11/25 06:00 로테이션에 함께 교체",
+      "sourceLabel": "게임 내 공지",
+      "summary": "5성·메가와 함께 도는 1성·3성 레이드 목록입니다. 도감 채우기와 그림자 포켓몬 수집에 쓰입니다.",
+      "highlights": [
+        "3성: 알로라 텅구리 · 레파르다스 · 골루그 · 섀도우 슈륙챙이 · 섀도우 메꾸리 · 섀도우 팽태자",
+        "1성: 알로라 나옹 · 무우마 · 가라르 데스마스 · 모래꿍",
+        "그림자 1성: 섀도우 애버라스 · 물짱이 · 마크탕 · 두개도스",
+        "색이 다른 모습이 나오는 보스가 많아 1성부터 도는 것도 방법"
+      ],
+      "links": [
+        { "label": "레이드 보스 목록", "url": "https://www.kakao.gg/games/pokemongo/raids" }
+      ]
+    },
+    {
+      "id": "shadow-tornadus",
+      "title": "그림자 레이드 — 그림자 토네로스(화신폼)",
+      "type": "raid",
+      "typeLabel": "레이드",
+      "startDate": "2026-11-16",
+      "startTime": "06:00",
+      "endDate": "2026-12-01",
+      "endTime": "22:00",
+      "periodLabel": "2026-11-16 06:00 ~ 12-01 22:00 (한국시간) · 주말 그림자 5성",
+      "sourceLabel": "게임 내 공지",
+      "summary": "주말마다 그림자 5성 레이드에 그림자 토네로스가 나옵니다. 비행 타입이라 바위·전기·얼음 공격이 약점입니다.",
+      "highlights": [
+        "보스가 폭주하면 정화 크리스탈로 진정 — 같은 등급 일반 레이드보다 어렵습니다",
+        "100% CP 1,911 (날씨 부스트 2,389)",
+        "주말에만 열리므로 인원이 모이는 시간대를 노리는 편이 안전",
+        "색이 다른 모습 등장"
+      ],
+      "links": [
+        { "label": "레이드 보스 목록", "url": "https://www.kakao.gg/games/pokemongo/raids" }
       ]
     },
     {
@@ -71,10 +265,31 @@
       "summary": "색이 다른 별가사리·리그레를 만날 확률이 올라가는 별빛 테마 이벤트입니다. 태양·달 코스튬 레이드와 이벤트 전용 GO패스가 함께 열립니다.",
       "highlights": [
         "야생: 삐삐·별가사리·리그레, 운이 좋으면 암멍이까지",
-        "별1 레이드: 태양 왕관 피카츄·달 왕관 피카츄 / 별3 레이드: 태양 스카프 에브이·달 스카프 블래키",
+        "별1 레이드: 태양 왕관 피카츄·달 왕관 피카츄 / 별3: 태양 스카프 에브이·달 스카프 블래키",
         "메가 레이드: 메가독침붕·메가헬가·메가깜까미·메가썬더볼트",
-        "필드리서치 보상이 11/26 10:00에 교체 — 11/26~11/30은 장식한 팬텀·핼러윈 모자 둥실라이드·그푸리",
-        "GO패스 보상 수령 마감은 12월 2일 20:00"
+        "필드리서치 보상 교체: 11/24~11/26 과사삭벌레·오라티프 → 11/26~11/30 장식한 팬텀·핼러윈 모자 둥실라이드·그푸리",
+        "이벤트 GO패스 보상 수령 마감 12월 2일 20:00"
+      ],
+      "links": [
+        { "label": "공식 공지", "url": "https://pokemongo.com/ko/news/twilight-wishes-2026" }
+      ]
+    },
+    {
+      "id": "go-pass-twilight-wishes",
+      "title": "GO패스: 황혼의 소원 (이벤트 패스)",
+      "type": "pass",
+      "typeLabel": "패스·배틀",
+      "startDate": "2026-11-24",
+      "startTime": "10:00",
+      "endDate": "2026-11-30",
+      "endTime": "20:00",
+      "periodLabel": "2026-11-24 10:00 ~ 11-30 20:00 (한국시간)",
+      "sourceLabel": "공식",
+      "summary": "황혼의 소원 기간에 자동 지급되는 무료 트랙입니다. 랭크를 올리면 이벤트 포켓몬 만남과 메가 에너지, 별의조각을 받습니다.",
+      "highlights": [
+        "랭크 1: 교환 반짝반짝 확률↑ / 랭크 10: 포획 별의모래 2배(디럭스 3배)",
+        "보상 수령 마감 12월 2일 20:00 — 랭크 진행은 11/30 20:00까지",
+        "GO패스 디럭스 $4.99 · 디럭스+6랭크 $6.99"
       ],
       "links": [
         { "label": "공식 공지", "url": "https://pokemongo.com/ko/news/twilight-wishes-2026" }
@@ -91,17 +306,165 @@
       "endTime": "17:00",
       "periodLabel": "2026-11-28 14:00 ~ 17:00 (한국시간)",
       "sourceLabel": "공식",
-      "summary": "메가픽시가 슈퍼 메가 레이드로 처음 등장합니다. 특정 체육관에서만 열리는 슈퍼 메가 레이드라 지도로 장소를 미리 확인해 두는 편이 좋습니다.",
+      "summary": "메가픽시가 슈퍼 메가 레이드로 처음 등장합니다. 특정 체육관에서만 열리므로 지도로 장소를 미리 확인해 두는 편이 좋습니다.",
       "highlights": [
         "메가픽시를 잡으면 메가레벨 1단계 달성, 슈퍼 맥스까지 강화 가능(문포스+ 추가)",
         "체육관 포토디스크로 무료 레이드패스 최대 6개",
         "11/28 10:00~11/29 13:00 리모트 레이드 상한 20회",
-        "글로벌 챌린지 티어에 따라 12/1 05:00~12/14 05:00 메가픽시 보너스 적용",
-        "색이 다른 픽시를 만날 확률 증가"
+        "글로벌 챌린지 결과에 따라 12/1 05:00~12/14 05:00 메가픽시 보너스",
+        "색이 다른 픽시 확률 증가 · 시간제한 리서치로 프리미엄 배틀패스·메타그로스"
       ],
       "links": [
         { "label": "공식 공지", "url": "https://pokemongo.com/ko/news/clefable-super-mega-raid-day-2026" },
         { "label": "슈퍼 메가 레이드 지도", "url": "https://pokemongo.com/map" }
+      ]
+    },
+    {
+      "id": "max-monday-nov-30",
+      "title": "맥스 먼데이 — 다이맥스 프리지오",
+      "type": "max",
+      "typeLabel": "맥스배틀",
+      "startDate": "2026-11-30",
+      "startTime": "06:00",
+      "endDate": "2026-11-30",
+      "endTime": "21:00",
+      "periodLabel": "2026-11-30(월) 06:00 ~ 21:00 (한국시간)",
+      "sourceLabel": "게임 내 공지",
+      "summary": "11월 마지막 맥스 먼데이 보스는 다이맥스 프리지오입니다. 다음 날 새 시즌이 시작되므로 시즌 막바지 맥스배틀로 보면 됩니다.",
+      "highlights": [
+        "다이맥스 프리지오 등장 기간 11/30 ~ 12/6",
+        "파워스폿 추가 등장·갱신 단축",
+        "맥스 파티클 수집 상한을 채워 두면 12/5 맥스배틀 데이에 유리"
+      ],
+      "links": [
+        { "label": "일정 달력(한국시간)", "url": "https://www.kakao.gg/games/pokemongo/schedule" }
+      ]
+    },
+    {
+      "id": "season-twilight-trails",
+      "title": "황혼의 여정 시즌 마지막 주",
+      "type": "season",
+      "typeLabel": "시즌",
+      "startDate": "2026-09-08",
+      "startTime": "10:00",
+      "endDate": "2026-12-01",
+      "endTime": "10:00",
+      "periodLabel": "2026-09-08 10:00 ~ 12-01 10:00 (한국시간)",
+      "sourceLabel": "공식",
+      "summary": "팔데아지방 포켓몬(오라티프·마피티프 등)과 메가찌르호크·메가샹델라가 처음 나온 시즌입니다. 시즌이 끝나면 야생·알·필드리서치 구성이 다음 시즌 것으로 통째로 바뀝니다.",
+      "highlights": [
+        "시즌 종료 12월 1일(화) 10:00 — 이 시각에 다음 시즌이 바로 시작",
+        "GO패스 메이저 마일스톤 보너스도 시즌과 함께 종료",
+        "시즌 마지막 이벤트가 '황혼의 소원'(11/24~11/30)"
+      ],
+      "links": [
+        { "label": "공식 시즌 페이지", "url": "https://pokemongo.com/ko/seasons/twilight-trails" }
+      ]
+    },
+    {
+      "id": "go-pass-november",
+      "title": "GO패스: 11월 — 포켓코인 400개",
+      "type": "pass",
+      "typeLabel": "패스·배틀",
+      "startDate": "2026-11-03",
+      "startTime": "10:00",
+      "endDate": "2026-12-01",
+      "endTime": "10:00",
+      "periodLabel": "2026-11-03 10:00 ~ 12-01 10:00 (한국시간)",
+      "sourceLabel": "공식",
+      "summary": "랭크를 올리면 포켓코인 400개와 그란돈 만남 등을 받는 무료 패스입니다. 11월 28~29일은 하루 획득 가능한 GO 포인트 상한이 사라집니다.",
+      "highlights": [
+        "보상 수령 마감 12월 3일 10:00 — 랭크 진행은 12/1 10:00까지",
+        "11/28 00:00~11/29 23:59 GO 포인트 일일 상한 해제",
+        "GO패스 디럭스 $7.99 · 디럭스+10랭크 $9.99"
+      ],
+      "links": [
+        { "label": "공식 공지", "url": "https://pokemongo.com/ko/news/go-pass-november-2026" }
+      ]
+    },
+    {
+      "id": "gbl-current",
+      "title": "GO배틀리그 — 하이퍼리그·마스터리그 메가 에디션·2026 GO LAIC 컵",
+      "type": "pass",
+      "typeLabel": "패스·배틀",
+      "startDate": "",
+      "startTime": "",
+      "endDate": "2026-11-26",
+      "endTime": "06:00",
+      "periodLabel": "~ 2026-11-26 06:00 (한국시간)",
+      "sourceLabel": "게임 내 공지",
+      "summary": "지금 돌아가는 GO배틀리그는 하이퍼리그 · 마스터리그(메가 에디션) · 2026 GO LAIC 컵 세 가지입니다. 11월 26일 06:00에 다음 로테이션으로 넘어갑니다.",
+      "highlights": [
+        "2026 GO LAIC 컵은 브라질 LAIC 기간에 맞춘 특별 컵",
+        "등급 보상은 시즌 종료(12/1)와 함께 정산",
+        "다음 로테이션: 마스터리그 · 메가 캐치컵(슈퍼리그 에디션) 12/2 06:00까지"
+      ],
+      "links": [
+        { "label": "일정 달력(한국시간)", "url": "https://www.kakao.gg/games/pokemongo/schedule" }
+      ]
+    },
+    {
+      "id": "gbl-next",
+      "title": "GO배틀리그 — 마스터리그·메가 캐치컵(슈퍼리그 에디션)",
+      "type": "pass",
+      "typeLabel": "패스·배틀",
+      "startDate": "2026-11-26",
+      "startTime": "06:00",
+      "endDate": "2026-12-02",
+      "endTime": "06:00",
+      "periodLabel": "2026-11-26 06:00 ~ 12-02 06:00 (한국시간)",
+      "sourceLabel": "게임 내 공지",
+      "summary": "11/26부터는 마스터리그와 메가 캐치컵(슈퍼리그 에디션)으로 바뀝니다. 새 시즌 시작(12/1)을 걸쳐 12/2 06:00까지 이어집니다.",
+      "highlights": [
+        "마스터리그: 전설·환상 포함 최상위 CP 리그",
+        "메가 캐치컵: 슈퍼리그 에디션 규칙의 특별 컵",
+        "시즌 경계(12/1 10:00)를 넘기므로 등급·보상 정산 시점을 확인"
+      ],
+      "links": [
+        { "label": "일정 달력(한국시간)", "url": "https://www.kakao.gg/games/pokemongo/schedule" }
+      ]
+    },
+    {
+      "id": "season-next-start",
+      "title": "새 시즌 시작 — 이름은 아직 미발표",
+      "type": "season",
+      "typeLabel": "시즌",
+      "startDate": "2026-12-01",
+      "startTime": "10:00",
+      "endDate": null,
+      "endTime": "",
+      "periodLabel": "2026-12-01 10:00 시작 (한국시간)",
+      "sourceLabel": "공식",
+      "summary": "황혼의 여정이 끝나는 12월 1일 10:00에 다음 시즌이 시작됩니다. 11월 23일 기준 시즌 이름과 로테이션(야생·알·레이드)은 아직 공식 발표 전입니다.",
+      "highlights": [
+        "12월 커뮤니티 데이(12/12~13), 맥스배틀 데이(12/5), 레이드 데이(12/19), 부화데이(12/26)는 이미 확정",
+        "새 시즌 5성·메가 레이드 보스와 스포트라이트 아워 대상은 공지 전",
+        "발표가 나오면 이 카드에 반영"
+      ],
+      "links": [
+        { "label": "공식 시즌 페이지", "url": "https://pokemongo.com/ko/seasons/twilight-trails" },
+        { "label": "다음 시즌 일정 공지", "url": "https://pokemongo.com/ko/news/save-the-date-s25" }
+      ]
+    },
+    {
+      "id": "max-battle-day-december",
+      "title": "맥스배틀 데이 (12/5 14:00~17:00)",
+      "type": "max",
+      "typeLabel": "맥스배틀",
+      "startDate": "2026-12-05",
+      "startTime": "14:00",
+      "endDate": "2026-12-05",
+      "endTime": "17:00",
+      "periodLabel": "2026-12-05(토) 14:00 ~ 17:00 (한국시간)",
+      "sourceLabel": "공식",
+      "summary": "다음 시즌 첫 맥스배틀 데이입니다. 공식 공지에는 날짜만 있었고, 14:00~17:00 시간대는 게임 내 일정 기준입니다.",
+      "highlights": [
+        "공식 공지: 12월 5일(토) 맥스배틀 데이 — 세부 보스·보너스 미발표",
+        "맥스배틀은 파워스폿에서 열리므로 11/30 주에 파티클을 모아 두세요",
+        "맥스 파티클 상한(1,000~1,400)을 채워 두면 시작 직후 바로 도전 가능"
+      ],
+      "links": [
+        { "label": "다음 시즌 일정 공지", "url": "https://pokemongo.com/ko/news/save-the-date-s25" }
       ]
     },
     {
@@ -119,32 +482,12 @@
       "highlights": [
         "12/12(토): 식스테일·식스테일(알로라)·흥나숭·염버니·맛보돈·어리짱 (팽도리 가능)",
         "12/13(일): 조로아·자망칼·울머기·훔처우·드니차 (딥상어동·모노두 가능)",
-        "특별한 기술 진화: 12/12 09:00 ~ 12/13 21:00 (나인테일 에너지볼, 엠페르트 하이드로캐논 등)",
+        "특별한 기술 진화 12/12 09:00 ~ 12/13 21:00 (나인테일 에너지볼, 엠페르트 하이드로캐논 등)",
         "보너스: 포획 XP·별의모래·사탕 2배, 부화 거리 1/2, 향로 3시간, 루어 1시간, 특별 교환 하루 2회",
-        "스페셜리서치 티켓 $4.99 (대단한 기술머신 스페셜·노말, 로켓레이더 등)"
+        "스페셜리서치 티켓 $4.99 · 하이퍼 커뮤니티 데이 박스(Web Store)"
       ],
       "links": [
         { "label": "공식 공지", "url": "https://pokemongo.com/ko/news/community-day-december-2026" }
-      ]
-    },
-    {
-      "id": "max-battle-day-december",
-      "title": "맥스배틀 데이 (12월)",
-      "type": "event",
-      "typeLabel": "이벤트",
-      "startDate": "2026-12-05",
-      "startTime": "",
-      "endDate": "2026-12-05",
-      "endTime": "",
-      "periodLabel": "2026-12-05(토) · 시간·대상 미발표",
-      "sourceLabel": "공식",
-      "summary": "다음 시즌 첫 주말에 열리는 맥스배틀 데이입니다. 어떤 다이맥스 포켓몬이 나오는지, 정확한 시간은 아직 공지되지 않았습니다.",
-      "highlights": [
-        "날짜만 확정 — 12월 5일(토)",
-        "세부 공지가 나오면 시간·보스·보너스를 채워 넣습니다"
-      ],
-      "links": [
-        { "label": "다음 시즌 일정 공지", "url": "https://pokemongo.com/ko/news/save-the-date-s25" }
       ]
     },
     {
@@ -159,7 +502,7 @@
       "periodLabel": "2026-12-19(토) · 시간·대상 미발표",
       "sourceLabel": "공식",
       "summary": "12월 레이드 데이 날짜만 확정된 상태입니다. 보통 주말 낮 3시간에 열리지만, 이번 회차 시간은 공식 공지를 확인해야 합니다.",
-      "highlights": ["날짜만 확정 — 12월 19일(토)"],
+      "highlights": ["날짜만 확정 — 12월 19일(토)", "세부 공지가 나오면 보스·보너스를 채워 넣습니다"],
       "links": [
         { "label": "다음 시즌 일정 공지", "url": "https://pokemongo.com/ko/news/save-the-date-s25" }
       ]
@@ -176,9 +519,94 @@
       "periodLabel": "2026-12-26(토) · 시간·대상 미발표",
       "sourceLabel": "공식",
       "summary": "12월 부화데이 날짜만 확정된 상태입니다. 알 부화 거리 단축·부화 보너스가 붙는 날이라 알을 미리 비워 두면 좋습니다.",
-      "highlights": ["날짜만 확정 — 12월 26일(토)"],
+      "highlights": ["날짜만 확정 — 12월 26일(토)", "알 12칸을 비워 두고 부화장치를 준비"],
       "links": [
         { "label": "다음 시즌 일정 공지", "url": "https://pokemongo.com/ko/news/save-the-date-s25" }
+      ]
+    },
+    {
+      "id": "twitch-drops-laic",
+      "title": "Twitch Drops — LAIC 리서치 보상 수령 (12/5 05:00까지)",
+      "type": "news",
+      "typeLabel": "소식",
+      "startDate": "2026-11-20",
+      "startTime": "21:00",
+      "endDate": "2026-12-05",
+      "endTime": "05:00",
+      "periodLabel": "방송 2026-11-20 21:00 ~ 11-23 08:00 · 보상 수령 2026-12-05 05:00까지 (한국시간)",
+      "sourceLabel": "공식",
+      "summary": "2027 라틴아메리카 인터내셔널(LAIC) 방송 시청 보상입니다. 방송은 11/23 08:00에 끝났지만, 받은 코드의 시간제한 리서치는 12월 4일 12:00 PST(=12/5 05:00 한국시간)까지 완료·수령해야 합니다.",
+      "highlights": [
+        "30분 시청: NAIC 우승팀 모티브 샤로다 만남 + 오샤와틀 사탕 XL·기술머신",
+        "45분 시청: LAIC 배틀 번들(대단한 기술머신스페셜 1·이상한사탕XL·기술머신 25+25)",
+        "보상 만료 12/4 12:00 PST = 12/5 05:00 한국시간"
+      ],
+      "links": [
+        { "label": "공식 공지(영문)", "url": "https://pokemongo.com/en/news/latin-america-international-championships-2026" }
+      ]
+    },
+    {
+      "id": "duolingo-timed-research",
+      "title": "Pokémon GO × 듀오링고 언어 리서치",
+      "type": "news",
+      "typeLabel": "소식",
+      "startDate": "2026-11-17",
+      "startTime": "10:00",
+      "endDate": "2026-12-31",
+      "endTime": "23:59",
+      "periodLabel": "2026-11-17 10:00 ~ 12-31 23:59 (한국시간)",
+      "sourceLabel": "공식",
+      "summary": "듀오링고에서 7일 동안 하루 한 레슨씩 마치면 Pokémon GO 시간제한 리서치 참가권을 받습니다. 리서치를 끝내면 스페셜 배경 피카츄·나옹·페라페·루카리오를 만날 수 있습니다.",
+      "highlights": [
+        "듀오링고 퀘스트 '듀오의 포켓몬 파티' 참여 마감 12월 21일 23:59",
+        "7개 레슨 완료(서로 다른 날짜) 마감 12월 29일 23:59",
+        "시간제한 리서치 완료·보상 수령 12월 31일 23:59까지",
+        "참가권은 Pokémon GO Web Store에서 사용"
+      ],
+      "links": [
+        { "label": "공식 공지", "url": "https://pokemongo.com/ko/news/duolingo-2026" }
+      ]
+    },
+    {
+      "id": "black-friday-2026",
+      "title": "블랙 프라이데이 — 보너스 포켓코인 2배",
+      "type": "news",
+      "typeLabel": "소식",
+      "startDate": "2026-11-09",
+      "startTime": "10:00",
+      "endDate": "2026-11-30",
+      "endTime": "13:00",
+      "periodLabel": "2026-11-09 10:00 ~ 11-30 13:00 (한국시간)",
+      "sourceLabel": "공식",
+      "summary": "Pokémon GO Web Store에서 포켓코인을 사면 보너스가 2배로 붙는 세일입니다. 윈터 스페셜 박스는 11월 28일 13:00에 먼저 끝납니다.",
+      "highlights": [
+        "보너스 포켓코인 2배 — 할인가 박스는 1인 1개 제한",
+        "윈터 스페셜 박스(6,095 포켓코인): 부화장치 40·슈퍼 부화장치 40·리모트 레이드패스 3·프리미엄 배틀패스 5·맥스 파티클 팩 1",
+        "윈터 스페셜 박스 판매 종료 11월 28일 13:00 (1인 3개까지)"
+      ],
+      "links": [
+        { "label": "공식 공지", "url": "https://pokemongo.com/ko/news/black-friday-2026" },
+        { "label": "Pokémon GO Web Store", "url": "https://store.pokemongo.com/" }
+      ]
+    },
+    {
+      "id": "crocs-collection",
+      "title": "크록스 포켓몬 컬렉션 출시",
+      "type": "news",
+      "typeLabel": "소식",
+      "startDate": "2026-11-17",
+      "startTime": "",
+      "endDate": null,
+      "endTime": "",
+      "periodLabel": "2026-11-17 ~ 판매 중",
+      "sourceLabel": "공식",
+      "summary": "피카츄·포켓볼·팬텀·푸린 클래식 클로그와 지비츠 참으로 구성된 포켓몬 30주년 컬렉션입니다. 게임 안에도 크록스 테마 아이템이 들어왔습니다.",
+      "highlights": [
+        "가격·재고는 크록스 공식몰·무신사에서 확인",
+        "게임 내 크록스 관련 소식은 공식 알림 참고"
+      ],
+      "links": [
+        { "label": "공식 공지", "url": "https://pokemongo.com/ko/news/pokemon-crocs-2026" }
       ]
     },
     {
@@ -203,171 +631,23 @@
       ]
     },
     {
-      "id": "deoxys-5star-raid",
-      "title": "5성 레이드: 테오키스 4가지 모습",
-      "type": "raid",
-      "typeLabel": "레이드",
-      "startDate": "2026-11-25",
-      "startTime": "06:00",
-      "endDate": "2026-12-01",
-      "endTime": "22:00",
-      "periodLabel": "2026-11-25 06:00 ~ 12-01 22:00 (한국시간)",
-      "sourceLabel": "게임 내 공지",
-      "summary": "테오키스 노말폼·디펜스폼·어택폼·스피드폼이 5성 레이드에 함께 등장합니다. 도감에 없는 모습부터 채우면 좋습니다.",
-      "highlights": [
-        "레이드 아워: 11월 25일(수) 18:00~19:00 — 네 가지 모습이 한 시간 집중 등장",
-        "레이드 보스는 매일 06:00에 교체",
-        "같은 기간 메가 레이드는 메가메타그로스로 교체"
-      ],
-      "links": [
-        { "label": "공식 시즌 페이지", "url": "https://pokemongo.com/ko/seasons/twilight-trails" }
-      ]
-    },
-    {
-      "id": "shadow-tornadus",
-      "title": "그림자 레이드: 그림자 토네로스(화신폼)",
-      "type": "raid",
-      "typeLabel": "레이드",
-      "startDate": "2026-11-16",
-      "startTime": "06:00",
-      "endDate": "2026-12-01",
-      "endTime": "22:00",
-      "periodLabel": "2026-11-16 06:00 ~ 12-01 22:00 (한국시간) · 주말 그림자 5성",
-      "sourceLabel": "게임 내 공지",
-      "summary": "주말마다 그림자 5성 레이드에 그림자 토네로스가 나옵니다. 비행 타입이라 바위·전기·얼음 공격이 약점입니다.",
-      "highlights": [
-        "보스가 폭주하면 정화 크리스탈로 진정 — 같은 등급 일반 레이드보다 어렵습니다",
-        "주말에만 열리므로 인원이 모이는 시간대를 노리는 편이 안전",
-        "색이 다른 모습도 등장"
-      ],
-      "links": [
-        { "label": "공식 시즌 페이지", "url": "https://pokemongo.com/ko/seasons/twilight-trails" }
-      ]
-    },
-    {
-      "id": "go-battle-league-twilight",
-      "title": "GO배틀리그 (황혼의 여정 마지막 로테이션)",
-      "type": "pass",
-      "typeLabel": "패스·배틀",
-      "startDate": "",
-      "startTime": "",
-      "endDate": "2026-11-26",
-      "endTime": "06:00",
-      "periodLabel": "~ 2026-11-26 06:00 (한국시간)",
-      "sourceLabel": "게임 내 공지",
-      "summary": "울트라리그 · 마스터리그: 메가 에디션 · 2026 GO LAIC 컵이 함께 돌아가는 구간입니다. 11월 26일 06:00에 다음 로테이션으로 넘어갑니다.",
-      "highlights": [
-        "현재 3개 리그 동시 진행 — 남은 기간에 등급을 올려 두세요",
-        "시즌 마지막 로테이션은 12월 1일 시즌 종료와 함께 마무리됩니다"
-      ],
-      "links": [
-        { "label": "공식 시즌 페이지", "url": "https://pokemongo.com/ko/seasons/twilight-trails" }
-      ]
-    },
-    {
-      "id": "go-pass-november",
-      "title": "GO패스: 11월 — 포켓코인 400개",
-      "type": "pass",
-      "typeLabel": "패스·배틀",
-      "startDate": "2026-11-03",
-      "startTime": "10:00",
-      "endDate": "2026-12-01",
-      "endTime": "10:00",
-      "periodLabel": "2026-11-03 10:00 ~ 12-01 10:00 (한국시간)",
-      "sourceLabel": "공식",
-      "summary": "랭크를 올리면 포켓코인 400개와 그란돈 만남 등을 받는 무료 패스입니다. 11월 28~29일은 하루 획득 가능한 GO 포인트 상한이 사라집니다.",
-      "highlights": [
-        "보상 수령 마감: 12월 3일 10:00 — 랭크 진행은 12/1 10:00까지",
-        "11/28 00:00~11/29 23:59 GO 포인트 일일 상한 해제(밀린 랭크 올리기 좋은 구간)",
-        "GO패스 디럭스 $7.99 · 디럭스+10랭크 $9.99"
-      ],
-      "links": [
-        { "label": "공식 공지", "url": "https://pokemongo.com/ko/news/go-pass-november-2026" }
-      ]
-    },
-    {
-      "id": "duolingo-timed-research",
-      "title": "Pokémon GO × 듀오링고 언어 리서치",
+      "id": "korea-onsite-suwon",
+      "title": "한국 현장 이벤트 — 타임빌라스 수원 (종료)",
       "type": "news",
       "typeLabel": "소식",
-      "startDate": "2026-11-17",
+      "startDate": "2026-11-14",
       "startTime": "10:00",
-      "endDate": "2026-12-31",
-      "endTime": "23:59",
-      "periodLabel": "2026-11-17 10:00 ~ 12-31 23:59 (한국시간)",
+      "endDate": "2026-11-15",
+      "endTime": "18:00",
+      "periodLabel": "2026-11-14 ~ 11-15 10:00~18:00 (한국시간) · 종료",
       "sourceLabel": "공식",
-      "summary": "듀오링고에서 7일 동안 하루 한 레슨씩 마치면 Pokémon GO 시간제한 리서치 참가권을 받습니다. 리서치를 끝내면 스페셜 배경 피카츄·나옹·페라페·루카리오를 만날 수 있습니다.",
+      "summary": "'Pokémon GO 와일드 에리어: 글로벌' 기념으로 타임빌라스 수원에서 열린 국내 현장 이벤트입니다. 메인 부스·현장 미션·포토존·대형 피카츄 벌룬이 운영됐습니다.",
       "highlights": [
-        "듀오링고 퀘스트 참여 마감: 12월 21일 23:59",
-        "7개 레슨 완료(서로 다른 날짜) 마감: 12월 29일 23:59",
-        "시간제한 리서치 완료·보상 수령: 12월 31일 23:59까지",
-        "참가권은 Pokémon GO Web Store에서 사용"
+        "장소: 타임빌라스 수원 1F 센터홀",
+        "다음 국내 현장 이벤트는 공식 알림이 나오면 이 칸에 올립니다"
       ],
       "links": [
-        { "label": "공식 공지", "url": "https://pokemongo.com/ko/news/duolingo-2026" }
-      ]
-    },
-    {
-      "id": "black-friday-2026",
-      "title": "블랙 프라이데이 — 보너스 포켓코인 2배",
-      "type": "news",
-      "typeLabel": "소식",
-      "startDate": "2026-11-09",
-      "startTime": "10:00",
-      "endDate": "2026-11-30",
-      "endTime": "13:00",
-      "periodLabel": "2026-11-09 10:00 ~ 11-30 13:00 (한국시간)",
-      "sourceLabel": "공식",
-      "summary": "Pokémon GO Web Store에서 포켓코인을 사면 보너스가 2배로 붙는 세일입니다. 윈터 스페셜 박스는 11월 28일 13:00에 먼저 끝납니다.",
-      "highlights": [
-        "보너스 포켓코인 2배 — 할인가 박스는 1인 1개 제한",
-        "윈터 스페셜 박스(6,095 포켓코인): 부화장치 40·슈퍼 부화장치 40·리모트 레이드패스 3·프리미엄 배틀패스 5·맥스 파티클 팩 1",
-        "윈터 스페셜 박스 판매 종료: 11월 28일 13:00 (1인 3개까지)"
-      ],
-      "links": [
-        { "label": "공식 공지", "url": "https://pokemongo.com/ko/news/black-friday-2026" },
-        { "label": "Pokémon GO Web Store", "url": "https://store.pokemongo.com/" }
-      ]
-    },
-    {
-      "id": "crocs-collection",
-      "title": "크록스 포켓몬 컬렉션 출시",
-      "type": "news",
-      "typeLabel": "소식",
-      "startDate": "2026-11-17",
-      "startTime": "",
-      "endDate": null,
-      "endTime": "",
-      "periodLabel": "2026-11-17 ~ 판매 중",
-      "sourceLabel": "공식",
-      "summary": "피카츄·포켓볼·팬텀·푸린 클래식 클로그와 지비츠 참으로 구성된 포켓몬 30주년 컬렉션입니다. 게임 안에서도 크록스 테마 아이템이 함께 열렸습니다.",
-      "highlights": [
-        "가격·재고는 크록스 공식몰·무신사에서 확인",
-        "게임 내 크록스 관련 소식은 공식 알림 참고"
-      ],
-      "links": [
-        { "label": "공식 공지", "url": "https://pokemongo.com/ko/news/pokemon-crocs-2026" }
-      ]
-    },
-    {
-      "id": "into-the-wild-eternatus",
-      "title": "커다란 발자국 — 무한다이노 귀환 (오늘 종료)",
-      "type": "event",
-      "typeLabel": "이벤트",
-      "startDate": "2026-11-16",
-      "startTime": "10:00",
-      "endDate": "2026-11-23",
-      "endTime": "20:00",
-      "periodLabel": "2026-11-16 10:00 ~ 11-23 20:00 (한국시간)",
-      "sourceLabel": "공식",
-      "summary": "시즌 내내 등장한 다이맥스 포켓몬이 총출동하고, 무한다이노가 파워스폿을 점령했던 이벤트입니다. 오늘(11/23) 20:00에 끝나고, GO패스 보상도 11/25 20:00까지 받을 수 있습니다.",
-      "highlights": [
-        "오늘 20:00 이벤트 종료 — 남은 맥스배틀·맥스 파티클 8배 혜택은 오늘까지",
-        "GO패스: 커다란 발자국 보상 수령 마감 11월 25일 20:00",
-        "무한다이노는 이벤트당 1마리만 포획 가능(이미 잡았다면 사탕 보상)"
-      ],
-      "links": [
-        { "label": "공식 공지", "url": "https://pokemongo.com/ko/news/dynamax-trails-eternamax-eternatus-2026" }
+        { "label": "공식 공지", "url": "https://pokemongo.com/ko/news/ko-gowa-global-on-site-event-2026" }
       ]
     }
   ]
