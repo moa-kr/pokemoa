@@ -109,7 +109,7 @@
   }
 
   /* ---------------------------------------------------------- 필터 칩 */
-  function chipRow(rowEl, items, key, current, onPick) {
+  function chipRow(rowEl, items, current, onPick) {
     if (!rowEl) return;
     var label = rowEl.getAttribute("data-label") || "";
     rowEl.innerHTML = (label ? '<span class="pgo-filter-label">' + escapeHtml(label) + "</span>" : "") +
