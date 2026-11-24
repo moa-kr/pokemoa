@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#101f3c">
+<title>오프라인 — 포켓몬카드모아</title>
+<style>
+  :root {
+    --navy: #101f3c;
+    --yellow: #ffcb05;
+    --ink: #14203a;
+    --muted: #65718a;
+    --line: #e5eaf3;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    background: radial-gradient(120% 90% at 50% 0%, #1b2f57 0%, #101f3c 62%);
+    color: #fff;
+    font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard",
+      "Malgun Gothic", "맑은 고딕", "Noto Sans KR", "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    word-break: keep-all;
+  }
+  main {
+    width: 100%;
+    max-width: 420px;
+    text-align: center;
+  }
+  .mark {
+    display: inline-grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 7px;
+    padding: 14px;
+    border-radius: 22px;
+    background: rgba(255, 255, 255, .06);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .1);
+  }
+  .mark i {
+    width: 26px;
+    height: 26px;
+    border-radius: 8px;
+    background: var(--yellow);
+  }
+  .mark i:nth-child(2), .mark i:nth-child(3) { opacity: .7; }
+  h1 {
+    margin: 26px 0 10px;
+    font-size: 22px;
+    letter-spacing: -.02em;
+  }
+  h1 em { font-style: normal; color: var(--yellow); }
+  p {
+    margin: 0 0 8px;
+    font-size: 14.5px;
+    line-height: 1.7;
+    color: #c9d4e8;
+  }
+  .actions {
+    margin-top: 26px;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  button, a.btn {
+    appearance: none;
+    border: 1px solid transparent;
+    border-radius: 12px;
+    padding: 12px 20px;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  button {
+    background: var(--yellow);
+    color: var(--navy);
+  }
+  a.btn {
+    background: rgba(255, 255, 255, .08);
+    color: #e8eef9;
+    border-color: rgba(255, 255, 255, .18);
+  }
+  .hint {
+    margin-top: 22px;
+    font-size: 12.5px;
+    line-height: 1.7;
+    color: #8b9ab5;
+  }
+</style>
+</head>
+<body>
+<main>
+  <div class="mark" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+  <h1>지금은 <em>오프라인</em>이에요</h1>
+  <p>인터넷 연결이 끊겨 페이지를 불러오지 못했습니다.<br>연결을 확인한 뒤 다시 시도해 주세요.</p>
+  <div class="actions">
+    <button type="button" onclick="location.reload()">다시 시도</button>
+    <a class="btn" href="/pokemoa/">포켓몬카드모아 홈</a>
+  </div>
+  <p class="hint">이미 보고 있던 화면이라면 휴대폰을 잠시 내려놓았다가<br>전파가 잡히는 곳에서 다시 열어 주세요.</p>
+</main>
+</body>
+</html>

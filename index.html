@@ -36,6 +36,14 @@
 <meta name="twitter:image" content="https://moa-kr.github.io/pokemoa/assets/img/og-image.png">
 <meta name="twitter:image:alt" content="포켓몬카드모아 — 내 주변 편의점 재고 · 인기 카드 시세 · 도감">
 <meta name="theme-color" content="#101f3c">
+<!-- 앱 설치(PWA) — 홈 화면에 추가하면 주소창 없는 앱처럼 열립니다. -->
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="application-name" content="포켓몬카드모아">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="포켓몬카드모아">
+<link rel="apple-touch-icon" sizes="180x180" href="assets/img/icons/apple-touch-icon-180.png">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%23101f3c'/%3E%3Crect x='7' y='7' width='7.5' height='7.5' rx='2.2' fill='%23ffcb05'/%3E%3Crect x='17.5' y='7' width='7.5' height='7.5' rx='2.2' fill='%23ffcb05' opacity='.7'/%3E%3Crect x='7' y='17.5' width='7.5' height='7.5' rx='2.2' fill='%23ffcb05' opacity='.7'/%3E%3Crect x='17.5' y='17.5' width='7.5' height='7.5' rx='2.2' fill='%23ffcb05'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="assets/css/style.css?v=141">
 <!-- 카카오맵 JavaScript SDK — autoload=false로 불러 두고 map.js가 kakao.maps.load()로 초기화합니다.
@@ -1797,5 +1805,7 @@
         data-track-site="pokemoa"
         data-tab-container=".main-nav"
         data-banner-host=".site-header"></script>
+<!-- 앱 설치(PWA) — manifest 는 <head>, 서비스 워커 등록은 여기서 합니다. -->
+<script src="assets/js/pwa.js?v=1" defer></script>
 </body>
 </html>
