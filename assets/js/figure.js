@@ -350,10 +350,10 @@
     backdrop.setAttribute("aria-modal", "true");
     backdrop.setAttribute("aria-labelledby", "fgPopupTitle");
     backdrop.innerHTML = popupHtml(p);
+    state.lastFocus = document.activeElement;
     document.body.appendChild(backdrop);
     document.body.classList.add("no-scroll");
     state.popupEl = backdrop;
-    state.lastFocus = document.activeElement;
 
     backdrop.addEventListener("click", function (e) {
       if (e.target === backdrop) { closePopup(false); return; }
@@ -372,8 +372,11 @@
       }
     });
     document.addEventListener("keydown", onKeydown);
-    var closeBtn = $(".fg-close", backdrop);
-    if (closeBtn) closeBtn.focus();
+    /* 어드민 미리보기에서는 포커스를 가져오지 않는다 — 어드민 입력칸에서 타자를 이어갈 수 있게. */
+    if (!isPreviewFrame()) {
+      var closeBtn = $(".fg-close", backdrop);
+      if (closeBtn) closeBtn.focus();
+    }
     track("figure_popup_open", { product: F.id });
     hideReopen();
   }
@@ -473,9 +476,11 @@
     }
 
     if (isPreviewFrame()) {
-      if (state.popupEl) closePopup(false);
-      openPopup();
-      if (p.floating) showReopen(p); else hideReopen();
+      /* 미리보기에서는 팝업을 닫았다 열지 않고 내용만 갈아 끼운다 — 어드민에서 타자를 이어갈 수 있게.
+         팝업을 닫았을 때만 ‘다시 보기’ 버튼이 보이게 한다. */
+      if (state.popupEl) state.popupEl.innerHTML = popupHtml(p);
+      else openPopup();
+      hideReopen();
       return;
     }
 
