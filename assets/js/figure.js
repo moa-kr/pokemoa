@@ -484,7 +484,11 @@
       return;
     }
 
-    if (state.popupEl) return;   /* 이미 보고 있는 팝업은 문구가 바뀌어도 그대로 둔다 */
+    if (state.popupEl) {
+      /* 설정이 늦게 도착해 기본 문구로 먼저 떠 있던 팝업은 그 자리에서 어드민 문구로 갈아 끼운다. */
+      state.popupEl.innerHTML = popupHtml(p);
+      return;
+    }
 
     if (!p.autoOpen) {
       if (p.floating) showReopen(p); else hideReopen();
