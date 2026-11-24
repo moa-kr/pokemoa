@@ -221,13 +221,13 @@
     "updatedAt": null
   },
   "figurePopup": {
-    "enabled": false,
+    "enabled": true,
     "autoOpen": true,
     "floating": true,
     "floatingLabel": "팜사이즈 원더 안내",
     "badge": "GS25 NEW · 2026.11.20",
     "eyebrow": "GS25 신상 · 총 20종 랜덤",
-    "title": "포켓몬스터 팜사이즈 원더 피규어",
+    "title": "팝업 제어 확인 — 어드민에서 바꾼 제목",
     "body": "손바닥에 쏙 들어오는 팜사이즈 랜덤 피규어입니다. 몬스터볼 모양 케이스에 담겨 나오고, 시리즈별로 1종이 랜덤으로 들어 있습니다.",
     "buttonLabel": "바로 재고 찾기",
     "buttonAction": "stock",
