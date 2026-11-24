@@ -4548,3 +4548,241 @@ body.figure-mode .demo-notice .notice-figure { display: block; }
   .pgo-title { font-size: 14.5px; }
   .pgo-badge, .pgo-summary span { margin-left: 0; }
 }
+
+/* ============================================================
+   포켓몬 GO 달력 뷰 (assets/js/pokemongo.js · v=136)
+   ============================================================ */
+.pgo-toolbar {
+  display: flex; flex-wrap: wrap; gap: 10px;
+  align-items: center; justify-content: space-between;
+  margin: 0 0 12px;
+}
+.pgo-viewtoggle {
+  display: inline-flex; gap: 2px; padding: 3px;
+  background: var(--paper); border: 1px solid var(--line); border-radius: 999px;
+}
+.pgo-viewbtn {
+  padding: 7px 18px; border: 0; border-radius: 999px;
+  background: transparent; color: var(--ink-2);
+  font-size: 12.5px; font-weight: 800; letter-spacing: -0.02em;
+}
+.pgo-viewbtn:hover { color: var(--navy); }
+.pgo-viewbtn.is-on {
+  background: var(--navy); color: #fff;
+  box-shadow: 0 4px 12px rgba(16, 31, 60, 0.18);
+}
+.pgo-monthnav { display: flex; align-items: center; gap: 6px; }
+.pgo-monthbtn {
+  width: 34px; height: 34px; padding: 0;
+  border: 1.5px solid var(--line); border-radius: 11px;
+  background: #fff; color: var(--navy);
+  font-size: 17px; font-weight: 900; line-height: 1;
+}
+.pgo-monthbtn:hover { border-color: var(--navy); background: var(--blue-soft); }
+#pgoMonthLabel {
+  min-width: 100px; text-align: center;
+  font-size: 14.5px; font-weight: 900; letter-spacing: -0.02em;
+  color: var(--ink); font-variant-numeric: tabular-nums;
+}
+.pgo-monthtoday {
+  padding: 8px 13px; border: 1.5px solid var(--line); border-radius: 999px;
+  background: #fff; color: var(--ink-2);
+  font-size: 11.5px; font-weight: 800; letter-spacing: -0.02em;
+}
+.pgo-monthtoday:hover { border-color: var(--navy); color: var(--navy); }
+
+.pgo-calwrap { display: grid; gap: 16px; margin: 0 0 4px; }
+
+.pgcal {
+  padding: 14px 12px 12px;
+  background: #fff; border: 1px solid var(--line); border-radius: 18px;
+  box-shadow: var(--shadow-sm);
+}
+.pgcal-dows {
+  display: grid; grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px; margin-bottom: 5px;
+}
+.pgcal-dows span {
+  padding: 2px 0; text-align: center;
+  font-size: 10.5px; font-weight: 800; color: var(--muted-2);
+}
+.pgcal-dows span.sun { color: #c8384b; }
+.pgcal-dows span.sat { color: #2f6df6; }
+
+.pgcal-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+
+.pgcal-cell {
+  position: relative; overflow: hidden;
+  display: flex; flex-direction: column; gap: 2px;
+  min-height: 62px; padding: 5px 4px 5px;
+  background: #fafbfd; border: 1px solid var(--line-2); border-radius: 10px;
+  text-align: left; font: inherit; color: var(--ink);
+  transition: border-color 0.15s, background 0.15s;
+}
+.pgcal-cell:hover { border-color: #b9c7e0; background: #f4f7fd; }
+.pgcal-cell.has-ev { background: #fff; border-color: var(--line); }
+.pgcal-cell.is-out { opacity: 0.42; }
+.pgcal-cell.is-today { border-color: var(--navy); }
+.pgcal-cell.is-sel {
+  background: var(--navy); border-color: var(--navy);
+  box-shadow: 0 6px 16px rgba(16, 31, 60, 0.22);
+}
+.pgcal-daynum {
+  align-self: flex-start;
+  font-size: 11.5px; font-weight: 900; line-height: 1.2;
+  color: var(--ink); font-variant-numeric: tabular-nums;
+}
+.pgcal-cell.is-sun .pgcal-daynum { color: #c8384b; }
+.pgcal-cell.is-sat .pgcal-daynum { color: #2f6df6; }
+.pgcal-cell.is-today .pgcal-daynum {
+  padding: 0 4px; margin-left: -2px;
+  background: var(--yellow); color: var(--navy); border-radius: 5px;
+}
+.pgcal-cell.is-sel .pgcal-daynum { background: var(--yellow); color: var(--navy); }
+
+/* 유형 색 — 칩·막대·상세 패널이 같은 --pgc 를 씁니다. */
+.pgc-raid { --pgc: #a8321f; }
+.pgc-max { --pgc: #5b2fbf; }
+.pgc-weekly { --pgc: #8a5200; }
+.pgc-event { --pgc: #2159d8; }
+.pgc-season { --pgc: #0b6b5e; }
+.pgc-pass { --pgc: #0a5c8a; }
+.pgc-news { --pgc: #4f5d78; }
+
+.pgcal-chips { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.pgcal-chip {
+  display: flex; align-items: center; gap: 3px; min-width: 0; max-width: 100%;
+  padding: 1px 4px; border-radius: 5px;
+  background: var(--pgc, var(--muted)); color: #fff;
+  font-size: 9.5px; font-weight: 800; line-height: 1.4; letter-spacing: -0.02em;
+}
+.pgcal-dot { display: none; width: 5px; height: 5px; border-radius: 50%; background: var(--pgc); }
+.pgcal-chip-t { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pgcal-more { font-size: 9px; font-weight: 900; color: var(--muted); line-height: 1.3; }
+.pgcal-cell.is-sel .pgcal-more { color: #cfd9ee; }
+
+.pgcal-bars { display: flex; gap: 2px; margin-top: auto; padding-top: 2px; }
+.pgcal-bars i {
+  display: block; flex: 1 1 0; min-width: 0; height: 3px; border-radius: 2px;
+  background: var(--pgc, var(--muted));
+}
+
+.pgcal-legend {
+  display: flex; flex-wrap: wrap; gap: 6px 12px;
+  margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--line);
+  font-size: 11px; color: var(--ink-2);
+}
+.pgcal-legend span { display: inline-flex; align-items: center; gap: 5px; }
+.pgcal-legend i { display: block; width: 8px; height: 8px; border-radius: 50%; background: var(--pgc); }
+.pgcal-legend .is-bar i { width: 14px; height: 3px; border-radius: 2px; background: var(--muted); }
+.pgcal-note { margin: 8px 0 0; font-size: 11px; color: var(--muted); line-height: 1.55; }
+
+/* 선택한 날짜 상세 패널 */
+.pgcal-day {
+  padding: 14px;
+  background: #fff; border: 1px solid var(--line); border-radius: 18px;
+  box-shadow: var(--shadow-sm);
+}
+.pgcal-day:empty { display: none; }
+.pgcal-day-head {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 8px;
+  padding-bottom: 10px; margin-bottom: 10px; border-bottom: 1px solid var(--line-2);
+}
+.pgcal-day-head strong { font-size: 15px; letter-spacing: -0.02em; color: var(--ink); }
+.pgcal-day-today {
+  padding: 2px 8px; border-radius: 999px;
+  background: var(--yellow-soft); color: #6f5100;
+  font-size: 10.5px; font-weight: 900;
+}
+.pgcal-day-count { margin-left: auto; font-size: 11.5px; font-weight: 800; color: var(--muted); }
+
+.pgcal-ev {
+  display: flex; flex-direction: column; gap: 5px;
+  margin-bottom: 8px; padding: 11px 12px 11px 11px;
+  background: #fdfdff; border: 1px solid var(--line);
+  border-left: 4px solid var(--pgc, var(--line)); border-radius: 12px;
+}
+.pgcal-ev:last-child { margin-bottom: 0; }
+.pgcal-ev-top { display: flex; flex-wrap: wrap; align-items: center; gap: 5px 7px; }
+.pgcal-ev-type {
+  padding: 2px 8px; border-radius: 6px;
+  background: var(--navy); color: var(--yellow);
+  font-size: 10.5px; font-weight: 900; letter-spacing: -0.02em;
+}
+.pgcal-ev-state { font-size: 10.5px; font-weight: 900; color: var(--green); }
+.pgcal-ev-state.is-upcoming { color: #8a5200; }
+.pgcal-ev-state.is-ended { color: var(--muted); }
+.pgcal-ev-when { margin-left: auto; font-size: 11px; font-weight: 800; color: var(--navy-3); font-variant-numeric: tabular-nums; }
+.pgcal-ev-title { margin: 0; font-size: 14px; line-height: 1.35; letter-spacing: -0.02em; color: var(--ink); }
+.pgcal-ev-meta { margin: 0; font-size: 10.5px; font-weight: 700; color: var(--muted); line-height: 1.5; }
+.pgcal-ev-sum { margin: 0; font-size: 12.5px; color: var(--ink-2); line-height: 1.55; }
+.pgcal-ev-points { margin: 0; padding: 0; list-style: none; display: grid; gap: 3px; }
+.pgcal-ev-points li {
+  position: relative; padding-left: 10px;
+  font-size: 12px; color: var(--ink-2); line-height: 1.5;
+}
+.pgcal-ev-points li::before {
+  content: ""; position: absolute; left: 0; top: 6px;
+  width: 4px; height: 4px; border-radius: 50%; background: var(--pgc, var(--yellow));
+}
+.pgcal-ev-links { display: flex; flex-wrap: wrap; gap: 10px; padding-top: 6px; border-top: 1px dashed var(--line-2); }
+.pgcal-ev-links a { font-size: 11.5px; font-weight: 800; color: var(--blue); }
+
+.pgcal-empty {
+  margin: 0; padding: 16px 12px; text-align: center;
+  background: var(--paper); border: 1px dashed var(--line); border-radius: 12px;
+  font-size: 12.5px; color: var(--muted);
+}
+.pgcal-next {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+  margin-top: 8px; padding: 10px 12px;
+  background: var(--blue-soft); border-radius: 12px;
+  font-size: 12px; font-weight: 800; color: var(--navy);
+}
+.pgcal-next span { font-size: 10.5px; font-weight: 900; color: var(--blue); }
+.pgcal-goto {
+  margin-left: auto; padding: 5px 11px;
+  border: 1.5px solid var(--navy); border-radius: 999px;
+  background: #fff; color: var(--navy);
+  font-size: 11px; font-weight: 900;
+}
+.pgcal-goto:hover { background: var(--navy); color: #fff; }
+
+@media (min-width: 720px) {
+  .pgcal-cell { min-height: 92px; padding: 6px 5px 6px; }
+  .pgcal-daynum { font-size: 12.5px; }
+  .pgcal-chip { font-size: 10px; }
+}
+@media (min-width: 960px) {
+  .pgo-calwrap { grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr); align-items: start; }
+  .pgcal { padding: 16px 14px 14px; }
+  .pgcal-cell { min-height: 98px; }
+}
+@media (max-width: 719px) {
+  /* 좁은 화면은 글자 칩 대신 도트로 — 칸이 40px 남짓이라 글자가 겹칩니다. */
+  .pgcal-chip {
+    width: 6px; height: 6px; padding: 0;
+    background: transparent; border-radius: 50%;
+  }
+  .pgcal-chip-t { display: none; }
+  .pgcal-dot { display: block; }
+  .pgcal-chips { flex-direction: row; flex-wrap: wrap; gap: 3px; margin-top: 1px; }
+  .pgcal-more { font-size: 8.5px; }
+  .pgo-toolbar { gap: 8px; }
+  #pgoMonthLabel { min-width: 88px; font-size: 13.5px; }
+  .pgo-monthbtn { width: 32px; height: 32px; }
+  .pgo-monthtoday { padding: 7px 11px; font-size: 11px; }
+  .pgcal-day { padding: 12px; }
+  .pgcal-ev-when { margin-left: 0; }
+}
+.pgcal-sub {
+  margin: 12px 0 8px; padding-top: 10px; border-top: 1px dashed var(--line);
+  font-size: 11px; font-weight: 900; letter-spacing: 0.01em; color: var(--muted);
+}
+.pgcal-ev.is-compact { padding: 9px 11px 9px 10px; background: #fbfcfe; border-left-width: 3px; }
+.pgcal-ev.is-compact .pgcal-ev-title { font-size: 13px; }
+.pgcal-ev.is-compact .pgcal-ev-sum {
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  font-size: 12px; color: var(--muted);
+}
+.pgcal-ev.is-compact .pgcal-ev-links { border-top: 0; padding-top: 2px; }
