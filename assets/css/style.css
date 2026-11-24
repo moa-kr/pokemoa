@@ -4751,10 +4751,10 @@ body.figure-mode .demo-notice .notice-figure { display: block; }
 @media (min-width: 720px) {
   .pgcal-cell { min-height: 92px; padding: 6px 5px 6px; }
   .pgcal-daynum { font-size: 12.5px; }
-  .pgcal-chip { font-size: 10px; }
+  .pgcal-chip { padding: 1px 3px; font-size: 9.5px; letter-spacing: -0.03em; }
 }
 @media (min-width: 960px) {
-  .pgo-calwrap { grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr); align-items: start; }
+  .pgo-calwrap { grid-template-columns: minmax(0, 1.62fr) minmax(0, 1fr); gap: 18px; align-items: start; }
   .pgcal { padding: 16px 14px 14px; }
   .pgcal-cell { min-height: 98px; }
 }
