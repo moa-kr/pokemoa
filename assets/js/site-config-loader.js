@@ -29,6 +29,16 @@
    document.dispatchEvent(new CustomEvent("moa:route-rendered")) 를 보내면
    섹션·문구를 그 화면 기준으로 다시 적용합니다.
 
+   v4.4 — 공개 설정 API 우선 읽기 (2026-11-24)
+   모아 어드민이 저장하면 복지모아 서버가 GitHub 에 커밋하면서 그 설정을 메모리에 들고 있고,
+   포케모아는 아래 주소에서 그것을 바로 받아 옵니다(GitHub Pages 빌드 30초~1분을 기다리지 않음).
+     <script src="assets/js/site-config-loader.js" defer
+             data-config="assets/config/site-config.json"
+             data-config-api="https://bokjimoa.onrender.com/api/site-config?site=pokemoa">
+   - data-config-api : 선택. API 가 2.5초 안에 정상 설정(schemaVersion 1)을 주면 그것을 쓰고,
+                       실패하면 데이터 경로(data-config)의 정적 JSON 으로 조용히 넘어갑니다.
+   - 받은 곳은 window.MoaSiteConfig.source, 화면 이벤트 detail.source 로 알 수 있습니다(api|file).
+
    v4 — 모아 어드민의 실제 미리보기(iframe) 연동
    모아 어드민(https://moa-kr.github.io/moa-admin/)이 이 사이트를 390px iframe 으로 띄우고
    저장 전 draft 설정을 보내면, 이 로더가 받아 화면에 바로 적용합니다(새로고침 없이).
@@ -56,7 +66,7 @@
 (function () {
   "use strict";
 
-  const VERSION = "4.3";
+  const VERSION = "4.4";
   const STYLE_ID = "moa-site-config-style";
   const DISMISS_PREFIX = "moa:popup:";
   const TAB_SELECTOR = "[data-tab],[data-nav]";
@@ -90,7 +100,7 @@
     urgent: { light: ["#fdecec", "#a01c22"], dark: ["#4a1620", "#ffd4d6"] }
   };
 
-  const state = { path: "", config: null, options: null, preview: false, bannerEl: null, popupEl: null };
+  const state = { path: "", apiPath: "", source: "", config: null, options: null, preview: false, bannerEl: null, popupEl: null };
 
   function ensureStyle(dark) {
     if (document.getElementById(STYLE_ID)) return;
@@ -142,6 +152,36 @@
       .then((res) => (res.ok ? res.json() : null))
       .then((cfg) => (cfg && cfg.schemaVersion === 1 ? cfg : null))
       .catch(() => null);
+  }
+
+  /* 공개 설정 API — 어드민이 저장하면 바로 최신값을 준다. 늦거나 실패하면 null 로 떨어져
+     정적 JSON 폴백을 쓴다. 방문자 화면을 오래 붙잡지 않도록 2.5초에서 끊는다. */
+  const API_TIMEOUT_MS = 2500;
+  function loadRemote(path) {
+    const url = path + (path.indexOf("?") === -1 ? "?" : "&") + "_moa=" + Date.now();
+    return new Promise((resolve) => {
+      let settled = false;
+      let controller = null;
+      try { if (typeof AbortController === "function") controller = new AbortController(); } catch (err) { controller = null; }
+      const finish = (cfg) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        resolve(cfg && cfg.schemaVersion === 1 ? cfg : null);
+      };
+      const timer = setTimeout(() => {
+        try { if (controller) controller.abort(); } catch (err) { /* 무시 */ }
+        finish(null);
+      }, API_TIMEOUT_MS);
+      try {
+        fetch(url, { cache: "no-store", credentials: "omit", signal: controller ? controller.signal : undefined })
+          .then((res) => (res.ok ? res.json() : null))
+          .then(finish)
+          .catch(() => finish(null));
+      } catch (err) {
+        finish(null);
+      }
+    });
   }
 
   /* ───────────── 공지 배너 ───────────── */
@@ -831,17 +871,27 @@
       tabContainer: document.querySelector(script.getAttribute("data-tab-container") || ".main-nav")
     };
     state.path = path;
+    state.apiPath = script.getAttribute("data-config-api") || "";
     state.options = options;
     startTracking(script);
     announceReady();
-    load(path).then((cfg) => {
+    const finish = (cfg, source) => {
       if (!cfg) return;
       // 어드민이 보낸 draft 를 이미 적용했다면, 뒤늦게 도착한 저장본으로 덮어쓰지 않는다.
       if (state.preview) { announceReady(); return; }
+      state.source = source;
       apply(cfg, options);
       announceReady();
       document.dispatchEvent(new CustomEvent("moa:site-config-applied", { detail: cfg }));
-    });
+    };
+    if (state.apiPath) {
+      loadRemote(state.apiPath).then((cfg) => {
+        if (cfg) { finish(cfg, "api"); return; }
+        load(path).then((local) => finish(local, "file"));
+      });
+      return;
+    }
+    load(path).then((cfg) => finish(cfg, "file"));
   }
 
   /* ───────────── 방문 통계 (v4.1) ─────────────
@@ -1181,4 +1231,6 @@
     state
   };
   Object.defineProperty(window.MoaSiteConfig, "config", { get: () => state.config });
+  /* 이번 화면의 설정을 어디서 받았는지(api|file|"") — 점검용. */
+  Object.defineProperty(window.MoaSiteConfig, "source", { get: () => state.source });
 })();

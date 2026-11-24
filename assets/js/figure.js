@@ -30,6 +30,7 @@
     mode: "card",
     requested: false,     /* ?figure=1 로 열렸는지 */
     popupEl: null,
+    popupCfg: null,
     reopenEl: null,
     lastFocus: null,
     busy: false,
@@ -218,18 +219,107 @@
   }
 
   /* ================================================================ 팝업 */
-  function popupHtml() {
+  /* 어드민(모아 어드민 ① 팝업 관리)이 켜고 끄고 문구를 고치는 안내 팝업.
+     site-config.json 의 figurePopup 을 그대로 읽되, 값이 없으면 지금까지의 화면
+     (켜짐 · 첫 방문 자동 열기 · 닫은 뒤 우하단 ‘다시 보기’)을 기본값으로 쓴다. */
+  var POPUP_DEFAULTS = {
+    enabled: true,
+    autoOpen: true,
+    floating: true,
+    floatingLabel: "팜사이즈 원더 안내",
+    badge: "GS25 NEW · 2026.11.20",
+    eyebrow: "GS25 신상 · 총 " + F.totalCount + "종 랜덤",
+    title: "포켓몬스터 팜사이즈 원더 피규어",
+    body: F.summary || "",
+    buttonLabel: "바로 재고 찾기",
+    buttonAction: "stock",
+    buttonValue: "",
+    dismissToday: true,
+    startDate: "",
+    endDate: ""
+  };
+  var POPUP_BOOLS = { enabled: 1, autoOpen: 1, floating: 1, dismissToday: 1 };
+  var POPUP_ACTIONS = { stock: 1, tab: 1, url: 1, close: 1 };
+  var popupSig = "";
+  var popupTimer = 0;
+
+  function boolOf(value, fallback) {
+    if (value === undefined || value === null || value === "") return fallback;
+    if (typeof value === "string") return !/^(false|0|off|no)$/i.test(value.trim());
+    return Boolean(value);
+  }
+
+  function rawPopupConfig() {
+    var api = window.MoaSiteConfig;
+    var cfg = api && api.config;
+    var raw = cfg && cfg.figurePopup;
+    return raw && typeof raw === "object" ? raw : null;
+  }
+
+  function popupCfg() {
+    var raw = rawPopupConfig();
+    var out = {};
+    Object.keys(POPUP_DEFAULTS).forEach(function (key) {
+      var fallback = POPUP_DEFAULTS[key];
+      var value = raw ? raw[key] : undefined;
+      if (POPUP_BOOLS[key]) { out[key] = boolOf(value, fallback); return; }
+      out[key] = value == null ? fallback : String(value);
+    });
+    if (!out.title.replace(/\s/g, "")) out.title = POPUP_DEFAULTS.title;
+    if (!out.buttonLabel.replace(/\s/g, "")) out.buttonLabel = POPUP_DEFAULTS.buttonLabel;
+    if (!POPUP_ACTIONS[out.buttonAction]) out.buttonAction = "stock";
+    out.startDate = String(out.startDate || "").slice(0, 10);
+    out.endDate = String(out.endDate || "").slice(0, 10);
+    return out;
+  }
+
+  function todayISO() {
+    var d = new Date();
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+  }
+
+  function isPreviewFrame() {
+    try {
+      if (window.MoaSiteConfig && window.MoaSiteConfig.state && window.MoaSiteConfig.state.preview) return true;
+      return document.documentElement.classList.contains("moa-preview-mode");
+    } catch (e) { return false; }
+  }
+
+  function inPopupPeriod(p) {
+    if (isPreviewFrame()) return true;   /* 미리보기는 기간 밖이어도 그대로 보여 준다 */
+    var iso = todayISO();
+    if (p.startDate && iso < p.startDate) return false;
+    if (p.endDate && iso > p.endDate) return false;
+    return true;
+  }
+
+  function popupButtonHtml(p) {
+    var label = esc(p.buttonLabel);
+    if (p.buttonAction === "url" && /^https?:\/\//i.test(p.buttonValue)) {
+      return '<a class="fg-btn-primary" href="' + esc(p.buttonValue) + '" target="_blank" rel="noopener"' +
+        ' data-moa-focus=\'{"kind":"figurePopup","key":"buttonLabel"}\'>' + label + '</a>';
+    }
+    return '<button type="button" class="fg-btn-primary" data-fg-action="' + esc(p.buttonAction) + '"' +
+      ' data-moa-focus=\'{"kind":"figurePopup","key":"buttonLabel"}\'>' + label + '</button>';
+  }
+
+  function popupHtml(p) {
+    var badge = p.badge ? '<span class="fg-flag">' + esc(p.badge) + '</span>' : "";
+    var eyebrow = p.eyebrow ? '<p class="fg-eyebrow">' + esc(p.eyebrow) + '</p>' : "";
+    var today = p.dismissToday
+      ? '<label><input type="checkbox" data-fg-today> 오늘 하루 보지 않기</label>'
+      : '<span aria-hidden="true"></span>';
     return '' +
       '<div class="fg-modal" role="document">' +
         '<div class="fg-hero">' +
           '<button type="button" class="fg-close" data-fg-close aria-label="안내 팝업 닫기">✕</button>' +
           '<img src="' + esc(F.image) + '" alt="' + esc(F.imageAlt) + '" width="' + (F.imageWidth || 600) + '" height="' + (F.imageHeight || 736) + '">' +
-          '<span class="fg-flag">GS25 NEW · 2026.11.20</span>' +
+          badge +
         '</div>' +
         '<div class="fg-body">' +
-          '<p class="fg-eyebrow">GS25 신상 · 총 ' + F.totalCount + '종 랜덤</p>' +
-          '<h2 id="fgPopupTitle">포켓몬스터 팜사이즈 원더 피규어</h2>' +
-          '<p class="fg-desc">' + esc(F.summary) + '</p>' +
+          eyebrow +
+          '<h2 id="fgPopupTitle" data-moa-focus=\'{"kind":"figurePopup","key":"title"}\'>' + esc(p.title) + '</h2>' +
+          '<p class="fg-desc" data-moa-focus=\'{"kind":"figurePopup","key":"body"}\'>' + esc(p.body) + '</p>' +
           '<ul class="fg-facts">' +
             '<li><span>가격</span><b>' + esc(F.priceLabel) + '</b></li>' +
             '<li><span>출시</span><b>' + esc(F.releaseLabel) + '</b></li>' +
@@ -237,12 +327,12 @@
           '</ul>' +
           '<ul class="fg-series">' + seriesListHtml("modal") + '</ul>' +
           '<div class="fg-actions">' +
-            '<button type="button" class="fg-btn-primary" data-fg-stock>바로 재고 찾기</button>' +
+            popupButtonHtml(p) +
             '<a class="fg-btn-ghost" href="' + esc(F.productUrl) + '" target="_blank" rel="noopener">우리동네GS 공식 상품 보기 ↗</a>' +
           '</div>' +
           '<p class="fg-note">' + esc(F.periodNote) + ' 재고는 우리동네GS 앱·매장에서 확인하세요.<br>' + esc(F.sourceNote) + '</p>' +
           '<div class="fg-foot">' +
-            '<label><input type="checkbox" data-fg-today> 오늘 하루 보지 않기</label>' +
+            today +
             '<button type="button" data-fg-close>닫기</button>' +
           '</div>' +
         '</div>' +
@@ -251,13 +341,15 @@
 
   function openPopup() {
     if (state.popupEl) return;
+    var p = state.popupCfg || popupCfg();
+    state.popupCfg = p;
     var backdrop = document.createElement("div");
     backdrop.className = "fg-backdrop";
     backdrop.id = "fgPopup";
     backdrop.setAttribute("role", "dialog");
     backdrop.setAttribute("aria-modal", "true");
     backdrop.setAttribute("aria-labelledby", "fgPopupTitle");
-    backdrop.innerHTML = popupHtml();
+    backdrop.innerHTML = popupHtml(p);
     document.body.appendChild(backdrop);
     document.body.classList.add("no-scroll");
     state.popupEl = backdrop;
@@ -270,9 +362,13 @@
         closePopup(!!(today && today.checked));
         return;
       }
-      if (e.target.closest("[data-fg-stock]")) {
+      var actionEl = e.target.closest("[data-fg-action]");
+      if (actionEl) {
+        var action = actionEl.getAttribute("data-fg-action");
+        var target = (state.popupCfg && state.popupCfg.buttonValue) || "";
         closePopup(false);
-        goStock();
+        if (action === "stock") { goStock(); return; }
+        if (action === "tab") { activateTab(target); return; }
       }
     });
     document.addEventListener("keydown", onKeydown);
@@ -280,6 +376,19 @@
     if (closeBtn) closeBtn.focus();
     track("figure_popup_open", { product: F.id });
     hideReopen();
+  }
+
+  /* 버튼이 ‘탭 이동’일 때 — 사이트 로더가 있으면 그쪽 탭 열기를 쓰고, 없으면 직접 누른다. */
+  function activateTab(id) {
+    var value = String(id || "").trim();
+    if (!value) return false;
+    if (window.MoaSiteConfig && typeof window.MoaSiteConfig.activateTab === "function") {
+      try { if (window.MoaSiteConfig.activateTab(value)) return true; } catch (e) {}
+    }
+    var tab = document.querySelector('[data-tab="' + value + '"],[data-nav="' + value + '"]');
+    if (tab) { try { tab.click(); return true; } catch (e) {} }
+    if (value.charAt(0) === "#") { try { location.hash = value.slice(1); return true; } catch (e) {} }
+    return false;
   }
 
   function onKeydown(e) {
@@ -305,24 +414,87 @@
     document.body.classList.remove("no-scroll");
     if (state.lastFocus && state.lastFocus.focus) { try { state.lastFocus.focus(); } catch (e) {} }
     state.lastFocus = null;
-    showReopen();
+    showReopen(state.popupCfg);
     track("figure_popup_close", { today_off: todayOff ? 1 : 0 });
   }
 
-  function showReopen() {
-    if (state.reopenEl) { state.reopenEl.hidden = false; return; }
+  function updateReopenLabel(p, btn) {
+    var el = btn || state.reopenEl;
+    if (!el) return;
+    var span = el.querySelector("span");
+    if (span) span.textContent = (p && p.floatingLabel) || POPUP_DEFAULTS.floatingLabel;
+    el.setAttribute("aria-label", ((p && p.floatingLabel) || POPUP_DEFAULTS.floatingLabel) + " 다시 보기");
+  }
+
+  function showReopen(p) {
+    var cfgPopup = p || popupCfg();
+    if (!cfgPopup.floating) { hideReopen(); return; }
+    if (state.reopenEl) {
+      state.reopenEl.hidden = false;
+      updateReopenLabel(cfgPopup);
+      return;
+    }
     var btn = document.createElement("button");
     btn.type = "button";
     btn.className = "fg-reopen";
-    btn.setAttribute("aria-label", "GS25 팜사이즈 원더 피규어 안내 다시 보기");
+    btn.setAttribute("data-moa-focus", JSON.stringify({ kind: "figurePopup", key: "floatingLabel" }));
     btn.innerHTML = '<img src="' + esc(F.series[0].image) + '" alt="" width="30" height="30">' +
-      '<span>팜사이즈 원더 안내</span>';
+      '<span></span>';
+    updateReopenLabel(cfgPopup, btn);
     btn.addEventListener("click", function () { openPopup(); });
     document.body.appendChild(btn);
     state.reopenEl = btn;
   }
   function hideReopen() {
     if (state.reopenEl) state.reopenEl.hidden = true;
+  }
+  function removeReopen() {
+    if (state.reopenEl && state.reopenEl.parentNode) state.reopenEl.parentNode.removeChild(state.reopenEl);
+    state.reopenEl = null;
+  }
+
+  /* 어드민 설정이 바뀔 때마다(저장본·미리보기 draft) 팝업과 다시 보기 버튼을 그 값에 맞춘다.
+     - 꺼짐·기간 밖 : 팝업과 버튼을 모두 없앤다.
+     - 미리보기     : 편집 중인 설정을 그대로 보여 주려고 항상 연다.
+     - 자동 열기    : 첫 방문에 0.9초 뒤 연다(‘오늘 하루 보지 않기’가 살아 있으면 버튼만).
+     - 자동 열기 끔 : 팝업을 열지 않고 ‘다시 보기’ 버튼으로만 열 수 있게 한다. */
+  function setupPopupFromConfig(force) {
+    var p = popupCfg();
+    var sig = JSON.stringify(p);
+    if (!force && sig === popupSig) return;
+    popupSig = sig;
+    state.popupCfg = p;
+    clearTimeout(popupTimer);
+
+    if (!p.enabled || !inPopupPeriod(p)) {
+      if (state.popupEl) closePopup(false);
+      removeReopen();
+      return;
+    }
+
+    if (isPreviewFrame()) {
+      if (state.popupEl) closePopup(false);
+      openPopup();
+      if (p.floating) showReopen(p); else hideReopen();
+      return;
+    }
+
+    if (state.popupEl) return;   /* 이미 보고 있는 팝업은 문구가 바뀌어도 그대로 둔다 */
+
+    if (!p.autoOpen) {
+      if (p.floating) showReopen(p); else hideReopen();
+      return;
+    }
+    if (dismissedUntil() > Date.now()) {
+      if (p.floating) showReopen(p); else hideReopen();
+      return;
+    }
+    hideReopen();
+    popupTimer = setTimeout(function () {
+      /* 공통 첫 방문 팝업(site-config popup)이 떠 있으면 두 겹이 되지 않게 양보한다 */
+      if (state.popupEl || document.querySelector(".moa-popup-backdrop")) return;
+      openPopup();
+    }, 900);
   }
 
   /* ====================================================== 상품 전환 · 재고 */
@@ -920,15 +1092,11 @@
       }, { once: true });
     }
 
-    /* 안내 팝업 — 오늘 하루 보지 않기를 고르지 않았다면 첫 방문에 띄운다 */
-    if (dismissedUntil() > Date.now()) {
-      showReopen();
-    } else {
-      var t = setTimeout(function () {
-        if (!state.popupEl) openPopup();
-      }, 900);
-      if (typeof t === "object" && t && t.unref) t.unref();
-    }
+    /* 안내 팝업 — 어드민 설정(figurePopup)을 기다렸다가 그 값대로 띄운다.
+       설정은 로더가 늦게 받아올 수 있어(공개 API 2.5초) 받는 즉시 다시 맞춘다. */
+    setupPopupFromConfig(true);
+    document.addEventListener("moa:site-config-applied", function () { setupPopupFromConfig(false); });
+    document.addEventListener("moa:preview-applied", function () { setupPopupFromConfig(true); });
   }
 
   if (document.readyState === "loading") {
@@ -942,6 +1110,8 @@
     setMode: setMode,
     openPopup: openPopup,
     closePopup: closePopup,
+    popupConfig: popupCfg,
+    syncPopup: setupPopupFromConfig,
     goStock: goStock,
     refreshStock: function () { queryStock(true); },
     product: F

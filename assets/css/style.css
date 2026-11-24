@@ -4037,7 +4037,7 @@ button.pop-link { font: inherit; color: inherit; cursor: pointer; }
 .fg-body { padding: 16px 18px 14px; }
 .fg-eyebrow { margin: 0; font-size: 11.5px; font-weight: 800; color: #b3392b; letter-spacing: 0.02em; }
 .fg-body h2 { margin: 4px 0 0; font-size: 20px; line-height: 1.3; letter-spacing: -0.03em; }
-.fg-desc { margin: 8px 0 0; font-size: 13px; line-height: 1.6; color: var(--ink-2); }
+.fg-desc { margin: 8px 0 0; font-size: 13px; line-height: 1.6; color: var(--ink-2); white-space: pre-line; overflow-wrap: anywhere; }
 .fg-facts { list-style: none; margin: 12px 0 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
 .fg-facts li { padding: 8px 10px; border-radius: 11px; background: var(--paper); border: 1px solid var(--line-2); }
 .fg-facts span { display: block; font-size: 10.5px; color: var(--muted); font-weight: 700; }
