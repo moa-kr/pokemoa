@@ -3613,13 +3613,17 @@ button.pop-link { font: inherit; color: inherit; cursor: pointer; }
 /* 「📲 앱 설치」 (2026-11-25) — 헤더 한 줄에 함께 넣기 위한 간격 보정
    1024~1119px: 탭이 가장 넓어지는 구간이라 ≤1023px 와 같은 값으로 탭 간격만 좁혀
                 설치 아이콘(38px)이 한 줄에 들어가게 합니다.
-   1600px~   : 날짜 표기가 다시 나와 한 줄이 꽉 차므로 탭 좌우 여백만 2px 줄입니다. */
+   1600px~   : 날짜 표기가 다시 나오고 오른쪽에 설치·문의·제보가 나란히 서므로,
+                탭 간격과 날짜를 한 줄로 정리해 헤더가 넘치지 않게 합니다. */
 @media (min-width: 1024px) and (max-width: 1119px) {
   .nav-btn { padding: 8px 7px; font-size: 12px; letter-spacing: -0.02em; }
   .header-actions { gap: 6px; margin-left: 4px; }
 }
 @media (min-width: 1600px) {
-  .nav-btn { padding: 9px 12px; }
+  .main-nav { gap: 2px; }
+  .nav-btn { padding: 9px 10px; font-size: 13px; }
+  .header-actions { gap: 6px; }
+  .header-date { white-space: nowrap; }
 }
 
 /* 태블릿 폭(680~959px) — 상단 5탭과 우측 버튼이 한 줄에 들어가도록 더 좁게 */
