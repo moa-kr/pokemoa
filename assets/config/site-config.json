@@ -221,7 +221,7 @@
     "updatedAt": null
   },
   "figurePopup": {
-    "enabled": true,
+    "enabled": false,
     "autoOpen": true,
     "floating": true,
     "floatingLabel": "팜사이즈 원더 안내",
