@@ -221,7 +221,7 @@
     "updatedAt": null
   },
   "figurePopup": {
-    "enabled": true,
+    "enabled": false,
     "autoOpen": true,
     "floating": true,
     "floatingLabel": "팜사이즈 원더 안내",
@@ -417,7 +417,7 @@
   ],
   "meta": {
     "updatedBy": "moa-admin (@Acewoni)",
-    "updatedAt": "2026-11-23T09:55:44.206Z",
+    "updatedAt": "2026-11-24T04:50:22.145Z",
     "note": "모아 어드민이 관리하는 공통 설정 파일입니다. 형식: https://moa-kr.github.io/moa-admin/SCHEMA.md"
   }
 }
