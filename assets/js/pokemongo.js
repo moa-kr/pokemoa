@@ -157,18 +157,33 @@
     return TYPE_KEYS[t] ? "pgc-" + t : "pgc-news";
   }
 
-  /* 날짜 칸에 넣을 짧은 이름 — 제목에서 꼬리 설명을 덜어냅니다.
+  /* 날짜 칸에 넣을 짧은 이름 — 제목에서 꼬리 설명·연월을 덜어냅니다.
      (데이터에 short 필드가 있으면 그것을 먼저 씁니다) */
-  function shortLabel(item) {
-    if (item.short) return String(item.short);
+  var RECURRING_HEAD = { "레이드 아워": 1, "스포트라이트 아워": 1, "맥스 먼데이": 1 };
+  function titleParts(item) {
     var s = String(item.title || "");
     s = s.replace(/\s*\([^()]*\)\s*$/, "");
     s = s.replace(/\s*\([^()]*\)\s*$/, "");
-    var dash = s.split(/\s+—\s+/);
-    if (dash.length > 1) s = dash[dash.length - 1];
-    var seg = s.split(/\s+·\s+/)[0];
-    if (seg) s = seg;
-    return s.trim();
+    s = s.replace(/^\d{4}년\s*(\d+월\s*)?/, "");
+    var parts = s.split(/\s+—\s+/);
+    return { head: (parts[0] || "").trim(), tail: parts.length > 1 ? parts[parts.length - 1].trim() : "" };
+  }
+  function trimSegment(s) {
+    var seg = String(s || "").split(/\s+·\s+/)[0];
+    return (seg || "").trim();
+  }
+  function shortLabel(item) {
+    if (item.short) return String(item.short);
+    var p = titleParts(item);
+    /* 매주 반복되는 아워·먼데이는 사람이 부르는 이름 그대로 */
+    if (p.tail && RECURRING_HEAD[p.head]) return p.head;
+    /* "— 이름은 아직 미발표" 처럼 꼬리가 설명문이면 앞쪽 제목을 씁니다 */
+    if (p.tail && !/^(이름은|시간|대상)/.test(p.tail) && !/미발표/.test(p.tail)) return trimSegment(p.tail);
+    return trimSegment(p.head || p.tail);
+  }
+  function headLabel(item) {
+    var p = titleParts(item);
+    return RECURRING_HEAD[p.head] ? p.head : (p.head || trimSegment(p.tail));
   }
 
   /* ---------------------------------------------------------- 필터 칩 */
@@ -372,8 +387,15 @@
     var isTodayCell = cell.key === today;
     var isSel = cell.key === state.day;
 
+    var used = {};
     var chips = shown.map(function (it) {
       var lab = shortLabel(it);
+      /* 같은 날 같은 이름이 두 번 나오면(예: 레이드 아워와 5성 로테이션) 앞부분으로 구분합니다. */
+      if (used[lab]) {
+        var alt = headLabel(it);
+        lab = alt && !used[alt] ? alt : lab + " · " + (it.typeLabel || "");
+      }
+      used[lab] = 1;
       return '<span class="pgcal-chip ' + typeClass(it) + '" title="' + escapeHtml(it.title) + '">' +
         '<i class="pgcal-dot"></i><span class="pgcal-chip-t">' + escapeHtml(lab) + "</span></span>";
     }).join("");
