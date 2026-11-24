@@ -9,7 +9,7 @@
 결과: assets/img/icons/
   icon-192.png · icon-512.png                (purpose: any — 둥근 모서리)
   icon-maskable-192.png · icon-maskable-512.png  (purpose: maskable — 꽉 찬 바탕)
-  apple-touch-icon-180.png                   (iOS 홈 화면 — 꽉 찬 바탕, 투명 없음)
+  apple-touch-icon-180.png                   (iOS 홈 화면 — 꽉 찬 바탕, 알파 채널 없음)
 """
 from PIL import Image, ImageDraw
 
@@ -84,7 +84,7 @@ def main():
         ("icon-512.png", make(512, False, 0.66)),
         ("icon-maskable-192.png", make(192, True, 0.50)),
         ("icon-maskable-512.png", make(512, True, 0.50)),
-        ("apple-touch-icon-180.png", make(180, True, 0.62)),
+        ("apple-touch-icon-180.png", make(180, True, 0.62).convert("RGB")),
     ]
     for name, img in jobs:
         path = os.path.join(OUT, name)
