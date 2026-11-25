@@ -2717,6 +2717,14 @@
     });
   });
 
+  /* ---------------------------------------- 운영자 블로그로 나가는 클릭 */
+  /* 헤더·푸터의 「📝 블로그」 링크. 어느 자리에서 나갔는지(data-blog-loc)만 함께 보냅니다. */
+  document.addEventListener("click", function (e) {
+    var a = e.target && e.target.closest ? e.target.closest("a[data-blog-loc]") : null;
+    if (!a) return;
+    trackEvent("blog_outbound", { from: a.getAttribute("data-blog-loc") || "" });
+  });
+
   /* ------------------------------------------- 쿠팡 파트너스 영역 반응 */
   /* iframe 내부 클릭은 cross-origin이라 부모 페이지에서 볼 수 없다. 카드·슬롯 상자의
      클릭·포커스만 집계하고, 슬롯이 없으면 카드 ID를 slot으로 쓴다. */
