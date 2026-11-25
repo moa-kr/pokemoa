@@ -45,7 +45,7 @@
 <meta name="apple-mobile-web-app-title" content="포켓몬카드모아">
 <link rel="apple-touch-icon" sizes="180x180" href="assets/img/icons/apple-touch-icon-180.png">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%23101f3c'/%3E%3Crect x='7' y='7' width='7.5' height='7.5' rx='2.2' fill='%23ffcb05'/%3E%3Crect x='17.5' y='7' width='7.5' height='7.5' rx='2.2' fill='%23ffcb05' opacity='.7'/%3E%3Crect x='7' y='17.5' width='7.5' height='7.5' rx='2.2' fill='%23ffcb05' opacity='.7'/%3E%3Crect x='17.5' y='17.5' width='7.5' height='7.5' rx='2.2' fill='%23ffcb05'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="assets/css/style.css?v=148">
+<link rel="stylesheet" href="assets/css/style.css?v=149">
 <!-- 카카오맵 JavaScript SDK — autoload=false로 불러 두고 map.js가 kakao.maps.load()로 초기화합니다.
      JavaScript 키 도메인에는 https://moa-kr.github.io 만 등록되어 있어, 그 밖의 주소(미등록 프리뷰)에서는
      지도 대신 내장 좌표 스냅샷 안내가 표시됩니다. -->
@@ -397,6 +397,41 @@
           <span class="store-go" aria-hidden="true">→</span>
         </a>
       </div>
+
+      <!-- v4.54 — 오프라인 채널별 「참고 입고 요일」 (현장·제보 기준, 공식 확정 아님) -->
+      <aside class="arrival-card" aria-labelledby="arrival-title">
+        <div class="arrival-head">
+          <span class="arrival-ico" aria-hidden="true">🗓</span>
+          <div class="arrival-head-text">
+            <h3 id="arrival-title" data-copy="arrivalTitle">참고 입고 요일</h3>
+            <p data-copy="arrivalLead">채널마다 물량이 도는 요일이 다릅니다. 방문 계획을 세울 때 가볍게 참고하세요.</p>
+          </div>
+          <span class="arrival-tag" data-copy="arrivalTag">현장 제보 기준</span>
+        </div>
+        <ul class="arrival-list">
+          <li class="arrival-item">
+            <span class="arrival-who"><span class="arrival-dot" style="--brand:#ff4d8d;--brand-ink:#ffffff" aria-hidden="true">A</span><span class="arrival-name" data-copy="arrivalArtName">아트박스</span></span>
+            <span class="arrival-when" data-copy="arrivalArtDays">화·목 또는 수·금</span>
+          </li>
+          <li class="arrival-item">
+            <span class="arrival-who"><span class="arrival-dot" style="--brand:#008061;--brand-ink:#ffffff" aria-hidden="true">7</span><span class="arrival-name" data-copy="arrivalSevenName">세븐일레븐</span></span>
+            <span class="arrival-when" data-copy="arrivalSevenDays">화요일</span>
+          </li>
+          <li class="arrival-item">
+            <span class="arrival-who"><span class="arrival-dot" style="--brand:#00a0e9;--brand-ink:#ffffff" aria-hidden="true">G</span><span class="arrival-name" data-copy="arrivalMartName">GS25 · 이마트</span></span>
+            <span class="arrival-when" data-copy="arrivalMartDays">금요일</span>
+          </li>
+          <li class="arrival-item">
+            <span class="arrival-who"><span class="arrival-dot" style="--brand:#d6002f;--brand-ink:#ffffff" aria-hidden="true">L</span><span class="arrival-name" data-copy="arrivalLotteName">롯데마트</span></span>
+            <span class="arrival-when" data-copy="arrivalLotteDays">금~토요일</span>
+          </li>
+          <li class="arrival-item is-wide">
+            <span class="arrival-who"><span class="arrival-dot" style="--brand:#12854a;--brand-ink:#ffffff" aria-hidden="true">C</span><span class="arrival-name" data-copy="arrivalShopName">공인 카드샵</span></span>
+            <span class="arrival-when is-long"><span data-copy="arrivalShopDays">신상품 발매일·주말 전후</span><span class="arrival-sub" data-copy="arrivalShopNote">인기 박스 오픈런 주의</span></span>
+          </li>
+        </ul>
+        <p class="arrival-note" data-copy="arrivalNote">※ 현장·제보 기준 참고 요일이며, 매장·물류 사정에 따라 미입고 또는 요일이 다를 수 있습니다. 방문 전 매장 확인 권장.</p>
+      </aside>
 
       <p class="src-note mt-16">출처: 포켓몬코리아 <a href="https://www.pokemonkorea.co.kr/card_vending_machine" target="_blank" rel="noopener">자판기 안내</a>(전국 178곳 중 좌표 확인 176곳) · <a href="https://www.pokemonkorea.co.kr/pokemon_cardshop" target="_blank" rel="noopener">공식 카드샵 목록</a>(16곳) 2026-11-18 확인, 아트박스 매장·재고 조회 <a href="https://www.poom.co.kr" target="_blank" rel="noopener">POOM</a>. 대형마트 위치는 「동네에서 찾기」 지도에서 카카오 장소 검색으로 보여 줍니다. 재고·운영 여부는 시점·매장에 따라 달라지므로 방문 전 확인하세요.</p>
     </section>
