@@ -4875,9 +4875,8 @@ body.figure-mode .demo-notice .notice-figure { display: block; }
 }
 .arrival-head {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 9px;
-  flex-wrap: wrap;
 }
 .arrival-ico {
   flex: 0 0 26px;
@@ -4891,6 +4890,12 @@ body.figure-mode .demo-notice .notice-figure { display: block; }
   line-height: 1;
 }
 .arrival-head-text { flex: 1 1 auto; min-width: 0; }
+.arrival-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
 .arrival-head-text h3 {
   margin: 0;
   font-size: 14px;
@@ -4905,6 +4910,7 @@ body.figure-mode .demo-notice .notice-figure { display: block; }
 }
 .arrival-tag {
   flex: 0 0 auto;
+  margin-left: auto;
   padding: 3px 8px;
   border-radius: 999px;
   background: var(--grey-soft);
