@@ -5004,7 +5004,7 @@ body.figure-mode .demo-notice .notice-figure { display: block; }
   .arrival-item.is-wide { grid-column: 1 / -1; }
   .arrival-name { font-size: 13px; }
 }
-@media (min-width: 1080px) {
+@media (min-width: 960px) {
   .arrival-card { padding: 14px 16px; }
   .arrival-list { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .arrival-item.is-wide { grid-column: span 2; }
