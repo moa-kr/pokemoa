@@ -327,6 +327,11 @@ button { font: inherit; color: inherit; cursor: pointer; }
   background: var(--green);
   box-shadow: 0 0 0 3px rgba(18, 133, 74, 0.14);
 }
+/* 헤더 「데이터 기준」 배지 — 모든 폭에서 화면에 나오지 않게 숨김(2026-11-25 요청, v4.53).
+   마크업(.header-date, data-copy="headerDate")은 지우지 않고 그대로 둡니다 — 모아 어드민
+   ③ 문구 화면이 이 키를 계속 찾아 편집할 수 있어야 하고, 지우면 미리보기에서 대상이 사라집니다.
+   데이터 기준일 안내는 아래 푸터(footerDataDate)에 그대로 남아 있습니다. */
+.header-date { display: none; }
 
 /* --------------------------------------------------------------- 히어로 */
 .hero {
