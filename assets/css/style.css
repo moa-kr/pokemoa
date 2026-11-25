@@ -3673,8 +3673,8 @@ button.pop-link { font: inherit; color: inherit; cursor: pointer; }
 /* 「📲 앱 설치」 (2026-11-25) — 헤더 한 줄에 함께 넣기 위한 간격 보정
    1024~1119px: 탭이 가장 넓어지는 구간이라 ≤1023px 와 같은 값으로 탭 간격만 좁혀
                 설치 아이콘(38px)이 한 줄에 들어가게 합니다.
-   1600px~   : 날짜 표기가 다시 나오고 오른쪽에 설치·문의·제보가 나란히 서므로,
-                탭 간격과 날짜를 한 줄로 정리해 헤더가 넘치지 않게 합니다. */
+   1600px~   : 오른쪽에 블로그·설치·문의·제보가 나란히 서므로, 탭 간격을 줄이고
+                기준일은 푸터에 같은 값이 있어 헤더에서 숨깁니다. */
 @media (min-width: 1024px) and (max-width: 1199px) {
   .nav-btn { padding: 8px 7px; font-size: 12px; letter-spacing: -0.02em; }
   .header-actions { gap: 6px; margin-left: 4px; }
