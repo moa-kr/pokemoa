@@ -31,6 +31,12 @@ LAST_MOD = "2026-11-26"           # 이번에 생성한 정적 페이지의 last
 GA_ID = "G-LWRMBRD0X9"
 CSS_V = "2"
 
+# 구조화 데이터에 쓰는 실제 자산 URL(라이브에서 200으로 열리는 파일만)
+SITE_HOME = BASE + "/"
+OG_IMAGE = BASE + "/assets/img/og-image.png"       # 1200x630 대표 이미지
+SITE_LOGO = BASE + "/assets/img/icons/icon-512.png"  # 512x512 로고
+FIRST_PUBLISHED = "2026-11-26"   # 정적 상세 페이지 최초 공개일
+
 FAVICON = (
     "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E"
     "%3Crect width='32' height='32' rx='9' fill='%23101f3c'/%3E"
@@ -81,9 +87,15 @@ def head(title, desc, path, og_title=None, og_desc=None, extra_head="", og_type=
 <meta property="og:description" content="{e(og_desc or desc)}">
 <meta property="og:url" content="{url}">
 <meta property="og:locale" content="ko_KR">
-<meta name="twitter:card" content="summary">
+<meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="{e(og_title or title)}">
 <meta name="twitter:description" content="{e(og_desc or desc)}">
+<meta name="twitter:image" content="{OG_IMAGE}">
+<meta property="og:image" content="{OG_IMAGE}">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="{SITE_NAME} — 포켓몬 카드 정가 구매처·편의점 재고·확장팩 도감">
 <meta name="theme-color" content="#101f3c">
 <meta name="application-name" content="{SITE_NAME}">
 <link rel="icon" href="{FAVICON}">
@@ -171,6 +183,91 @@ def page(path, title, desc, crumb_items, body, jsonld=None, og_type="article"):
         + body
         + foot(path)
     )
+
+
+def page_url(path):
+    return BASE + "/" + ("" if path == "index.html" else path)
+
+
+def publisher_ld():
+    return {
+        "@type": "Organization",
+        "@id": SITE_HOME + "#organization",
+        "name": SITE_NAME,
+        "url": SITE_HOME,
+        "logo": {"@type": "ImageObject", "url": SITE_LOGO, "width": 512, "height": 512},
+    }
+
+
+def article_ld(path, headline, description, section=None):
+    """가이드·도감 페이지의 글 정보.
+
+    포켓몬카드모아는 직접 판매하지 않는 정보 사이트이므로 Product/Offer 스키마와
+    평점·리뷰·배송·반품 같은 판매 조건은 넣지 않는다.
+    """
+    url = page_url(path)
+    d = {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "@id": url + "#article",
+        "headline": headline,
+        "description": description,
+        "url": url,
+        "image": [OG_IMAGE],
+        "datePublished": FIRST_PUBLISHED,
+        "dateModified": LAST_MOD,
+        "inLanguage": "ko-KR",
+        "author": {"@type": "Organization", "name": SITE_NAME, "url": SITE_HOME},
+        "publisher": publisher_ld(),
+        "isPartOf": {
+            "@type": "WebSite",
+            "@id": SITE_HOME + "#website",
+            "url": SITE_HOME,
+            "name": SITE_NAME,
+        },
+        "mainEntityOfPage": {"@type": "WebPage", "@id": url},
+    }
+    if section:
+        d["articleSection"] = section
+    return d
+
+
+def collection_ld(path, name, description, list_items, about_name=None):
+    """목록·도감 페이지 정보. list_items는 ListItem dict 목록."""
+    url = page_url(path)
+    d = {
+        "@context": "https://schema.org",
+        "@type": "CollectionPage",
+        "@id": url + "#collection",
+        "url": url,
+        "name": name,
+        "description": description,
+        "inLanguage": "ko-KR",
+        "isPartOf": {
+            "@type": "WebSite",
+            "@id": SITE_HOME + "#website",
+            "url": SITE_HOME,
+            "name": SITE_NAME,
+        },
+        "primaryImageOfPage": {
+            "@type": "ImageObject",
+            "url": OG_IMAGE,
+            "width": 1200,
+            "height": 630,
+        },
+        "datePublished": FIRST_PUBLISHED,
+        "dateModified": LAST_MOD,
+        "publisher": publisher_ld(),
+        "mainEntity": {
+            "@type": "ItemList",
+            "name": name,
+            "numberOfItems": len(list_items),
+            "itemListElement": list_items,
+        },
+    }
+    if about_name:
+        d["about"] = {"@type": "Thing", "name": about_name}
+    return d
 
 
 def breadcrumb_ld(path, crumb_items):
@@ -396,22 +493,22 @@ def set_page(s, idx):
 """
     ld = [
         breadcrumb_ld(path, [("포켓몬카드모아", "../"), ("확장팩 도감", "sets/"), (s["short"], None)]),
-        {
-            "@context": "https://schema.org",
-            "@type": "Product",
-            "name": s["name"],
-            "brand": {"@type": "Brand", "name": "포켓몬 카드 게임"},
-            "category": "포켓몬 카드 확장팩",
-            "releaseDate": s["release"],
-            "description": s["summary"],
-            "offers": {
-                "@type": "Offer",
-                "price": str(s["packPrice"]),
-                "priceCurrency": "KRW",
-                "availability": "https://schema.org/InStock",
-                "url": BASE + "/sets/" + sid + ".html",
-            },
-        },
+        collection_ld(
+            path,
+            f'{s["short"]} 확장팩 도감 — 정가·구성·대표 카드',
+            desc,
+            [
+                {"@type": "ListItem", "position": i, "name": c["name"]}
+                for i, c in enumerate(s["cards"], start=1)
+            ],
+            about_name=s["name"],
+        ),
+        article_ld(
+            path,
+            f'{s["short"]} 확장팩 정리 — 발매일·정가·대표 카드·시세',
+            desc,
+            section="확장팩 도감",
+        ),
     ]
     return path, page(
         path,
@@ -478,12 +575,11 @@ def sets_index_page():
 """
     ld = [
         breadcrumb_ld(path, [("포켓몬카드모아", "../"), ("확장팩 도감", None)]),
-        {
-            "@context": "https://schema.org",
-            "@type": "ItemList",
-            "name": "포켓몬 카드 확장팩 도감",
-            "numberOfItems": len(SETS),
-            "itemListElement": [
+        collection_ld(
+            path,
+            "포켓몬 카드 확장팩 도감 — 발매일·정가·시세 비교",
+            "포켓몬카드모아가 정리한 9개 확장팩의 발매일, 팩·박스 정가, 수록 카드 수, KREAM 한글판 시세 비교 목록입니다.",
+            [
                 {
                     "@type": "ListItem",
                     "position": i,
@@ -492,7 +588,8 @@ def sets_index_page():
                 }
                 for i, s in enumerate(SETS, start=1)
             ],
-        },
+            about_name="포켓몬 카드 게임 확장팩",
+        ),
     ]
     return path, page(
         path,
@@ -599,14 +696,12 @@ def guide_price():
 """
     ld = [
         breadcrumb_ld(path, [("포켓몬카드모아", "../"), ("가이드", "guides/"), ("정가 구매처 비교", None)]),
-        {
-            "@context": "https://schema.org",
-            "@type": "Article",
-            "headline": "포켓몬 카드 정가 구매처 비교 — 30th CELEBRATION 기준 6개 채널",
-            "dateModified": LAST_MOD,
-            "inLanguage": "ko",
-            "author": {"@type": "Organization", "name": SITE_NAME},
-        },
+        article_ld(
+            path,
+            "포켓몬 카드 정가 구매처 비교 — 30th CELEBRATION 기준 6개 채널",
+            "30th CELEBRATION 기준 포켓몬스토어 추첨, SSG·G마켓 공식인증샵, 티씨지박스, 이마트·롯데마트 등 마트, 편의점의 가격·배송비·구매 조건과 총액 계산법입니다.",
+            section="가이드",
+        ),
     ]
     return path, page(
         path,
@@ -722,14 +817,12 @@ def guide_cvs():
 """
     ld = [
         breadcrumb_ld(path, [("포켓몬카드모아", "../"), ("가이드", "guides/"), ("편의점 재고·입고 요일", None)]),
-        {
-            "@context": "https://schema.org",
-            "@type": "Article",
-            "headline": "편의점 포켓몬 카드 재고 확인법 — GS25·CU·세븐일레븐·이마트24",
-            "dateModified": LAST_MOD,
-            "inLanguage": "ko",
-            "author": {"@type": "Organization", "name": SITE_NAME},
-        },
+        article_ld(
+            path,
+            "편의점 포켓몬 카드 재고 확인법 — GS25·CU·세븐일레븐·이마트24",
+            "GS25·CU·세븐일레븐·이마트24에서 포켓몬 카드 재고를 확인하는 방법과 재고 숫자의 의미, 채널별 참고 입고 요일입니다.",
+            section="가이드",
+        ),
     ]
     return path, page(
         path,
@@ -829,14 +922,12 @@ def guide_market():
 """
     ld = [
         breadcrumb_ld(path, [("포켓몬카드모아", "../"), ("가이드", "guides/"), ("시세·팝수 읽기", None)]),
-        {
-            "@context": "https://schema.org",
-            "@type": "Article",
-            "headline": "포켓몬 카드 시세·팝수 읽는 법 — KREAM 체결가와 PSA·BRG 팝 리포트",
-            "dateModified": LAST_MOD,
-            "inLanguage": "ko",
-            "author": {"@type": "Organization", "name": SITE_NAME},
-        },
+        article_ld(
+            path,
+            "포켓몬 카드 시세·팝수 읽는 법 — KREAM 체결가와 PSA·BRG 팝 리포트",
+            "포켓몬 카드 정가와 시세의 차이, KREAM 슈링크·논슈링크 체결가 읽는 법, 박스 가격을 팩당 단가로 바꾸는 계산, 카드 번호로 팝수를 조회하는 순서입니다.",
+            section="가이드",
+        ),
     ]
     return path, page(
         path,
@@ -935,7 +1026,24 @@ def guides_index_page():
 <p>세트별 발매일·정가·수록 카드·시세는 도감에서 볼 수 있습니다.</p>
 <p><a class="cta" href="../sets/">확장팩 도감 전체 보기</a><a class="cta ghost" href="../">포켓몬카드모아 홈</a></p>
 """
-    ld = [breadcrumb_ld(path, [("포켓몬카드모아", "../"), ("가이드", None)])]
+    ld = [
+        breadcrumb_ld(path, [("포켓몬카드모아", "../"), ("가이드", None)]),
+        collection_ld(
+            path,
+            "포켓몬 카드 가이드 — 정가·재고·시세·FAQ",
+            "포켓몬 카드 정가 구매처 비교, 편의점 4사 재고·입고 요일 확인법, KREAM 시세와 팝수 읽는 법, 자주 묻는 질문을 한곳에 모은 가이드 목록입니다.",
+            [
+                {
+                    "@type": "ListItem",
+                    "position": i,
+                    "name": g["nav"],
+                    "url": f"{BASE}/guides/{g['slug']}.html",
+                }
+                for i, g in enumerate(GUIDES, start=1)
+            ],
+            about_name="포켓몬 카드 구매·시세 가이드",
+        ),
+    ]
     return path, page(
         path,
         f"포켓몬 카드 가이드 — 정가 구매처·편의점 재고·시세·FAQ | {SITE_NAME}",
