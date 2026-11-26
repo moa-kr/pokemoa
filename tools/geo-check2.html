@@ -3,16 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="robots" content="noindex, nofollow">
-<title>GEOCHECK2</title>
-<style>body{font:13px/1.5 ui-monospace,monospace;padding:16px}td,th{border:1px solid #ddd;padding:4px 6px;font-size:12px}</style>
-<script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=63b35e228dacdcc4d0e31f83a7738f22&libraries=services&autoload=false"></script>
+<title>GEOCHECK3</title>
+<script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=63b35e228dacdcc4d0e31f83a7738f22&libraries=services,clusterer,drawing&autoload=false"></script>
 </head>
 <body>
-<p>좌표 확인용 임시 페이지 2 — 공식 주소를 카카오 주소 검색으로 찾습니다(색인 제외).</p>
+<p>좌표 확인용 임시 페이지 3(색인 제외).</p>
 <pre id="out">RUNNING</pre>
 <script>
 (function () {
-  /* [id, 공식 주소, 장소 검색어] */
   var SHOPS = [
     ["용산", "서울특별시 용산구 한강대로23길 55 아이파크몰 리빙파크 8층", "pokemon 카드샵 용산 아이파크몰"],
     ["역삼", "서울특별시 강남구 논현로77길 9 태원빌딩 4층", "카드냥 역삼"],
@@ -31,41 +29,48 @@
     ["부산", "부산광역시 동래구 명륜로129번길 54 4층", "카드베이스 부산"],
     ["광주", "광주광역시 동구 중앙로160번길 22 2층", "화성스토어 광주"]
   ];
+  var state = { done: 0, total: SHOPS.length, rows: [], errors: [] };
+  window.__geo = state;
   var out = document.getElementById("out");
-  var rows = [];
-
+  window.onerror = function (msg, src, line) { state.errors.push(String(msg) + " @" + line); flush(); };
+  function flush() {
+    out.textContent = JSON.stringify(state);
+    document.title = state.done >= state.total ? "DONE3" : "RUNNING";
+  }
   function keyword(q) {
     return new Promise(function (resolve) {
-      new kakao.maps.services.Places().keywordSearch(q, function (data, status) {
-        if (status !== kakao.maps.services.Status.OK || !data || !data.length) return resolve(null);
-        resolve({ lat: Number(data[0].y), lng: Number(data[0].x), road: data[0].road_address_name || "", place: data[0].place_name || "" });
-      }, { size: 3, sort: kakao.maps.services.SortBy.ACCURACY });
+      try {
+        new kakao.maps.services.Places().keywordSearch(q, function (data, status) {
+          if (status !== kakao.maps.services.Status.OK || !data || !data.length) return resolve(null);
+          resolve({ lat: Number(data[0].y), lng: Number(data[0].x), road: data[0].road_address_name || "", place: data[0].place_name || "" });
+        }, { size: 3, sort: kakao.maps.services.SortBy.ACCURACY });
+      } catch (err) { state.errors.push("kw:" + q + ":" + err.message); resolve(null); }
     });
   }
   function address(addr) {
     return new Promise(function (resolve) {
-      new kakao.maps.services.Geocoder().addressSearch(addr, function (data, status) {
-        if (status !== kakao.maps.services.Status.OK || !data || !data.length) return resolve(null);
-        var hit = data[0];
-        resolve({ lat: Number(hit.y), lng: Number(hit.x), road: hit.road_address ? hit.road_address.address_name : "", kind: hit.address_type || "" });
-      }, { size: 3 });
+      try {
+        new kakao.maps.services.Geocoder().addressSearch(addr, function (data, status) {
+          if (status !== kakao.maps.services.Status.OK || !data || !data.length) return resolve(null);
+          var hit = data[0];
+          resolve({ lat: Number(hit.y), lng: Number(hit.x), road: hit.road_address ? hit.road_address.address_name : "" });
+        }, { size: 3 });
+      } catch (err) { state.errors.push("addr:" + addr + ":" + err.message); resolve(null); }
     });
   }
-
-  var chain = Promise.resolve();
-  SHOPS.forEach(function (s) {
-    chain = chain.then(function () {
-      return Promise.all([address(s[1]), keyword(s[2])]).then(function (res) {
-        rows.push({ id: s[0], addr: s[1], geocoder: res[0], keyword: res[1] });
-      });
+  function one(s) {
+    return Promise.all([address(s[1]), keyword(s[2])]).then(function (res) {
+      state.rows.push({ id: s[0], geocoder: res[0], keyword: res[1] });
+      state.done += 1;
+      flush();
     });
-  });
-  kakao.maps.load(function () {
-    chain.then(function () {
-      out.textContent = JSON.stringify(rows);
-      document.title = "DONE2";
-    });
-  });
+  }
+  function run(i) {
+    if (i >= SHOPS.length) { flush(); return; }
+    one(SHOPS[i]).then(function () { run(i + 1); });
+  }
+  if (!window.kakao || !kakao.maps) { state.errors.push("no kakao"); flush(); return; }
+  kakao.maps.load(function () { run(0); });
 })();
 </script>
 </body>
