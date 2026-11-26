@@ -1,5 +1,5 @@
 /* =========================================================================
- * 포켓몬카드모아 — 롯데마트·토이저러스 점포별 실시간 재고 (2026-11-26 v4.57)
+ * 포켓몬카드모아 — 롯데마트·토이저러스 점포별 실시간 재고 (2026-11-26 v4.59)
  *
  * · 롯데마트 모바일 도와센터(company.lottemart.com/mobiledowa)는 로그인·토큰 없이
  *   지역·매장·상품명으로 점포별 상품명·가격·재고 수량/품절을 HTML 로 돌려준다.
@@ -20,6 +20,12 @@
  * · 상품은 검색어 '포켓몬' 결과를 쓰되, 카드(TCG) 상품은 이름으로 골라낸다.
  *   2026-11-26 실측: 도와센터에는 포켓몬 TCG 부스터 상품이 없고 완구·문구·카드용품만
  *   있어, 카드가 0건이면 그 사실을 그대로 적고 포켓몬 상품 재고 수만 함께 알린다.
+ *
+ * · 시·도 판정(2026-11-26 v4.59): 지역 선택(드롭다운)은 고른 시·도 하나만 본다.
+ *   내 위치·지도 이동·?lat=&lng= 로 찾을 때는 사각 경계(BOXES)가 성겨 서울 끝(광명 등)이
+ *   '서울' 하나로만 잡혀 경기 점포를 못 불렀다. 그래서 좌표 조회에서는 사각 경계가 고른
+ *   시·도 + 그 좌표 반경+4km 안에 시·군·구 좌표·토이저러스 좌표가 있는 인접 시·도를
+ *   가까운 순으로 최대 2개만 함께 조회한다(areasForPoint).
  * ========================================================================= */
 window.PokeMoMoaLotte = (function () {
   "use strict";
@@ -54,6 +60,9 @@ window.PokeMoMoaLotte = (function () {
     { area: "전북", la: [35.25, 36.15], ln: [126.25, 127.95] },
     { area: "전남", la: [34.15, 35.45], ln: [125.85, 127.85] }
   ];
+
+  var MAX_AREAS = 2;       /* 좌표 조회에서 함께 볼 시·도 수 상한(경계 지역만 인접 시·도 추가) */
+  var AREA_MARGIN_M = 4000; /* 인접 시·도를 함께 볼 여유 — 시·군·구 좌표가 반경보다 이만큼 밖이어도 포함 */
 
   var baseState = { tried: {}, ok: null };   /* 이번 세션에서 확인한 중계 주소 */
   var storeCache = {};                        /* area -> { at, list } */
@@ -99,7 +108,8 @@ window.PokeMoMoaLotte = (function () {
     });
   }
 
-  /* 중계 주소를 한 번만 확인한다 — stores 요청 하나로 어느 쪽이 살아 있는지 본다. */
+  /* 중계 주소를 한 번만 확인한다 — stores 요청 하나로 어느 쪽이 살아 있는지 본다.
+     확인하며 받은 점포 목록은 그대로 캐시에 넣어, 같은 시·도를 다시 부르지 않는다. */
   function pickBase(area) {
     if (baseState.ok) return Promise.resolve(baseState.ok);
     var list = candidates().filter(function (b) { return !baseState.tried[b]; });
@@ -107,20 +117,30 @@ window.PokeMoMoaLotte = (function () {
     var base = list[0];
     baseState.tried[base] = true;
     return getJson(base + "/stores?area=" + encodeURIComponent(area)).then(function (res) {
-      if (res.ok) { baseState.ok = base; return base; }
+      if (res.ok) {
+        baseState.ok = base;
+        if (res.data && res.data.stores && res.data.stores.length) {
+          storeCache[area] = { at: now(), list: res.data.stores };
+        }
+        return base;
+      }
       return pickBase(area);
     });
   }
 
-  function areaOfRegion(regionId, center) {
-    if (regionId && D.regions) {
-      for (var i = 0; i < D.regions.length; i++) {
-        if (D.regions[i].id !== regionId) continue;
-        var prov = String(D.regions[i].province || "");
-        if (AREAS.indexOf(prov) >= 0) return prov;
-      }
+  /* 지역 id → 시·도 (없거나 도와센터가 모르는 시·도면 "") */
+  function provinceOfRegion(regionId) {
+    if (!regionId || !D.regions) return "";
+    for (var i = 0; i < D.regions.length; i++) {
+      if (D.regions[i].id !== regionId) continue;
+      var prov = String(D.regions[i].province || "");
+      return AREAS.indexOf(prov) >= 0 ? prov : "";
     }
-    return areaOfPoint(center);
+    return "";
+  }
+
+  function areaOfRegion(regionId, center) {
+    return provinceOfRegion(regionId) || areaOfPoint(center);
   }
 
   function areaOfPoint(center) {
@@ -130,6 +150,72 @@ window.PokeMoMoaLotte = (function () {
       if (center.lat >= b.la[0] && center.lat <= b.la[1] && center.lng >= b.ln[0] && center.lng <= b.ln[1]) return b.area;
     }
     return "";
+  }
+
+  /* 주소 앞머리로 시·도 — data.js 에 넣어 둔 토이저러스 좌표를 어느 시·도로 볼지 정한다 */
+  function areaOfAddress(addr) {
+    var a = String(addr || "").replace(/^\s+/, "");
+    if (/^전남광주/.test(a)) return "광주";   /* 통합 표기(토이저러스 수완점) */
+    for (var i = 0; i < AREAS.length; i++) if (a.indexOf(AREAS[i]) === 0) return AREAS[i];
+    return "";
+  }
+
+  /* 그 시·도에서 가장 가까운 시·군·구 좌표(data.js regions)까지 거리(m) */
+  function regionDistance(center, area) {
+    var best = Infinity;
+    var list = D.regions || [];
+    for (var i = 0; i < list.length; i++) {
+      if (String(list[i].province || "") !== area) continue;
+      if (!isFinite(list[i].lat) || !isFinite(list[i].lng)) continue;
+      var d = meters(center, list[i]);
+      if (d < best) best = d;
+    }
+    return best;
+  }
+
+  /* 그 시·도에서 가장 가까운 내장 점포 좌표(토이저러스 13곳)까지 거리(m) */
+  function branchDistance(center, area) {
+    var best = Infinity;
+    for (var i = 0; i < TOYS.length; i++) {
+      var t = TOYS[i];
+      if (!isFinite(t.lat) || !isFinite(t.lng)) continue;
+      if (areaOfAddress(t.addr) !== area) continue;
+      var d = meters(center, t);
+      if (d < best) best = d;
+    }
+    return best;
+  }
+
+  /* 좌표 조회에서 함께 볼 시·도 목록 — 가까운 순, 최대 MAX_AREAS.
+     첫 자리는 지금까지처럼 사각 경계(BOXES)가 고른 시·도다. 두 번째부터는 그 좌표에서
+     반경+4km 안에 시·군·구 좌표나 확인된 점포 좌표가 있는 시·도만 고른다 — 전국을 다
+     부르지 않고, 경계에 붙은 좌표(광명·부천·계양 등)에서 인접 시·도 점포를 놓치지 않는다. */
+  function areasForPoint(center, radius) {
+    if (!center || !isFinite(center.lat) || !isFinite(center.lng)) return [];
+    var reach = (Number(radius) || 0) + AREA_MARGIN_M;
+    var primary = areaOfPoint(center);
+    var cand = [];
+    for (var i = 0; i < AREAS.length; i++) {
+      var area = AREAS[i];
+      if (area === primary) continue;
+      var near = Math.min(regionDistance(center, area), branchDistance(center, area));
+      if (near > reach) continue;
+      cand.push({ area: area, near: near, order: i });
+    }
+    cand.sort(function (x, y) {
+      if (x.near !== y.near) return x.near - y.near;
+      return x.order - y.order;
+    });
+    var out = primary ? [primary] : [];
+    for (var j = 0; j < cand.length && out.length < MAX_AREAS; j++) out.push(cand[j].area);
+    return out;
+  }
+
+  /* 이번 조회에서 볼 시·도 — 지역 선택이면 고른 시·도 하나, 좌표면 경계 보완까지 */
+  function areasForQuery(regionId, center, radius) {
+    var one = provinceOfRegion(regionId);
+    if (one) return [one];
+    return areasForPoint(center, radius);
   }
 
   function normName(name) {
@@ -216,9 +302,11 @@ window.PokeMoMoaLotte = (function () {
     });
   }
 
-  /* 점포 재고 — 3분 캐시. page 1 이 20건을 넘으면 page 2 까지만 더 읽는다. */
+  /* 점포 재고 — 3분 캐시. page 1 이 20건을 넘으면 page 2 까지만 더 읽는다.
+     캐시 열쇠에 시·도를 넣는다 — 인접 시·도 목록을 함께 보므로 코드가 겹쳐도 섞이지 않게. */
   function loadStock(base, area, code) {
-    var hit = stockCache[code];
+    var cacheKey = (area || "") + ":" + code;
+    var hit = stockCache[cacheKey];
     if (hit && now() - hit.at < 3 * 60 * 1000) return Promise.resolve(hit.val);
     var url = base + "/stock?market=" + encodeURIComponent(code) +
       (area ? "&area=" + encodeURIComponent(area) : "") +
@@ -254,7 +342,7 @@ window.PokeMoMoaLotte = (function () {
         cardStock: cardItems.filter(function (c) { return Number(c.stock) > 0; }).length,
         at: now()
       };
-      stockCache[code] = { at: now(), val: val };
+      stockCache[cacheKey] = { at: now(), val: val };
       return val;
     }
   }
@@ -289,6 +377,28 @@ window.PokeMoMoaLotte = (function () {
     return geoPending[name];
   }
 
+  /* 시·도별로 번갈아 고른다 — 두 시·도 목록을 함께 볼 때 한쪽 목록이 위치 확인 자리를
+     다 차지하지 않게(위치 확인은 8곳까지만 한다) */
+  function interleaveByArea(list, cap) {
+    var order = [];
+    var byArea = {};
+    list.forEach(function (st) {
+      var k = st.area || "";
+      if (!byArea[k]) { byArea[k] = []; order.push(k); }
+      byArea[k].push(st);
+    });
+    var out = [];
+    for (var round = 0; out.length < cap; round++) {
+      var added = false;
+      for (var i = 0; i < order.length && out.length < cap; i++) {
+        var bucket = byArea[order[i]];
+        if (round < bucket.length) { out.push(bucket[round]); added = true; }
+      }
+      if (!added) break;
+    }
+    return out;
+  }
+
   /* 카카오 대형마트 마커(rows)와 도와센터 점포 이름을 맞춘다 */
   function matchRows(stores, rows) {
     var used = {};
@@ -315,14 +425,38 @@ window.PokeMoMoaLotte = (function () {
     var center = opts.center || null;
     var radius = Number(opts.radius) || 3000;
     var rows = (opts.rows || []).filter(function (r) { return r && isFinite(r.lat) && isFinite(r.lng); });
-    var area = areaOfRegion(opts.regionId, center);
+    var areas = areasForQuery(opts.regionId, center, radius);
     var emit = typeof opts.progress === "function" ? opts.progress : noop;
-    if (!area) return Promise.resolve({ ok: false, stores: [], reason: "area-unknown" });
+    if (!areas.length) return Promise.resolve({ ok: false, stores: [], reason: "area-unknown" });
 
-    emit({ phase: "stores", done: 0, total: 1 });
-    return pickBase(area).then(function (base) {
+    emit({ phase: "stores", done: 0, total: areas.length });
+    return pickBase(areas[0]).then(function (base) {
       if (!base) return { ok: false, stores: [], reason: "no-relay" };
-      return loadStores(base, area).then(function (list) {
+      /* 시·도 목록은 6시간 캐시라, 인접 시·도를 더 봐도 요청은 처음 한 번씩만 늘어난다 */
+      var areaDone = 0;
+      var listJobs = areas.map(function (area) {
+        return loadStores(base, area).then(function (list) {
+          areaDone += 1;
+          emit({ phase: "stores", done: areaDone, total: areas.length });
+          return { area: area, list: list || [] };
+        }).catch(function () {
+          areaDone += 1;
+          emit({ phase: "stores", done: areaDone, total: areas.length });
+          return { area: area, list: [] };
+        });
+      });
+      return Promise.all(listJobs).then(function (parts) {
+        /* 시·도마다 점포에 그 시·도를 붙여 하나로 합친다(같은 코드는 한 번만) */
+        var list = [];
+        var seenCode = {};
+        parts.forEach(function (part) {
+          (part.list || []).forEach(function (st) {
+            var code = String((st && st.code) || "");
+            if (!code || seenCode[code]) return;
+            seenCode[code] = 1;
+            list.push({ code: code, name: st.name, area: part.area });
+          });
+        });
         if (!list.length) return { ok: false, stores: [], reason: "no-store-list" };
         var pairs = matchRows(list, rows);
         var taken = {};
@@ -338,7 +472,7 @@ window.PokeMoMoaLotte = (function () {
            토이저러스는 좌표표(data.js)를 쓰므로 카카오 호출이 없다 — 반경 안 13곳을 다 본다.
            표에 없는 점포는 카카오 키워드 검색이 필요해 8곳까지만 본다(세션 캐시). */
         var unmatched = pairs.filter(function (p) { return !p.row; }).map(function (p) { return p.store; });
-        var others = unmatched.filter(function (st) { return !isToy(st.name); }).slice(0, 8);
+        var others = interleaveByArea(unmatched.filter(function (st) { return !isToy(st.name); }), 8);
         var geoJobs = unmatched.filter(function (st) { return isToy(st.name); })
           .concat(others)
           .map(function (st) {
@@ -395,7 +529,7 @@ window.PokeMoMoaLotte = (function () {
           emit({ phase: "stock", done: 0, total: picked.length });
           var done = 0;
           var jobs = picked.map(function (item) {
-            return loadStock(base, area, item.store.code).then(function (val) {
+            return loadStock(base, item.store.area || areas[0], item.store.code).then(function (val) {
               done += 1;
               emit({ phase: "stock", done: done, total: picked.length });
               return { item: item, val: val };
@@ -423,14 +557,15 @@ window.PokeMoMoaLotte = (function () {
                 at: x.val.at
               };
             });
-            return { ok: true, area: area, base: base, stores: stores, checked: picked.length };
+            return { ok: true, area: areas[0], areas: areas, base: base, stores: stores, checked: picked.length };
           });
         });
       });
     });
   }
 
-  return { query: query, areaOfPoint: areaOfPoint, normName: normName, chainOf: chainOf, reset: function () {
+  return { query: query, areaOfPoint: areaOfPoint, areasForPoint: areasForPoint, areasForQuery: areasForQuery,
+    maxAreas: MAX_AREAS, areaMarginM: AREA_MARGIN_M, normName: normName, chainOf: chainOf, reset: function () {
     baseState = { tried: {}, ok: null };
     storeCache = {}; stockCache = {}; geoCache = {};
   } };
