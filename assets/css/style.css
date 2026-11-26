@@ -3385,6 +3385,23 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .off-chip.is-active { background: var(--brand, var(--navy)); border-color: var(--brand, var(--navy)); color: #fff; }
 .off-chip.is-active b { color: rgba(255, 255, 255, 0.85); }
 .off-chip.is-muted { opacity: 0.45; }
+/* 반경 안에 없는 오프라인 판매처 안내 — "0곳"만 보이면 고장으로 보여서
+   가장 가까운 곳을 거리와 함께 적는다(2026-11-26) */
+.offline-note {
+  grid-column: 1 / -1;
+  grid-row: 3;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin: -4px 0 10px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.offline-note[hidden] { display: none; }
+.offline-note span { display: inline-flex; gap: 4px; }
+.offline-note span::before { content: "·"; color: var(--muted-2); }
+.offline-note span:first-child::before { content: ""; }
 .offline-toggle {
   display: inline-flex;
   align-items: center;
@@ -3404,11 +3421,15 @@ button { font: inherit; color: inherit; cursor: pointer; }
   .offline-bar .row-label { grid-column: 1; grid-row: 1; }
   .offline-chips { grid-column: 2; grid-row: 1; flex-wrap: wrap; }
   .offline-toggle { grid-column: 3; grid-row: 1; }
+  .offline-note { grid-row: 2; }
 }
 
 /* 지도 범례 · 배지 */
 .map-legend .l-offline { background: #7c4dff; }
 .chip-offline { background: #f0eaff; color: #5334d6; font-weight: 800; }
+/* 롯데마트·토이저러스 도와센터 실시간 재고(2026-11-26) — 마트 파란색 계열 */
+.chip.chip-lotte { background: #e6effd; border: 1px solid #c4d8f8; color: #1f4fbe; font-weight: 700; }
+.chip.chip-lotte.is-none { background: #f2f4f8; border: 1px solid #e0e5ee; color: #5d6b80; font-weight: 700; }
 .pm-pill.is-offline { border-color: rgba(16, 31, 60, 0.18); }
 .store-item.is-offline .s-name { font-weight: 700; }
 

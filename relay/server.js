@@ -186,6 +186,17 @@
  *   · v2.1 의 기존 경로·동작은 바꾸지 않았습니다(gs25StockForItem 은 조회 반경 인자만 선택적으로
  *     받게 했고, 주지 않으면 예전과 똑같이 GS25_RADIUS 를 씁니다).
  *
+ * 2026-11-26 개정(v2.3) — 롯데마트·토이저러스 점포별 실시간 재고
+ *   · 새 경로 `GET /api/lottemart/stores?area=서울` — 롯데마트 모바일 도와센터
+ *     (company.lottemart.com/mobiledowa)가 돌려주는 지역별 매장 목록(코드·이름). 6시간 캐시.
+ *   · 새 경로 `GET /api/lottemart/stock?area=서울&market=2302&q=포켓몬&page=1` —
+ *     그 점포의 상품명·가격·재고 수량/품절(`11 개` / `품절`). 3분 캐시.
+ *   · 왜 중계가 필요한가: 도와센터는 로그인·토큰은 없지만 해외 IP 를 막고(미국 리전 서버에서
+ *     연결 타임아웃), 브라우저에서 직접 부르면 CORS 로 막힙니다. 한국 IP 인 이 태블릿이
+ *     대신 읽어 사이트에 넘깁니다.
+ *   · 이 경로만 따로 분당 90회 제한(RELAY_LOTTE_RATE_LIMIT_PER_MIN). 기존 편의점 조회
+ *     제한(분당 15회)과 섞지 않습니다. 캐시 적중은 세지 않습니다.
+ *
  * 주의: 이 서버는 조회만 합니다. 주문·결제·선점 같은 쓰기 요청은 없습니다
  *       (자기 파일을 바꾸는 /admin/update 만 예외).
  */
@@ -198,7 +209,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const cp = require('node:child_process');
 
-const VERSION = '2.2';
+const VERSION = '2.3';
 const SERVICE = 'pokemoa-relay';
 
 const PORT = Number(process.env.PORT || 3100);
@@ -3023,6 +3034,8 @@ const HELP_HTML = `<!doctype html><html lang="ko"><meta charset="utf-8">
 <li><code>GET /api/seven</code> — 세븐일레븐만 따로(지역명·점포·수량)</li>
 <li><code>GET /api/gs25</code> — GS25만 따로(로그인 세션 상태·상품·매장별 수량)</li>
 <li><code>GET /api/gs25-grid?lat=36.0733&amp;lng=129.3947&amp;radius=3000&amp;items=6970834313420,6970834313864</code> — GS25 상품 지정 3km 격자(팜사이즈 원더 피규어)</li>
+<li><code>GET /api/lottemart/stores?area=서울</code> — 롯데마트·토이저러스 매장 목록(도와센터, 6시간 캐시)</li>
+<li><code>GET /api/lottemart/stock?area=서울&amp;market=2302&amp;q=포켓몬</code> — 점포별 상품명·가격·재고 수량/품절(3분 캐시)</li>
 </ul>
 <p style="color:#5b6b85">조회 전용입니다. 주문·결제·선점 요청은 만들지 않습니다.</p>
 </body></html>`;
@@ -3236,6 +3249,233 @@ async function handleAdminUpdate(req, res) {
   } finally {
     updateGuard.running = false;
   }
+}
+
+/* ───────────────── 롯데마트·토이저러스 도와센터 중계 (v2.3, 2026-11-26) ─────────────────
+   포켓몬카드모아 지도가 롯데마트·토이저러스 점포별 실시간 재고를 받아 갈 수 있게,
+   롯데마트 모바일 도와센터(company.lottemart.com/mobiledowa)의 공개 HTML 을 대신 읽어
+   JSON 으로 돌려줍니다. 로그인·토큰은 쓰지 않습니다.
+     GET /api/lottemart/stores?area=서울
+     GET /api/lottemart/stock?area=서울&market=2302&q=포켓몬&page=1
+   도와센터는 해외 IP 를 막아서(미국 리전 서버에서는 연결 자체가 안 됨) 집 태블릿처럼
+   한국 IP 에서 도는 이 중계가 필요합니다. 매장 목록 6시간 · 재고 3분 캐시. */
+const LOTTE_BASE = String(process.env.LOTTEMART_BASE_URL || 'https://company.lottemart.com/mobiledowa').replace(/\/+$/, '');
+const LOTTE_TIMEOUT_MS = Number(process.env.LOTTEMART_TIMEOUT_MS || 9000);
+const LOTTE_STORE_TTL_MS = 6 * 60 * 60 * 1000;
+const LOTTE_STOCK_TTL_MS = 3 * 60 * 1000;
+const LOTTE_AREAS = ['서울', '경기', '인천', '강원', '충북', '충남', '대전', '경북', '경남', '대구', '부산', '울산', '전북', '전남', '광주', '제주'];
+const lotteCache = new Map();
+const lottePending = new Map();
+
+function lotteArea(value) {
+  const text = String(value || '').trim();
+  if (!text) return '';
+  if (text === '기타') return '제주';
+  if (LOTTE_AREAS.indexOf(text) >= 0) return text;
+  const short = text.replace(/(특별시|광역시|특별자치시|특별자치도|도|시)$/g, '').trim();
+  return LOTTE_AREAS.indexOf(short) >= 0 ? short : '';
+}
+
+function lotteUpstreamArea(area) {
+  return area === '제주' ? '기타' : area;
+}
+
+function lotteDecode(text) {
+  return String(text || '')
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&amp;/gi, '&')
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function lotteNum(text) {
+  const cleaned = String(text || '').replace(/[^\d.-]/g, '');
+  if (!cleaned) return null;
+  const n = Number(cleaned);
+  return Number.isFinite(n) ? n : null;
+}
+
+function lotteStockState(text) {
+  const raw = lotteDecode(text);
+  if (!raw) return { stock: null, stockText: '', soldOut: false };
+  if (/품절|없음/.test(raw)) return { stock: 0, stockText: '품절', soldOut: true };
+  const n = lotteNum(raw);
+  if (n === null) return { stock: null, stockText: raw, soldOut: false };
+  return { stock: n, stockText: raw, soldOut: n <= 0 };
+}
+
+function lotteParseStores(html) {
+  const out = [];
+  const seen = {};
+  const re = /<option\s+value="(\d{3,6})"\s*>([\s\S]*?)<\/option>/gi;
+  let m;
+  while ((m = re.exec(String(html || '')))) {
+    const name = lotteDecode(m[2]);
+    if (!name || seen[m[1]]) continue;
+    seen[m[1]] = 1;
+    out.push({ code: m[1], name: name });
+  }
+  return out;
+}
+
+function lotteParseStock(html) {
+  const src = String(html || '');
+  const totalMatch = /검색결과\s*:\s*([\d,]+)\s*건/.exec(src);
+  const total = totalMatch ? Number(totalMatch[1].replace(/,/g, '')) : null;
+  const pagesMatch = /더보기\s*\(\s*(\d+)\s*\/\s*(\d+)\s*\)/.exec(src);
+  const items = [];
+  const liRe = /<li>([\s\S]*?)<\/li>/gi;
+  let m;
+  while ((m = liRe.exec(src))) {
+    const chunk = m[1];
+    const nameMatch = /class="prod-name">([\s\S]*?)<\/div>/.exec(chunk);
+    if (!nameMatch) continue;
+    const name = lotteDecode(nameMatch[1]);
+    if (!name) continue;
+    const countMatch = /class="prod-count">([\s\S]*?)<\/div>/.exec(chunk);
+    const barcodeMatch = /<!--\s*(\d{8,14})\s*-->/.exec(countMatch ? countMatch[1] : chunk);
+    const priceMatch = /가격[^<]*<\/th>\s*<td>([\s\S]*?)<\/td>/i.exec(chunk);
+    const stockMatch = /재고[^<]*<\/th>\s*<td>([\s\S]*?)<\/td>/i.exec(chunk);
+    const priceText = priceMatch ? lotteDecode(priceMatch[1]) : '';
+    const st = lotteStockState(stockMatch ? stockMatch[1] : '');
+    items.push({
+      name: name,
+      spec: countMatch ? lotteDecode(countMatch[1].replace(/<!--[\s\S]*?-->/g, ' ')) : '',
+      barcode: barcodeMatch ? barcodeMatch[1] : '',
+      price: lotteNum(priceText),
+      priceText: priceText,
+      stock: st.stock,
+      stockText: st.stockText,
+      soldOut: st.soldOut
+    });
+  }
+  return { total: total, pages: pagesMatch ? Number(pagesMatch[2]) : (total ? 1 : 0), items: items };
+}
+
+async function lotteFetchText(pathAndQuery) {
+  const res = await fetch(LOTTE_BASE + pathAndQuery, {
+    headers: {
+      'user-agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1',
+      accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+      'accept-language': 'ko-KR,ko;q=0.9',
+      referer: LOTTE_BASE + '/'
+    },
+    redirect: 'follow',
+    signal: AbortSignal.timeout(LOTTE_TIMEOUT_MS)
+  });
+  const text = await res.text();
+  if (!res.ok) {
+    const err = new Error('lottemart HTTP ' + res.status);
+    err.upstreamStatus = res.status;
+    throw err;
+  }
+  return text;
+}
+
+function lotteCached(key, ttl) {
+  const hit = lotteCache.get(key);
+  if (!hit) return null;
+  if (Date.now() - hit.at > ttl) { lotteCache.delete(key); return null; }
+  return hit.value;
+}
+
+function lotteRemember(key, value) {
+  if (lotteCache.size > 240) {
+    const first = lotteCache.keys().next();
+    if (!first.done) lotteCache.delete(first.value);
+  }
+  lotteCache.set(key, { at: Date.now(), value: value });
+  return value;
+}
+
+/* 롯데마트 조회는 한 번의 지도 조회에 매장 목록 1건 + 점포 재고 6건 안팎을 부른다.
+   기존 편의점 조회 제한(분당 15건)과 섞으면 사이트가 금방 링을 수 있으므로,
+   이 경로만 따로 분당 제한을 둔다(캐시 응답은 세지 않는다). */
+const LOTTE_RATE_PER_MIN = Math.max(10, Number(process.env.RELAY_LOTTE_RATE_LIMIT_PER_MIN || 90));
+const lotteGuard = { perIp: new Map(), limitedCount: 0, lastLimitedAt: '' };
+function countLotteRate(ip) {
+  const now = Date.now();
+  const list = (lotteGuard.perIp.get(ip) || []).filter((at) => now - at < RATE_WINDOW_MS);
+  if (list.length >= LOTTE_RATE_PER_MIN) {
+    lotteGuard.perIp.set(ip, list);
+    lotteGuard.limitedCount += 1;
+    lotteGuard.lastLimitedAt = new Date().toISOString();
+    return false;
+  }
+  list.push(now);
+  lotteGuard.perIp.set(ip, list);
+  if (lotteGuard.perIp.size > 2000) {
+    for (const [key, times] of lotteGuard.perIp) {
+      if (!times.length || now - times[times.length - 1] > RATE_WINDOW_MS) lotteGuard.perIp.delete(key);
+      if (lotteGuard.perIp.size <= 800) break;
+    }
+  }
+  return true;
+}
+
+async function lotteStores(area) {
+  const key = 'stores:' + area;
+  const hit = lotteCached(key, LOTTE_STORE_TTL_MS);
+  if (hit) return { ok: true, area: area, stores: hit, fetchedAt: new Date().toISOString(), cached: true };
+  if (lottePending.has(key)) return lottePending.get(key);
+  const job = (async () => {
+    const html = await lotteFetchText('/inc/asp/search_market_list.asp?p_area=' + encodeURIComponent(lotteUpstreamArea(area)) + '&p_type=1');
+    const stores = lotteParseStores(html);
+    lotteRemember(key, stores);
+    return { ok: true, area: area, stores: stores, fetchedAt: new Date().toISOString(), cached: false };
+  })().finally(() => { lottePending.delete(key); });
+  lottePending.set(key, job);
+  return job;
+}
+
+async function lotteStock(query) {
+  const area = lotteArea(query.area);
+  const market = /^\d{3,6}$/.test(String(query.market || '').trim()) ? String(query.market).trim() : '';
+  const q = String(query.q || '').replace(/\s+/g, ' ').trim().slice(0, 30);
+  const page = Math.min(30, Math.max(1, Math.floor(Number(query.page) || 1)));
+  if (!market) return { ok: false, status: 400, error: 'market_required' };
+  if (q.replace(/\s/g, '').length < 2) return { ok: false, status: 400, error: 'query_too_short' };
+  const key = 'stock:' + [area, market, q, page].join('|');
+  const hit = lotteCached(key, LOTTE_STOCK_TTL_MS);
+  if (hit) return Object.assign({}, hit, { cached: true });
+  if (lottePending.has(key)) return lottePending.get(key);
+  const job = (async () => {
+    let path;
+    if (page > 1) {
+      path = '/inc/asp/search_product_list.asp?p_market=' + encodeURIComponent(market) +
+        '&p_schWord=' + encodeURIComponent(q) + '&page=' + page;
+    } else {
+      path = '/product/search_product.asp?p_market=' + encodeURIComponent(market) +
+        '&p_schWord=' + encodeURIComponent(q) +
+        (area ? '&p_area=' + encodeURIComponent(lotteUpstreamArea(area)) : '');
+    }
+    const html = await lotteFetchText(path);
+    const parsed = lotteParseStock(html);
+    if (!parsed.items.length && parsed.total === null) {
+      return { ok: false, status: 502, error: 'parse_failed' };
+    }
+    const payload = {
+      ok: true,
+      area: area,
+      market: market,
+      q: q,
+      page: page,
+      pages: parsed.pages,
+      total: parsed.total,
+      items: parsed.items,
+      fetchedAt: new Date().toISOString(),
+      cached: false
+    };
+    lotteRemember(key, payload);
+    return payload;
+  })().finally(() => { lottePending.delete(key); });
+  lottePending.set(key, job);
+  return job;
 }
 
 const server = http.createServer(async (req, res) => {
@@ -3643,13 +3883,61 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
+    if (path === '/api/lottemart/stores') {
+      const area = lotteArea(url.searchParams.get('area'));
+      if (!area) {
+        sendJson(res, 400, { ok: false, error: '지역(area)은 서울·경기·인천 등 17개 시·도 중 하나여야 합니다.' });
+        return;
+      }
+      if (!lotteCached('stores:' + area, LOTTE_STORE_TTL_MS) && !countLotteRate(clientIp(req))) {
+        sendRateLimited(res);
+        return;
+      }
+      try {
+        const value = await lotteStores(area);
+        sendJson(res, 200, value);
+        console.log(`[lottemart] ${area} 매장 ${value.stores.length}곳`);
+      } catch (err) {
+        sendJson(res, 502, {
+          ok: false,
+          error: err && err.upstreamStatus ? 'upstream_http_' + err.upstreamStatus : (/timeout|abort/i.test(String((err && err.message) || '')) ? 'upstream_timeout' : 'upstream_unreachable'),
+          detail: (err && err.message) || ''
+        });
+      }
+      return;
+    }
+
+    if (path === '/api/lottemart/stock') {
+      if (!countLotteRate(clientIp(req))) {
+        sendRateLimited(res);
+        return;
+      }
+      const value = await lotteStock({
+        area: url.searchParams.get('area'),
+        market: url.searchParams.get('market'),
+        q: url.searchParams.get('q'),
+        page: url.searchParams.get('page')
+      }).catch((err) => ({
+        ok: false,
+        status: 502,
+        error: /timeout|abort/i.test(String((err && err.message) || '')) ? 'upstream_timeout' : 'upstream_unreachable',
+        detail: (err && err.message) || ''
+      }));
+      if (!value.ok) {
+        sendJson(res, value.status === 400 ? 400 : 502, { ok: false, error: value.error, detail: value.detail || '' });
+        return;
+      }
+      sendJson(res, 200, value);
+      return;
+    }
+
     if (path === '/' || path === '/index.html') {
       res.writeHead(200, { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' });
       res.end(HELP_HTML);
       return;
     }
 
-    sendJson(res, 404, { ok: false, error: '없는 경로입니다. /health, /api/nearby, /api/gs25-grid, /api/diag 를 쓰세요.' });
+    sendJson(res, 404, { ok: false, error: '없는 경로입니다. /health, /api/nearby, /api/gs25-grid, /api/diag, /api/lottemart/stores 를 쓰세요.' });
   } catch (err) {
     guard.errorCount += 1;
     guard.lastErrorAt = new Date().toISOString();

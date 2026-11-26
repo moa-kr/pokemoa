@@ -2179,7 +2179,7 @@ window.POKEMOA_DATA = (function () {
     { id: "cardshop", label: "공인 카드샵", short: "카드샵" }
   ];
   /* 포켓몬코리아 「포켓몬 카드 게임 자판기」 페이지가 불러오는 공식 목록
-     (https://www.pokemonkorea.co.kr/card_vending_machine → venderlist.json, 178곳 중 좌표 확인 176곳 · 2026-11-18) */
+     (https://www.pokemonkorea.co.kr/card_vending_machine → venderlist.json, 178곳 · 176곳은 2026-11-18, 나머지 2곳은 2026-11-26 주소로 좌표 확인) */
   var vendingPoints = [
     { n: "CGV 구로점", b: "CGV", k: "cinema", a: "서울특별시 구로구 구로중앙로 152", la: 37.50147, ln: 126.882261 },
     { n: "CGV 등촌점", b: "CGV", k: "cinema", a: "서울특별시 강서구 공항대로45길 63", la: 37.557974, ln: 126.855998 },
@@ -2356,27 +2356,34 @@ window.POKEMOA_DATA = (function () {
     { n: "이마트 월배점", b: "이마트", k: "mart", a: "대구광역시 달서구 진천로 92", la: 35.8173, ln: 128.523548 },
     { n: "이마트 김해점", b: "이마트", k: "mart", a: "경상남도 김해시 김해대로 2232", la: 35.230292, ln: 128.871831 },
     { n: "이마트 양산점", b: "이마트", k: "mart", a: "경상남도 양산시 양산역6길 12", la: 35.336882, ln: 129.02647 },
-    { n: "이마트 천안서북점", b: "이마트", k: "mart", a: "충청남도 천안시 서북구 삼성대로 20", la: 36.838695, ln: 127.122334 }
+    { n: "이마트 천안서북점", b: "이마트", k: "mart", a: "충청남도 천안시 서북구 삼성대로 20", la: 36.838695, ln: 127.122334 },
+    /* 2026-11-26 보강 — 공식 목록에는 있으나 좌표가 비어 있던 2곳(주소로 확인) */
+    { n: "롯데마트 평촌점", b: "롯데마트", k: "mart", a: "경기도 안양시 동안구 시민대로160번길 20", la: 37.388582, ln: 126.950259 },
+    { n: "롯데마트 롯데아울렛 파주점", b: "롯데마트", k: "mart", a: "경기도 파주시 회동길 390", la: 37.717819, ln: 126.693762 },
   ];
   /* 포켓몬코리아 「포켓몬 카드샵」 목록 16곳 (https://www.pokemonkorea.co.kr/pokemon_cardshop, 2026-11-18).
-     q = 카카오 장소 검색으로 좌표를 확인할 때 쓰는 검색어. */
+     lat·lng 는 2026-11-26 카카오 주소 검색(Geocoder)으로 공식 주소를 직접 찾아 넣은 값입니다.
+     예전에는 지도가 열릴 때마다 카카오 키워드 검색(q)으로 좌표를 구했는데, 검색이 실패하면
+     그 카드샵이 영구히 사라지고 검색 결과가 다른 동네 매장이면 엉뚱한 곳에 찍혔습니다
+     (실측: 'TCG라인 구리' → 성남, '카드롤 대전' → 검색 실패). 이제 좌표는 고정값을 먼저 쓰고,
+     q 는 좌표가 없는 항목의 예비 수단으로만 남깁니다. */
   var cardShops = [
-    { id: "용산", name: "포켓몬 카드샵 용산", addr: "서울특별시 용산구 한강대로23길 55 아이파크몰 리빙파크 8층", q: "pokemon 카드샵 용산 아이파크몰", url: "https://www.pokemonkorea.co.kr/pokemon_cardshop/menu329" },
-    { id: "역삼", name: "포켓몬 카드샵 카드냥 역삼", addr: "서울특별시 강남구 논현로77길 9 태원빌딩 4층", q: "카드냥 역삼", url: "https://www.pokemonkorea.co.kr/pokemon_cardshop/menu178" },
-    { id: "목동", name: "포켓몬 카드샵 카드 챔프 목동", addr: "서울특별시 양천구 오목로 194 정우빌딩 2층", q: "카드챔프 목동", url: "https://www.pokemonkorea.co.kr/pokemon_cardshop/menu758" },
-    { id: "인천", name: "포켓몬 카드샵 카드팝 인천", addr: "인천광역시 부평구 부평문화로66번길 21 4층", q: "카드팝 인천", url: "https://www.pokemonkorea.co.kr/pokemon_cardshop/menu211" },
-    { id: "수원", name: "포켓몬 카드샵 카드플래닛 수원", addr: "경기도 수원시 영통구 청명로 73-1 2층", q: "카드플래닛 수원", url: "https://www.pokemonkorea.co.kr/pokemon_cardshop/menu193" },
-    { id: "평택", name: "포켓몬 카드샵 카드홀릭 평택", addr: "경기도 평택시 평택2로 16 3층", q: "카드홀릭 평택", url: "https://www.pokemonkorea.co.kr/pokemon_cardshop/menu214" },
-    { id: "구리", name: "포켓몬 카드샵 TCG 라인 구리", addr: "경기도 구리시 장자대로86번길 32 2층", q: "TCG라인 구리", url: "https://www.pokemonkorea.co.kr/pokemon_cardshop/menu789" },
-    { id: "일산", name: "포켓몬 카드샵 카드필드 일산", addr: "경기도 고양시 일산서구 일중로15번길 23 2층", q: "카드필드 일산", url: "https://www.pokemonkorea.co.kr/pokemon_cardshop/menu825" },
-    { id: "원주", name: "포켓몬 카드샵 카드스페이스 원주", addr: "강원도 원주시 능라동길 42 602호", q: "카드스페이스 원주", url: "https://www.pokemonkorea.co.kr/pokemon_cardshop/menu202" },
-    { id: "강릉", name: "포켓몬 카드샵 카드웨이브 강릉", addr: "강원도 강릉시 솔올로 40 3층", q: "카드웨이브 강릉", url: "https://www.pokemonkorea.co.kr/pokemon_cardshop/menu809" },
-    { id: "천안", name: "포켓몬 카드샵 카드프라임 천안", addr: "충청남도 천안시 서북구 백석로 130 2층", q: "카드프라임 천안", url: "https://www.pokemonkorea.co.kr/pokemon_cardshop/menu776" },
-    { id: "대전", name: "포켓몬 카드샵 카드롤 대전", addr: "대전광역시 서구 둔산로 72 등오빌딩 5층", q: "카드롤 대전", url: "https://www.pokemonkorea.co.kr/pokemon_cardshop/menu749" },
-    { id: "대구", name: "포켓몬 카드샵 트레이너 스쿨 대구", addr: "대구광역시 달서구 성당동 488-1 2층", q: "트레이너 스쿨 대구", url: "https://www.pokemonkorea.co.kr/pokemon_cardshop/menu246" },
-    { id: "울산", name: "포켓몬 카드샵 TCG팩토리 울산", addr: "울산광역시 중구 번영로 454-1 1층", q: "TCG팩토리 울산", url: "https://www.pokemonkorea.co.kr/pokemon_cardshop/menu226" },
-    { id: "부산", name: "포켓몬 카드샵 카드베이스 부산", addr: "부산광역시 동래구 명륜로129번길 54 4층", q: "카드베이스 부산", url: "https://www.pokemonkorea.co.kr/pokemon_cardshop/menu661" },
-    { id: "광주", name: "포켓몬 카드샵 화성스토어TCG 광주", addr: "광주광역시 동구 중앙로160번길 22 2층", q: "화성스토어 광주", url: "https://www.pokemonkorea.co.kr/pokemon_cardshop/menu213" }
+    { id: "용산", name: "포켓몬 카드샵 용산", addr: "서울특별시 용산구 한강대로23길 55 아이파크몰 리빙파크 8층", q: "pokemon 카드샵 용산 아이파크몰", url: "https://www.pokemonkorea.co.kr/pokemon_cardshop/menu329", lat: 37.52985, lng: 126.964803 },
+    { id: "역삼", name: "포켓몬 카드샵 카드냥 역삼", addr: "서울특별시 강남구 논현로77길 9 태원빌딩 4층", q: "카드냥 역삼", url: "https://www.pokemonkorea.co.kr/pokemon_cardshop/menu178", lat: 37.49679, lng: 127.037723 },
+    { id: "목동", name: "포켓몬 카드샵 카드 챔프 목동", addr: "서울특별시 양천구 오목로 194 정우빌딩 2층", q: "카드챔프 목동", url: "https://www.pokemonkorea.co.kr/pokemon_cardshop/menu758", lat: 37.525199, lng: 126.858943 },
+    { id: "인천", name: "포켓몬 카드샵 카드팝 인천", addr: "인천광역시 부평구 부평문화로66번길 21 4층", q: "카드팝 인천", url: "https://www.pokemonkorea.co.kr/pokemon_cardshop/menu211", lat: 37.493093, lng: 126.723935 },
+    { id: "수원", name: "포켓몬 카드샵 카드플래닛 수원", addr: "경기도 수원시 영통구 청명로 73-1 2층", q: "카드플래닛 수원", url: "https://www.pokemonkorea.co.kr/pokemon_cardshop/menu193", lat: 37.253558, lng: 127.079068 },
+    { id: "평택", name: "포켓몬 카드샵 카드홀릭 평택", addr: "경기도 평택시 평택2로 16 3층", q: "카드홀릭 평택", url: "https://www.pokemonkorea.co.kr/pokemon_cardshop/menu214", lat: 36.992738, lng: 127.088357 },
+    { id: "구리", name: "포켓몬 카드샵 TCG 라인 구리", addr: "경기도 구리시 장자대로86번길 32 2층", q: "TCG라인 구리", url: "https://www.pokemonkorea.co.kr/pokemon_cardshop/menu789", lat: 37.586641, lng: 127.139527 },
+    { id: "일산", name: "포켓몬 카드샵 카드필드 일산", addr: "경기도 고양시 일산서구 일중로15번길 23 2층", q: "카드필드 일산", url: "https://www.pokemonkorea.co.kr/pokemon_cardshop/menu825", lat: 37.681382, lng: 126.773024 },
+    { id: "원주", name: "포켓몬 카드샵 카드스페이스 원주", addr: "강원도 원주시 능라동길 42 602호", q: "카드스페이스 원주", url: "https://www.pokemonkorea.co.kr/pokemon_cardshop/menu202", lat: 37.333831, lng: 127.929225 },
+    { id: "강릉", name: "포켓몬 카드샵 카드웨이브 강릉", addr: "강원도 강릉시 솔올로 40 3층", q: "카드웨이브 강릉", url: "https://www.pokemonkorea.co.kr/pokemon_cardshop/menu809", lat: 37.765474, lng: 128.878406 },
+    { id: "천안", name: "포켓몬 카드샵 카드프라임 천안", addr: "충청남도 천안시 서북구 백석로 130 2층", q: "카드프라임 천안", url: "https://www.pokemonkorea.co.kr/pokemon_cardshop/menu776", lat: 36.822354, lng: 127.125621 },
+    { id: "대전", name: "포켓몬 카드샵 카드롤 대전", addr: "대전광역시 서구 둔산로 72 등오빌딩 5층", q: "카드롤 대전", url: "https://www.pokemonkorea.co.kr/pokemon_cardshop/menu749", lat: 36.35105, lng: 127.381835 },
+    { id: "대구", name: "포켓몬 카드샵 트레이너 스쿨 대구", addr: "대구광역시 달서구 성당동 488-1 2층", q: "트레이너 스쿨 대구", url: "https://www.pokemonkorea.co.kr/pokemon_cardshop/menu246", lat: 35.841718, lng: 128.553059 },
+    { id: "울산", name: "포켓몬 카드샵 TCG팩토리 울산", addr: "울산광역시 중구 번영로 454-1 1층", q: "TCG팩토리 울산", url: "https://www.pokemonkorea.co.kr/pokemon_cardshop/menu226", lat: 35.562588, lng: 129.333936 },
+    { id: "부산", name: "포켓몬 카드샵 카드베이스 부산", addr: "부산광역시 동래구 명륜로129번길 54 4층", q: "카드베이스 부산", url: "https://www.pokemonkorea.co.kr/pokemon_cardshop/menu661", lat: 35.205445, lng: 129.079334 },
+    { id: "광주", name: "포켓몬 카드샵 화성스토어TCG 광주", addr: "광주광역시 동구 중앙로160번길 22 2층", q: "화성스토어 광주", url: "https://www.pokemonkorea.co.kr/pokemon_cardshop/menu213", lat: 35.146972, lng: 126.915101 }
   ];
 
   /* ==================================================================

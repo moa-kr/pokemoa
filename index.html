@@ -45,7 +45,7 @@
 <meta name="apple-mobile-web-app-title" content="포켓몬카드모아">
 <link rel="apple-touch-icon" sizes="180x180" href="assets/img/icons/apple-touch-icon-180.png">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%23101f3c'/%3E%3Crect x='7' y='7' width='7.5' height='7.5' rx='2.2' fill='%23ffcb05'/%3E%3Crect x='17.5' y='7' width='7.5' height='7.5' rx='2.2' fill='%23ffcb05' opacity='.7'/%3E%3Crect x='7' y='17.5' width='7.5' height='7.5' rx='2.2' fill='%23ffcb05' opacity='.7'/%3E%3Crect x='17.5' y='17.5' width='7.5' height='7.5' rx='2.2' fill='%23ffcb05'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="assets/css/style.css?v=154">
+<link rel="stylesheet" href="assets/css/style.css?v=155">
 <!-- 카카오맵 JavaScript SDK — autoload=false로 불러 두고 map.js가 kakao.maps.load()로 초기화합니다.
      JavaScript 키 도메인에는 https://moa-kr.github.io 만 등록되어 있어, 그 밖의 주소(미등록 프리뷰)에서는
      지도 대신 내장 좌표 스냅샷 안내가 표시됩니다. -->
@@ -388,7 +388,7 @@
         </a>
         <a class="store-shortcut" href="https://www.pokemonkorea.co.kr/card_vending_machine" target="_blank" rel="noopener">
           <span class="store-badge" style="--brand:#7c4dff;--brand-ink:#ffffff">V</span>
-          <span class="store-shortcut-body"><strong class="store-shortcut-name" data-copy="offlineVendingName">공식 카드 자판기</strong><span class="store-sub" data-copy="offlineVendingSub">전국 176곳 위치 안내</span></span>
+          <span class="store-shortcut-body"><strong class="store-shortcut-name" data-copy="offlineVendingName">공식 카드 자판기</strong><span class="store-sub" data-copy="offlineVendingSub">전국 178곳 위치 안내</span></span>
           <span class="store-go" aria-hidden="true">↗</span>
         </a>
         <a class="store-shortcut is-mart" href="#map" data-tab="map">
@@ -435,7 +435,7 @@
         <p class="arrival-note" data-copy="arrivalNote">※ 현장·제보 기준 참고 요일이며, 매장·물류 사정에 따라 미입고 또는 요일이 다를 수 있습니다. 방문 전 매장 확인 권장.</p>
       </aside>
 
-      <p class="src-note mt-16">출처: 포켓몬코리아 <a href="https://www.pokemonkorea.co.kr/card_vending_machine" target="_blank" rel="noopener">자판기 안내</a>(전국 178곳 중 좌표 확인 176곳) · <a href="https://www.pokemonkorea.co.kr/pokemon_cardshop" target="_blank" rel="noopener">공식 카드샵 목록</a>(16곳) 2026-11-18 확인, 아트박스 매장·재고 조회 <a href="https://www.poom.co.kr" target="_blank" rel="noopener">POOM</a>. 이마트·롯데마트·홈플러스·토이저러스 위치는 「동네에서 찾기」 지도에서 카카오 장소 검색으로 보여 줍니다. 재고·운영 여부는 시점·매장에 따라 달라지므로 방문 전 확인하세요.</p>
+      <p class="src-note mt-16">출처: 포켓몬코리아 <a href="https://www.pokemonkorea.co.kr/card_vending_machine" target="_blank" rel="noopener">자판기 안내</a>(전국 178곳) · <a href="https://www.pokemonkorea.co.kr/pokemon_cardshop" target="_blank" rel="noopener">공식 카드샵 목록</a>(16곳) 2026-11-18 확인, 아트박스 매장·재고 조회 <a href="https://www.poom.co.kr" target="_blank" rel="noopener">POOM</a>. 이마트·롯데마트·홈플러스·토이저러스 위치는 「동네에서 찾기」 지도에서 카카오 장소 검색으로 보여 줍니다. 재고·운영 여부는 시점·매장에 따라 달라지므로 방문 전 확인하세요.</p>
     </section>
 
 
@@ -578,7 +578,7 @@
     <div class="map-page-head">
       <span class="eyebrow" data-copy="mapEyebrow">동네에서 찾기</span>
       <h1 id="map-title" data-copy="mapTitle">내 주변 편의점과 오프라인 판매처, 어떤 카드가 있는지 한눈에</h1>
-      <p data-copy-html="mapLead">카카오맵 지도 위에 주변 <b>편의점 4사(GS25·CU·세븐일레븐·이마트24)</b>와 <b>오프라인 판매처(이마트·롯데마트·홈플러스·토이저러스·아트박스·공식 자판기·카드샵)</b>를 함께 표시합니다. GS25·CU·이마트24는 조회했을 때 편의점 앱에서 확인한 <b>실제 재고</b>를 보여 주고, 세븐일레븐은 앱에서만 재고를 확인할 수 있어 <b>매장 위치만</b> 안내합니다. <b>이마트</b>는 이마트 앱 점포 재고를 <b>실시간으로 직접 조회</b>해 카드 상품별 <b>재고 수량·품절·수량 비공개·휴무</b>까지 함께 보여 줍니다. 시·도 → 시·군·구를 고르거나 동네 이름으로 검색하고, <b>‘내 위치로 찾기’</b>를 누르면 내 주변 매장을 새로 조회합니다.</p>
+      <p data-copy-html="mapLead">카카오맵 지도 위에 주변 <b>편의점 4사(GS25·CU·세븐일레븐·이마트24)</b>와 <b>오프라인 판매처(이마트·롯데마트·홈플러스·토이저러스·아트박스·공식 자판기·카드샵)</b>를 함께 표시합니다. GS25·CU·이마트24는 조회했을 때 편의점 앱에서 확인한 <b>실제 재고</b>를 보여 주고, 세븐일레븐은 앱에서만 재고를 확인할 수 있어 <b>매장 위치만</b> 안내합니다. <b>이마트</b>는 이마트 앱 점포 재고를 <b>실시간으로 직접 조회</b>해 카드 상품별 <b>재고 수량·품절·수량 비공개·휴무</b>까지 함께 보여 줍니다. <b>롯데마트·토이저러스</b>는 롯데마트 모바일 도와센터(점포 전산)에서 <b>포켓몬</b> 상품 재고를 조회해, 카드 상품이 있으면 <b>상품명·가격·수량</b>을, 없으면 <b>카드 상품이 없다는 사실</b>을 보여 줍니다(조회 서버가 연결된 경우). 시·도 → 시·군·구를 고르거나 동네 이름으로 검색하고, <b>‘내 위치로 찾기’</b>를 누르면 내 주변 매장을 새로 조회합니다.</p>
     </div>
 
     <div class="demo-notice">
@@ -653,6 +653,7 @@
         <input type="checkbox" id="offlineToggle" checked>
         <span data-copy="mapOfflineToggle">지도에 함께 보기</span>
       </label>
+      <p class="offline-note" id="offlineNote" hidden></p>
     </div>
 
     <div class="map-toolbar">
@@ -828,7 +829,7 @@
         <div><b data-copy="status1Title">재고 있음</b><span data-copy="status1Desc">조회한 시점에 수량 1개 이상이 확인된 매장입니다.</span></div>
         <div><b data-copy="status3Title">없음</b><span data-copy="status3Desc">조회한 시점에 재고 0으로 확인된 매장입니다. 아직 입고 전일 수도 있습니다.</span></div>
         <div><b data-copy="status2Title">미조회</b><span data-copy="status2Desc">이번 조회에서 수량을 받지 못한 매장입니다. 위치만 표시합니다.</span></div>
-        <div><b data-copy="status5Title">오프라인 판매처</b><span data-copy="status5Desc">이마트·롯데마트·홈플러스·토이저러스·아트박스·공식 자판기·카드샵은 위치만 표시합니다(재고는 안내하지 않습니다).</span></div>
+        <div><b data-copy="status5Title">오프라인 판매처</b><span data-copy="status5Desc">이마트·롯데마트·토이저러스는 실시간 재고를 조회하고, 홈플러스·아트박스·공식 자판기·카드샵은 위치만 표시합니다.</span></div>
         <div><b>세븐일레븐 위치 안내</b><span>세븐일레븐은 앱에서만 재고를 알려 줍니다. 이 사이트는 <b>매장 위치만</b> 안내합니다.</span></div>
         <div><b>이마트 실시간 점포 재고</b><span>이마트는 이마트 앱 점포 재고를 직접 조회해 <b>재고 수량·품절·수량 비공개·오늘 휴무</b>를 표시합니다. 수량 비공개는 이마트 앱이 수량을 감추는 상태라 매장에 물어보셔야 합니다.</span></div>
       </div>
@@ -865,7 +866,7 @@
       </div>
     </details>
 
-    <p class="src-note">지도·매장 위치: <a href="https://apis.map.kakao.com/" target="_blank" rel="noopener">카카오맵</a> 장소 검색. GS25·CU·이마트24 재고는 편의점 앱에서 조회한 값만 표시하고, 재고 0으로 확인되면 「없음」, 확인하지 못한 매장은 「미조회」로 표시합니다. <b>오프라인 판매처</b> 중 이마트·롯데마트·홈플러스·토이저러스·아트박스는 카카오 장소 검색으로, 공식 자판기(176곳)와 공인 카드샵(16곳)은 <a href="https://www.pokemonkorea.co.kr/card_vending_machine" target="_blank" rel="noopener">포켓몬코리아 공식 목록</a>으로 <b>위치만</b> 안내합니다.</p>
+    <p class="src-note">지도·매장 위치: <a href="https://apis.map.kakao.com/" target="_blank" rel="noopener">카카오맵</a> 장소 검색. GS25·CU·이마트24 재고는 편의점 앱에서 조회한 값만 표시하고, 재고 0으로 확인되면 「없음」, 확인하지 못한 매장은 「미조회」로 표시합니다. <b>오프라인 판매처</b> 중 이마트·롯데마트·홈플러스·토이저러스·아트박스는 카카오 장소 검색으로, 공식 자판기(178곳)와 공인 카드샵(16곳)은 <a href="https://www.pokemonkorea.co.kr/card_vending_machine" target="_blank" rel="noopener">포켓몬코리아 공식 목록</a>으로 <b>위치만</b> 안내합니다.</p>
     <!-- 쿠팡파트너스 슬롯 — 「동네에서 찾기」 탭 하단 (v4.45: 5개 탭 공통 3열 · 모바일 3개 한 줄) -->
     <div class="affiliate affiliate-widget-card mt-24" data-affiliate-card="coupang-30th">
       <div class="affiliate-head">
@@ -1860,10 +1861,11 @@
   </div>
 </template>
 
-<script src="assets/js/data.js?v=142"></script>
+<script src="assets/js/data.js?v=143"></script>
 <script src="assets/js/emart.js?v=141"></script>
-<script src="assets/js/map.js?v=142"></script>
-<script src="assets/js/app.js?v=144"></script>
+<script src="assets/js/lottemart.js?v=1"></script>
+<script src="assets/js/map.js?v=143"></script>
+<script src="assets/js/app.js?v=145"></script>
 <!-- GS25 팜사이즈 원더 피규어 — 안내 팝업·상품 전환·주변 GS25 재고 조회 (data.js 의 figure) -->
 <script src="assets/js/figure.js?v=141"></script>
 <!-- 공식 콜라보 — assets/data/collabs.json 을 읽어 일정·소식 > 공식 콜라보 칸을 그립니다. -->

@@ -669,6 +669,25 @@
     });
   }
 
+  /* 롯데마트·토이저러스 점포의 도와센터 실시간 재고 칩 — 카드 상품이 있으면 수량, 없으면 그 사실을 적는다.
+     (2026-11-26 실측: 도와센터에 포켓몬 TCG 상품이 없어 대부분 점포가 '카드 상품 없음'이 된다) */
+  function lotteChipHtml(s) {
+    var L = s.lotte;
+    if (!L) return "";
+    var when = L.at ? new Date(L.at) : null;
+    var whenLabel = when ? String(when.getHours()).padStart(2, "0") + ":" + String(when.getMinutes()).padStart(2, "0") : "";
+    var title = "롯데마트 도와센터 조회" + (whenLabel ? " " + whenLabel : "") +
+      (L.total ? " · 포켓몬 상품 " + L.total + "종 중 재고 " + L.stockCount + "종" : "");
+    if (L.cardItems && L.cardItems.length) {
+      var inStock = L.cardItems.filter(function (c) { return Number(c.stock) > 0; });
+      var text = inStock.length
+        ? (inStock.length === 1 ? inStock[0].name : "카드 " + inStock.length + "종 재고")
+        : "카드 품절";
+      return '<span class="chip chip-lotte" title="' + escapeHtml(title) + '">' + escapeHtml(text) + "</span>";
+    }
+    return '<span class="chip chip-lotte is-none" title="' + escapeHtml(title) + '">카드 상품 없음</span>';
+  }
+
   function productTagsHtml(s) {
     var list = stockedProducts(s);
     if (!list.length) return "";
@@ -758,7 +777,7 @@
       var sLabel = s.emart
         ? (s.emartState === "in" ? "재고 있음" : s.emartState === "undisclosed" ? "수량 비공개" : "품절")
         : (s.offline
-          ? (s.brand === "vending" ? "공식 설치 지점" : s.brand === "cardshop" ? "공인 카드샵" : "매장 확인")
+          ? (s.lotte ? "도와센터 조회" : (s.brand === "vending" ? "공식 설치 지점" : s.brand === "cardshop" ? "공인 카드샵" : "매장 확인"))
           : (policyOnlyBrand(s.brand) ? "위치 안내" : (!s.relay && s.status === "none" ? "미조회" : statusText[s.status])));
       var item = document.createElement("li");
       var btn = document.createElement("button");
@@ -780,7 +799,7 @@
             (s.emartClosed ? '<span class="chip chip-closed">오늘 휴무</span>'
               : (s.emartOutside ? '<span class="chip chip-hours">영업시간 외</span>' : ""))
           : (s.offline
-          ? '<span class="chip chip-offline">재고 미확인</span>'
+          ? (s.lotte ? lotteChipHtml(s) : '<span class="chip chip-offline">재고 미확인</span>')
           : (policyOnlyBrand(s.brand)
             ? '<span class="chip chip-policy">앱에서 확인</span>'
             : (s.relay
@@ -1899,7 +1918,71 @@
   /* 오프라인 판매처(마트·아트박스·자판기·카드샵) 칩 — 누르면 그 종류만, 한 번 더 누르면 전체 */
   var offlineChips = $("#offlineChips");
   var offlineToggle = $("#offlineToggle");
+  var offlineNoteEl = $("#offlineNote");
   var offlineCounts = null;
+
+  /* 반경 안에 한 곳도 없는 오프라인 판매처(공식 자판기·공인 카드샵)는 “0곳”만 보여 주면
+     고장으로 보인다 — 데이터에는 있는데 반경 밖일 뿐이므로 가장 가까운 곳을 거리와 함께 알려 준다.
+     (2026-11-26: 서울 광화문 3km 에 자판기·카드샵이 0곳이던 문제) */
+  function haversine(aLat, aLng, bLat, bLng) {
+    var R = 6371000, p = Math.PI / 180;
+    var dLat = (bLat - aLat) * p, dLng = (bLng - aLng) * p;
+    var h = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(aLat * p) * Math.cos(bLat * p) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+    return 2 * R * Math.asin(Math.min(1, Math.sqrt(h)));
+  }
+
+  function distLabel(m) {
+    return m < 1000 ? Math.round(m) + "m" : (m / 1000).toFixed(1) + "km";
+  }
+
+  /* 종류별 가장 가까운 반경 밖 지점 2곳 */
+  function nearestOutside(kind, center, radius) {
+    var pts = [];
+    if (kind === "vending") {
+      (D.vendingPoints || []).forEach(function (v) {
+        if (!isFinite(v.la) || !isFinite(v.ln)) return;
+        pts.push({ name: v.n, dist: haversine(center.lat, center.lng, v.la, v.ln) });
+      });
+    } else if (kind === "cardshop") {
+      (D.cardShops || []).forEach(function (s) {
+        if (!isFinite(s.lat) || !isFinite(s.lng)) return;
+        pts.push({ name: s.name.replace(/^포켓몬 카드샵\s*/, ""), dist: haversine(center.lat, center.lng, s.lat, s.lng) });
+      });
+    }
+    return pts.filter(function (p) { return p.dist > radius; })
+      .sort(function (a, b) { return a.dist - b.dist; })
+      .slice(0, 2);
+  }
+
+  function renderOfflineNote(counts) {
+    if (!offlineNoteEl) return;
+    if (filterState.showOffline === false) { offlineNoteEl.hidden = true; offlineNoteEl.textContent = ""; return; }
+    var state = (window.PokeMoaMap && window.PokeMoaMap.getState) ? window.PokeMoaMap.getState() : null;
+    var center = state && state.center;
+    if (!center) { offlineNoteEl.hidden = true; return; }
+    var radius = state.radius || filterState.radius || 3000;
+    var kinds = [
+      { id: "vending", label: "공식 자판기" },
+      { id: "cardshop", label: "공인 카드샵" }
+    ];
+    var parts = [];
+    kinds.forEach(function (k) {
+      var c = (counts || {})[k.id];
+      if (!c || c.total !== 0) return;
+      var near = nearestOutside(k.id, center, radius);
+      if (!near.length) return;
+      parts.push(k.label + " " + (radius / 1000) + "km 안 없음 · 가장 가까운 곳 " +
+        near.map(function (p) { return p.name + " " + distLabel(p.dist); }).join(", "));
+    });
+    if (!parts.length) {
+      offlineNoteEl.hidden = true;
+      offlineNoteEl.textContent = "";
+      return;
+    }
+    offlineNoteEl.hidden = false;
+    offlineNoteEl.innerHTML = parts.map(function (t) { return "<span>" + t + "</span>"; }).join("");
+  }
 
   function renderOfflineChips(counts, activeBrand, showOffline) {
     if (!offlineChips) return;
@@ -1911,10 +1994,20 @@
       var meta = D.brandMeta[b.id] || { color: "#1b2a4a" };
       var c = counts[b.id] || { total: 0 };
       var active = activeBrand === b.id;
+      var title = "";
+      if (c.total === 0) {
+        var near = null;
+        var state = (window.PokeMoaMap && window.PokeMoaMap.getState) ? window.PokeMoaMap.getState() : null;
+        if (state && state.center && (b.id === "vending" || b.id === "cardshop")) {
+          near = nearestOutside(b.id, state.center, state.radius || filterState.radius || 3000)[0];
+        }
+        title = ' title="반경 안에 없습니다' + (near ? " · 가장 가까운 곳 " + near.name + " " + distLabel(near.dist) : "") + '"';
+      }
       return '<button type="button" class="off-chip' + (active ? " is-active" : "") + (on ? "" : " is-muted") +
-        '" data-offline="' + b.id + '" style="--brand:' + meta.color + '" aria-pressed="' + (active ? "true" : "false") + '">' +
+        '" data-offline="' + b.id + '" style="--brand:' + meta.color + '" aria-pressed="' + (active ? "true" : "false") + '"' + title + '>' +
         '<i class="off-dot" aria-hidden="true"></i><span>' + b.label + "</span><b>" + c.total + "</b></button>";
     }).join("");
+    renderOfflineNote(counts);
     if (offlineToggle) offlineToggle.checked = on;
   }
 
