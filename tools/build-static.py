@@ -429,7 +429,7 @@ def sets_index_page():
         box = s["boxPrice"] if s["id"] != "starter" else s["packPrice"]
         rows.append(
             "<tr>"
-            f'<td><a href="{s["id"]}.html"><strong>{e(s["short"])}</strong></a><br>'
+            f'<td><a href="{s["id"]}.html" aria-label="{e(s["short"])} 상세 페이지"><strong>{e(s["short"])}</strong></a><br>'
             f'<small style="color:var(--muted)">{e(s["code"])}</small></td>'
             f'<td class="num">{s["release"]}</td>'
             f'<td class="num">{e(s["total"])}</td>'
@@ -458,7 +458,7 @@ def sets_index_page():
 
 <h2>9개 세트 비교표</h2>
 <div class="table-scroll"><table>
-<caption>정가 대비 = 박스 정가를 0%로 본 KREAM 한글판 최근 체결 차이 · 기준일 {DATA_DATE}</caption>
+<caption>정가 대비 = 박스 정가를 0%로 본 KREAM 한글판 최근 체결 차이 · 기준일 {DATA_DATE} · 좁은 화면에서는 표를 좌우로 넘겨 보세요</caption>
 <thead><tr><th>세트</th><th class="num">발매일</th><th class="num">수록</th><th class="num right">1팩 정가</th><th class="num right">1박스 정가</th><th class="num right">KREAM</th><th class="num right">정가 대비</th></tr></thead>
 <tbody>{''.join(rows)}</tbody></table></div>
 <p class="note">스타터 세트는 팩이 아니라 카드 60장이 고정된 구축덱이라 ‘1박스 정가’ 칸에 세트 가격을 적었습니다.</p>
