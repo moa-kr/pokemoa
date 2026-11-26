@@ -952,7 +952,7 @@ window.PokeMoaMap = (function () {
       body = '<ul class="emart-stock">' + rows + "</ul>";
     } else {
       body = '<p class="pm-card-note">이 점포 도와센터 상품 목록에는 <b>포켓몬 카드(TCG) 상품이 없습니다</b>. ' +
-        (L.total ? '포켓몬 상품 ' + L.total + "종 중 재고 있음 " + L.stockCount + "종(완구·문구 등)" : "포켓몬 상품 자체가 조회되지 않았습니다") +
+        (L.total ? '확인한 포켓몬 상품 ' + L.total + "종 중 재고 있음 " + L.stockCount + "종(완구·문구 등)" : "포켓몬 상품 자체가 조회되지 않았습니다") +
         ". 카드 입고 여부는 매장에 직접 문의해 주세요.</p>";
     }
     el.card.hidden = false;

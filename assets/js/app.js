@@ -677,7 +677,7 @@
     var when = L.at ? new Date(L.at) : null;
     var whenLabel = when ? String(when.getHours()).padStart(2, "0") + ":" + String(when.getMinutes()).padStart(2, "0") : "";
     var title = "롯데마트 도와센터 조회" + (whenLabel ? " " + whenLabel : "") +
-      (L.total ? " · 포켓몬 상품 " + L.total + "종 중 재고 " + L.stockCount + "종" : "");
+      (L.total ? " · 확인한 포켓몬 상품 " + L.total + "종 중 재고 " + L.stockCount + "종" : "");
     if (L.cardItems && L.cardItems.length) {
       var inStock = L.cardItems.filter(function (c) { return Number(c.stock) > 0; });
       var text = inStock.length
