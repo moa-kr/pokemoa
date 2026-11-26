@@ -432,7 +432,7 @@
   ],
   "meta": {
     "updatedBy": "moa-admin (@Acewoni)",
-    "updatedAt": "2026-11-26T09:20:38.555Z",
+    "updatedAt": "2026-11-26T22:18:13.515Z",
     "note": "모아 어드민이 관리하는 공통 설정 파일입니다. 형식: https://moa-kr.github.io/moa-admin/SCHEMA.md"
   }
 }
