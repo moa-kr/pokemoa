@@ -85,7 +85,7 @@ h1 {
 h1 .code {
   display: inline-block;
   vertical-align: 3px;
-  margin-left: 6px;
+  margin-left: 10px;
   padding: 2px 9px;
   border-radius: 999px;
   background: var(--navy);
@@ -228,6 +228,28 @@ details.qa p { margin: 8px 0 0; color: #3d4a61; }
 .site-foot ul { list-style: none; padding: 0; margin: 0 0 14px; display: flex; flex-wrap: wrap; gap: 6px 16px; }
 .site-foot .fine { color: #8298bd; font-size: 12px; line-height: 1.7; }
 .site-foot .fine a { color: #a9bcd9; }
+
+/* 좁은 화면 — 브랜드는 한 줄, 메뉴는 한 줄(넘치면 가로 스크롤) */
+@media (max-width: 640px) {
+  .site-head .wrap { flex-direction: column; align-items: flex-start; gap: 2px; padding-top: 9px; padding-bottom: 4px; }
+  .site-nav {
+    margin-left: 0;
+    width: 100%;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: 13px;
+    padding-bottom: 4px;
+    scrollbar-width: none;
+  }
+  .site-nav::-webkit-scrollbar { display: none; }
+  .site-nav a { font-size: 12.5px; padding: 3px 0; white-space: nowrap; flex: 0 0 auto; }
+  h1 { font-size: 23px; }
+  h1 .code { margin-left: 6px; vertical-align: 2px; }
+  h2 { font-size: 18px; }
+  .lead { font-size: 14.5px; }
+  table { font-size: 13px; }
+  th, td { padding: 8px 10px; }
+}
 
 /* 인쇄·접근성 */
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }

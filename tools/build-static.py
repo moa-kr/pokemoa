@@ -29,7 +29,7 @@ SITE_NAME = "포켓몬카드모아"
 DATA_DATE = "2026-11-17"          # data.js 가격·일정 기준일
 LAST_MOD = "2026-11-26"           # 이번에 생성한 정적 페이지의 lastmod
 GA_ID = "G-LWRMBRD0X9"
-CSS_V = "1"
+CSS_V = "2"
 
 FAVICON = (
     "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E"
