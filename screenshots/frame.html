@@ -26,12 +26,21 @@
     var w = Math.min(1920, Math.max(320, parseInt(p.get("w") || "390", 10)));
     var h = Math.min(6000, Math.max(320, parseInt(p.get("h") || "844", 10)));
     var hash = (p.get("hash") || "").replace(/[^a-z0-9-]/gi, "");
-    var src = "../index.html?cb=" + Date.now() + (hash ? "#" + hash : "");
+    /* 지역·반경도 넘길 수 있게 한다(예: frame.html?w=1440&region=seoul-gwanghwamun&r=3000&hash=map) */
+    var region = (p.get("region") || "").replace(/[^a-z0-9-]/gi, "");
+    var radius = (p.get("r") || "").replace(/[^0-9]/g, "");
+    var lat = (p.get("lat") || "").replace(/[^0-9.-]/g, "");
+    var lng = (p.get("lng") || "").replace(/[^0-9.-]/g, "");
+    var qs = ["cb=" + Date.now()];
+    if (region) qs.push("region=" + encodeURIComponent(region));
+    if (radius) qs.push("r=" + radius);
+    if (lat && lng) { qs.push("lat=" + lat); qs.push("lng=" + lng); }
+    var src = "../index.html?" + qs.join("&") + (hash ? "#" + hash : "");
     var f = document.getElementById("f");
     f.style.width = w + "px";
     f.style.height = h + "px";
     f.src = src;
-    document.getElementById("cap").textContent = "실제 페이지 " + w + "×" + h + (hash ? " · #" + hash : "");
+    document.getElementById("cap").textContent = "실제 페이지 " + w + "×" + h + (region ? " · " + region : "") + (radius ? " · " + Number(radius) / 1000 + "km" : "") + (hash ? " · #" + hash : "");
   })();
 </script>
 </body>
