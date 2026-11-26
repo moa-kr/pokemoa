@@ -3430,6 +3430,11 @@ button { font: inherit; color: inherit; cursor: pointer; }
 /* 롯데마트·토이저러스 도와센터 실시간 재고(2026-11-26) — 마트 파란색 계열 */
 .chip.chip-lotte { background: #e6effd; border: 1px solid #c4d8f8; color: #1f4fbe; font-weight: 700; }
 .chip.chip-lotte.is-none { background: #f2f4f8; border: 1px solid #e0e5ee; color: #5d6b80; font-weight: 700; }
+/* 같은 건물 토이저러스(2026-11-26 v4.58) — 장난감 매장 느낌의 옐로 계열, 롯데마트 파랑과 구분 */
+.chip.chip-toys { background: #fff6d9; border: 1px solid #f2dc9b; color: #7a5a00; font-weight: 700; }
+.pm-card-sub { margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--line-2); }
+.pm-card-sub h4 { margin: 0 0 6px; font-size: 12.5px; font-weight: 800; color: var(--ink); }
+.pm-card-sub .pm-card-meta { margin-bottom: 4px; }
 .pm-pill.is-offline { border-color: rgba(16, 31, 60, 0.18); }
 .store-item.is-offline .s-name { font-weight: 700; }
 

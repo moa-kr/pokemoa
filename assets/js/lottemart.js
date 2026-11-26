@@ -12,8 +12,10 @@
  *
  * · 매장 이름은 도와센터 표기(예: 제타플렉스 잠실점)와 카카오 표기
  *   (롯데마트 제타플렉스 잠실점)가 달라서, 앞의 '롯데마트'를 떼고 공백을 지워 비교한다.
- *   카카오 대형마트 마커에 없는 점포(토이저러스 등)는 카카오 키워드 검색으로 위치를
- *   확인해 따로 그린다(세션 동안 캐시).
+ *   토이저러스는 카카오 업종(MT1 대형마트) 검색에 잡히지 않아(업종이 완구점) 지도에 따로 서지 못했다.
+ *   그래서 전국 13곳 좌표를 `data.js` `toysrusBranches` 에 넣고 **표를 먼저** 쓴다(검색 실패·오차 없음).
+ *   같은 건물에 롯데마트가 있으면(60~160m) 새 마커를 만들지 않고 그 마커에 `hostRowId` 로 붙여
+ *   지도에서는 '롯데마트·토이저러스' 한 곳, 매장 카드에서는 두 점포 재고를 나란히 보여 준다.
  *
  * · 상품은 검색어 '포켓몬' 결과를 쓰되, 카드(TCG) 상품은 이름으로 골라낸다.
  *   2026-11-26 실측: 도와센터에는 포켓몬 TCG 부스터 상품이 없고 완구·문구·카드용품만
@@ -25,8 +27,12 @@ window.PokeMoMoaLotte = (function () {
   var D = window.POKEMOA_DATA || {};
   var QUERY = "포켓몬";
   var TIMEOUT = 12000;
-  var MAX_STORES = 6;      /* 한 번에 재고를 조회할 점포 수 상한 */
+  var MAX_STORES = 6;      /* 한 번에 재고를 조회할 건물 수 상한(같은 건물의 롯데마트·토이저러스는 한 건물) */
+  var MAX_STOCK = 10;      /* 재고 요청 상한 — 중계 분당 한도(90) 안에서 여유를 둔다 */
   var MAX_PAGES = 2;       /* 점포당 상품 페이지(20건) 상한 */
+  var TOYS = D.toysrusBranches || [];   /* 토이저러스 전국 13곳 — 이름·좌표·같은 건물 롯데마트 코드 */
+  var TOY = /^토이저러스/;
+  var TOY_HOST_M = 160;    /* 같은 건물로 보는 거리 — 몰·아울렛 안에서 롯데마트와 토이저러스가 떨어진 정도(실측 3~140m) */
   var CARD_RE = /(카드게임|포켓몬\s*카드|부스터|확장팩|스타터|기념팩|하이클래스|스페셜팩|트레이딩\s*카드|TCG)/i;
   var AREAS = ["서울", "경기", "인천", "강원", "충북", "충남", "대전", "경북", "경남", "대구", "부산", "울산", "전북", "전남", "광주", "제주"];
   /* 좌표로 지역을 찾을 때 쓰는 대략 경계(지역 선택 없이 내 위치·지도 이동으로 찾을 때) */
@@ -136,11 +142,59 @@ window.PokeMoMoaLotte = (function () {
 
   function chainOf(name) {
     var n = String(name || "");
-    if (/^토이저러스/.test(n)) return "토이저러스";
+    if (TOY.test(n)) return "토이저러스";
     if (/^맥스/.test(n)) return "롯데마트 맥스";
     if (/^그랑그로서리/.test(n)) return "그랑그로서리";
     if (/^보틀벙커/.test(n)) return "보틀벙커";
     return "롯데마트";
+  }
+
+  function isToy(name) { return TOY.test(String(name || "")); }
+
+  /* 도와센터 점포 이름으로 토이저러스 좌표표(data.js)를 찾는다 — 코드가 같거나 이름이 같으면 그 점포 */
+  function toyInfo(name, code) {
+    if (!TOYS.length) return null;
+    var key = normName(name);
+    for (var i = 0; i < TOYS.length; i++) {
+      var t = TOYS[i];
+      if (code && String(t.code) === String(code)) return t;
+    }
+    for (var j = 0; j < TOYS.length; j++) {
+      var b = TOYS[j];
+      var bk = normName(b.name);
+      if (!bk || !key) continue;
+      if (bk === key || key.indexOf(bk) >= 0 || bk.indexOf(key) >= 0) return b;
+    }
+    return null;
+  }
+
+  /* 토이저러스와 같은 건물의 롯데마트 마커를 찾는다(같은 이름 조각 우선 → 가까운 순) */
+  function hostRowFor(toy, geo, rows) {
+    var place = normName((toy && toy.place) || "");
+    var best = null;
+    var bestScore = -1;
+    for (var i = 0; i < rows.length; i++) {
+      var r = rows[i];
+      if (!r || r.martChain === "토이저러스") continue;
+      var d = meters(r, geo);
+      if (d > TOY_HOST_M) continue;
+      var rk = normName(r.name);
+      var score = 0;
+      if (place && rk) {
+        if (place.indexOf(rk) >= 0) score = 2;          /* 롯데마트 제타플렉스 잠실점 ⊂ 장소명 */
+        else {
+          var tokens = place.split(/[\s()]+/).filter(function (t) { return t.length >= 3; });
+          tokens.forEach(function (t) { if (rk.indexOf(t) >= 0) score += 1; });
+        }
+      }
+      /* 점수 → 가까운 순. 점수가 없어도 160m 안이면 그 건물로 본다 */
+      var cand = { row: r, score: score, d: d };
+      if (!best || score > bestScore || (score === bestScore && d < best.d)) {
+        best = cand;
+        bestScore = score;
+      }
+    }
+    return best ? best.row : null;
   }
 
   function meters(a, b) {
@@ -205,10 +259,16 @@ window.PokeMoMoaLotte = (function () {
     }
   }
 
-  /* 카카오 키워드 검색으로 점포 좌표 확인(토이저러스처럼 대형마트 마커에 없는 점포) */
+  /* 카카오 키워드 검색으로 점포 좌표 확인 — 토이저러스는 data.js 표를 먼저 쓴다(표에 없는 이름만 검색) */
   function geocode(name) {
     if (geoCache[name]) return Promise.resolve(geoCache[name]);
     if (geoPending[name]) return geoPending[name];
+    var toy = toyInfo(name);
+    if (toy && isFinite(toy.lat) && isFinite(toy.lng)) {
+      var fixed = { lat: Number(toy.lat), lng: Number(toy.lng), street: toy.addr || "", fixed: true };
+      geoCache[name] = fixed;
+      return Promise.resolve(fixed);
+    }
     if (!window.kakao || !window.kakao.maps || !window.kakao.maps.services) return Promise.resolve(null);
     geoPending[name] = new Promise(function (resolve) {
       var query = String(name || "").trim();
@@ -274,13 +334,18 @@ window.PokeMoMoaLotte = (function () {
             if (d <= radius + 1) near.push({ store: p.store, row: p.row, distance: d });
           }
         });
-        /* 마커가 없는 점포(토이저러스 등)는 위치를 확인해 반경 안이면 따로 표시한다 */
+        /* 마커가 없는 점포는 위치를 확인해 반경 안이면 따로 세운다.
+           토이저러스는 좌표표(data.js)를 쓰고, 같은 건물 롯데마트가 있으면 그 마커에 붙인다 */
         var unmatched = pairs.filter(function (p) { return !p.row; }).map(function (p) { return p.store; });
-        var geoJobs = unmatched.slice(0, 8).map(function (st) {
+        var geoJobs = unmatched.slice(0, 12).map(function (st) {
           return geocode(st.name).then(function (geo) {
             if (!geo || !center) return null;
             var d = meters(center, geo);
             if (d > radius + 1) return null;
+            if (isToy(st.name)) {
+              var host = hostRowFor(toyInfo(st.name, st.code), geo, rows);
+              return { store: st, row: null, geo: geo, distance: d, kind: "toy", hostRowId: host ? host.id : "" };
+            }
             /* 같은 자리에 이미 마트 마커가 있으면 새 마커를 만들지 않고 그 마커에 붙인다
                (예: 카카오 ‘토이저러스 롯데마트 제타플렉스 잠실점’ ↔ 도와센터 ‘토이저러스 제타플렉스’) */
             var nearRows = rows.filter(function (r) { return !taken[r.id] && meters(r, geo) <= 60; });
@@ -297,15 +362,32 @@ window.PokeMoMoaLotte = (function () {
             var twin = nearRows.length && shared(nearRows[0]) > 0 ? nearRows[0] : (nearRows.length === 1 ? nearRows[0] : null);
             if (twin) {
               taken[twin.id] = 1;
-              return { store: st, row: twin, distance: meters(center, twin) };
+              return { store: st, row: twin, distance: meters(center, twin), kind: "mart" };
             }
-            return { store: st, row: null, distance: d, geo: geo };
+            return { store: st, row: null, distance: d, geo: geo, kind: "mart" };
           });
         });
         return Promise.all(geoJobs).then(function (extra) {
           extra.forEach(function (x) { if (x) near.push(x); });
           near.sort(function (a, b) { return a.distance - b.distance; });
-          var picked = near.slice(0, MAX_STORES);
+          /* 건물 단위로 묶는다 — 같은 건물의 롯데마트와 토이저러스는 한 건물로 세고 재고는 둘 다 조회한다 */
+          var groups = [];
+          var groupBy = {};
+          near.forEach(function (item) {
+            var key = item.hostRowId || (item.row && item.row.id) || item.store.code;
+            var g = groupBy[key];
+            if (!g) {
+              g = groupBy[key] = { key: key, items: [], distance: item.distance };
+              groups.push(g);
+            }
+            g.items.push(item);
+            if (item.distance < g.distance) g.distance = item.distance;
+          });
+          groups.sort(function (a, b) { return a.distance - b.distance; });
+          var picked = [];
+          groups.slice(0, MAX_STORES).forEach(function (g) {
+            g.items.forEach(function (it) { if (picked.length < MAX_STOCK) picked.push(it); });
+          });
           emit({ phase: "stock", done: 0, total: picked.length });
           var done = 0;
           var jobs = picked.map(function (item) {
@@ -318,6 +400,7 @@ window.PokeMoMoaLotte = (function () {
           return Promise.all(jobs).then(function (all) {
             var stores = all.filter(function (x) { return x.val && x.val.ok; }).map(function (x) {
               var it = x.item;
+              var toy = isToy(it.store.name) ? toyInfo(it.store.name, it.store.code) : null;
               return {
                 code: it.store.code,
                 name: it.store.name,
@@ -327,6 +410,8 @@ window.PokeMoMoaLotte = (function () {
                 street: it.row ? it.row.street : (it.geo ? it.geo.street : ""),
                 distance: it.distance,
                 rowId: it.row ? it.row.id : "",
+                hostRowId: it.hostRowId || "",
+                place: toy ? (toy.place || "") : "",
                 total: x.val.totalCount,
                 stockCount: x.val.stockCount,
                 cardItems: x.val.cardItems,

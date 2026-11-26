@@ -257,7 +257,11 @@ window.PokeMoaMap = (function () {
       official: !!o.official,
       placeKind: o.place || "",
       /* 마트 매장의 체인명(이마트·롯데마트·홈플러스·토이저러스) — 화면 표기용 */
-      martChain: o.martChain || ""
+      martChain: o.martChain || "",
+      /* 토이저러스 단독 행인지, 어떤 건물(쇼핑몰·아울렛) 안에 있는지 — data.js 좌표표에서 옴 */
+      toysrus: !!o.toysrus,
+      lotteCode: o.lotteCode || "",
+      placeName: o.placeName || ""
     };
   }
 
@@ -272,7 +276,72 @@ window.PokeMoaMap = (function () {
       s.products = [];
       out.push(s);
     }
-    return out;
+    return mergeToys(out);
+  }
+
+  /* --------------------------------------------- 토이저러스 건물 묶기 */
+  /* 토이저러스는 카카오 업종 검색(대형마트)에 잡히지 않아 data.js 좌표표로 항상 세운다.
+     그런데 전국 13곳 중 8곳은 롯데마트·롯데몰·아울렛 안이라 같은 자리에 마커가 둘 생긴다.
+     그럴 때는 토이저러스 행을 따로 그리지 않고 롯데마트 마커에 `toys` 로 붙여
+     말풍선·목록·카드에 '토이저러스 함께'로 적는다(같은 건물·같은 방문). */
+  var TOY_SAME_BUILDING_M = 160;
+
+  function normPlace(name) {
+    return String(name || "").replace(/^롯데마트\s*/, "").replace(/\s+/g, "").replace(/점$/, "");
+  }
+
+  function nearestMartRow(from, list) {
+    var best = null;
+    var bestScore = -1;
+    var place = normPlace(from.placeName || "");
+    for (var i = 0; i < list.length; i++) {
+      var s = list[i];
+      if (!s || s === from || s.toysrus) continue;
+      if (s.brand !== "mart") continue;
+      var d = meters(s, from);
+      if (d > TOY_SAME_BUILDING_M) continue;
+      var rk = normPlace(s.name);
+      var score = 0;
+      if (place && rk) {
+        if (place.indexOf(rk) >= 0 || rk.indexOf(place) >= 0) score = 2;
+        else {
+          var tokens = place.split(/[\s()]+/).filter(function (t) { return t.length >= 3; });
+          tokens.forEach(function (t) { if (rk.indexOf(t) >= 0) score += 1; });
+        }
+      }
+      if (!best || score > bestScore || (score === bestScore && d < best.d)) {
+        best = { row: s, d: d, score: score };
+        bestScore = score;
+      }
+    }
+    return best ? best.row : null;
+  }
+
+  function mergeToys(list) {
+    var toys = [];
+    for (var i = 0; i < list.length; i++) if (list[i].toysrus) toys.push(list[i]);
+    if (!toys.length) return list;
+    var drop = {};
+    toys.forEach(function (toy) {
+      var host = nearestMartRow(toy, list);
+      if (!host) return;
+      var prev = host.toys || {};
+      host.toys = {
+        code: prev.code || toy.lotteCode || "",
+        name: toy.name,
+        chain: "토이저러스",
+        place: toy.placeName || "",
+        lat: toy.lat,
+        lng: toy.lng,
+        street: toy.street || "",
+        distance: meters(host, toy),
+        static: true,
+        lotte: prev.lotte || null
+      };
+      drop[toy.id] = 1;
+    });
+    if (!Object.keys(drop).length) return list;
+    return list.filter(function (s) { return !drop[s.id]; });
   }
 
   /* ------------------------------------------------------ 카카오 SDK 로드 */
@@ -510,20 +579,19 @@ window.PokeMoaMap = (function () {
         '<i class="pm-dot is-in"></i>' +
         "<b>" + b.short + "</b><span>재고 있음" + (n ? " · " + n + "종" : "") + "</span></span>";
     } else if (s.offline && (s.brand === "mart" || s.brand === "artbox")) {
-      /* 오프라인 판매처는 재고 조회 대상이 아니다 — 방문 확인. 마트는 체인명을 그대로 적는다 */
+      /* 오프라인 판매처는 재고 조회 대상이 아니다 — 방문 확인. 마트는 체인명을 그대로 적는다.
+         같은 건물에 토이저러스가 있으면 '롯데마트·토이저러스' 로 함께 적는다. */
       var offName = (s.brand === "mart" && s.martChain) ? s.martChain : b.short;
-      if (s.lotte) {
-        /* 롯데마트·토이저러스는 도와센터에서 점포 재고를 받아 왔다 — 카드 상품이 있으면 수량, 없으면 그 사실 */
-        var lTail = s.lotte.cardItems.length
-          ? (s.lotte.cardStock ? "카드 " + s.lotte.cardStock + "종 재고" : "카드 품절")
-          : "카드 상품 없음";
+      if (s.toys && offName !== "토이저러스") offName += "·토이저러스";
+      var lTail = lotteTail(s);
+      if (lTail) {
         html = '<span class="pm-pill status-' + s.status + ' is-lotte" style="--brand:' + b.color + '">' +
           '<i class="pm-dot" style="background:' + b.color + '"></i>' +
-          "<span>" + escapeHtml(offName) + " · " + lTail + "</span></span>";
+          "<span>" + escapeHtml(offName) + " · " + escapeHtml(lTail) + "</span></span>";
       } else {
         html = '<span class="pm-pill status-' + s.status + ' is-offline" style="--brand:' + b.color + '">' +
           '<i class="pm-dot" style="background:' + b.color + '"></i>' +
-          "<span>" + offName + " · 매장확인</span></span>";
+          "<span>" + escapeHtml(offName) + " · 매장확인</span></span>";
       }
     } else if (isPolicyBrand(s.brand)) {
       /* 세븐일레븐 — 재고는 세븐일레븐 정책상 안내하지 않고 매장 위치만 (실패 색 아님) */
@@ -755,14 +823,31 @@ window.PokeMoaMap = (function () {
     emit("pokemoa:visible", { stores: st.visible });
   }
 
+  /* 롯데마트·토이저러스 도와센터 재고 한 줄 — 카드 상품이 있으면 수량, 없으면 그 사실.
+     같은 건물에 토이저러스가 있으면 토이저러스 쪽 카드 상태를 먼저 본다(카드를 파는 곳이 더 알고 싶은 정보다). */
+  function lotteTail(s) {
+    var own = s.lotte || null;
+    var toy = (s.toys && s.toys.lotte) || null;
+    if (own && own.cardItems && own.cardItems.length) {
+      return own.cardStock ? "카드 " + own.cardStock + "종 재고" : "카드 품절";
+    }
+    if (toy && toy.cardItems && toy.cardItems.length) {
+      return "토이저러스 카드 " + toy.cardStock + "종" + (toy.cardStock ? " 재고" : " 품절");
+    }
+    if (own || toy) return "카드 상품 없음";
+    return "";
+  }
+
   function placeLabel(s) {
     if (s.emart) return s.emartLabel;
     if (s.brand === "vending") return "공식 설치 지점";
     if (s.brand === "cardshop") return "공인 카드샵";
-    if (s.brand === "mart" && s.lotte) {
-      return s.lotte.cardItems.length
-        ? (s.lotte.cardStock ? "롯데마트 실시간 · 카드 " + s.lotte.cardStock + "종 재고" : "롯데마트 실시간 · 카드 품절")
-        : "롯데마트 실시간 · 카드 상품 없음";
+    if (s.brand === "mart" && (s.lotte || (s.toys && s.toys.lotte))) {
+      var base = (s.martChain === "토이저러스" ? "토이저러스" : "롯데마트") + " 실시간";
+      var tail = lotteTail(s);
+      if (tail) base += " · " + tail;
+      if (s.toys) base += " · 토이저러스 함께";
+      return base;
     }
     if (s.brand === "mart" || s.brand === "artbox") return "매장 확인 (방문·문의)";
     /* 세븐일레븐은 재고를 확인하지 않는다 — '미조회'가 아니라 위치 안내로 표기 */
@@ -860,7 +945,10 @@ window.PokeMoaMap = (function () {
       return "포켓몬코리아 <b>공식 카드샵 목록</b>(2026-11-18 확인)의 공인 매장입니다. 정가 판매·재고·영업시간은 매장에 문의하세요.";
     }
     var label = s.brand === "artbox" ? "아트박스" : (s.martChain || "이마트·롯데마트·홈플러스·토이저러스");
-    return "카카오맵 장소 검색으로 찾은 <b>" + label + (s.brand === "artbox" ? "" : " 매장") + "</b>입니다. 완구코너 포켓몬 카드 정가 판매와 재고는 매장에 문의해 확인하세요.";
+    var toyNote = (s.toys && s.toys.name)
+      ? " 같은 건물에 <b>" + escapeHtml(s.toys.name) + "</b>" + (s.toys.place ? " (" + escapeHtml(s.toys.place) + " 안)" : "") + "이 있습니다."
+      : "";
+    return "카카오맵 장소 검색으로 찾은 <b>" + label + (s.brand === "artbox" ? "" : " 매장") + "</b>입니다." + toyNote + " 완구코너 포켓몬 카드 정가 판매와 재고는 매장에 문의해 확인하세요.";
   }
 
   /* ------------------------------------------------ 이마트(대형마트) 카드 */
@@ -922,23 +1010,8 @@ window.PokeMoaMap = (function () {
     });
   }
 
-  function renderLotteCard(s) {
-    if (!el.card) return;
-    var meta = D.brandMeta.mart || { label: "롯데마트", short: "마트", color: "#1f6feb", ink: "#ffffff" };
-    var L = s.lotte || {};
-    var chain = L.chain || s.martChain || "롯데마트";
-    var dist = s.distance < 1000 ? Math.round(s.distance) + "m" : (s.distance / 1000).toFixed(1) + "km";
-    var subBits = [];
-    if (s.street) subBits.push(s.street);
-    subBits.push(dist);
-    var navLink = "https://map.naver.com/p/search/" + encodeURIComponent(s.name);
-    var when = L.at ? new Date(L.at) : null;
-    var whenLabel = when ? String(when.getHours()).padStart(2, "0") + ":" + String(when.getMinutes()).padStart(2, "0") : "";
-    var chips = ['<span class="chip chip-relay">롯데마트 도와센터 실시간</span>'];
-    if (whenLabel) chips.push('<span class="chip">조회 ' + whenLabel + '</span>');
-    if (s.phone) chips.push('<span class="chip">' + escapeHtml(s.phone) + '</span>');
-
-    var rows = (L.cardItems || []).map(function (it) {
+  function lotteStockRows(L) {
+    return (L.cardItems || []).map(function (it) {
       var qty = Number(it.stock);
       var cls = qty > 0 ? "in" : "none";
       return '<li class="es-row ' + cls + '">' +
@@ -946,19 +1019,66 @@ window.PokeMoaMap = (function () {
           (it.priceText ? '<i>' + escapeHtml(it.priceText) + "</i>" : "") + "</span>" +
         '<span class="es-qty">' + (qty > 0 ? qty + "개" : "품절") + "</span></li>";
     }).join("");
+  }
 
-    var body;
-    if (rows) {
-      body = '<ul class="emart-stock">' + rows + "</ul>";
-    } else {
-      body = '<p class="pm-card-note">이 점포 도와센터 상품 목록에는 <b>포켓몬 카드(TCG) 상품이 없습니다</b>. ' +
-        (L.total ? '확인한 포켓몬 상품 ' + L.total + "종 중 재고 있음 " + L.stockCount + "종(완구·문구 등)" : "포켓몬 상품 자체가 조회되지 않았습니다") +
-        ". 카드 입고 여부는 매장에 직접 문의해 주세요.</p>";
+  function lotteBody(L, who) {
+    var rows = lotteStockRows(L);
+    if (rows) return '<ul class="emart-stock">' + rows + '</ul>';
+    return '<p class="pm-card-note">' + who + ' 도와센터 상품 목록에는 <b>포켓몬 카드(TCG) 상품이 없습니다</b>. ' +
+      (L.total ? '확인한 포켓몬 상품 ' + L.total + "종 중 재고 있음 " + L.stockCount + "종(완구·문구 등)" : "포켓몬 상품 자체가 조회되지 않았습니다") +
+      '. 카드 입고 여부는 매장에 직접 문의해 주세요.</p>';
+  }
+
+  function lotteClock(at) {
+    var d = at ? new Date(at) : null;
+    return d ? String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0") : "";
+  }
+
+  /* 같은 건물 토이저러스 점고 — 롯데마트 카드 아래에 따로 붙인다 */
+  function toyBlockHtml(s) {
+    var T = s.toys;
+    if (!T) return "";
+    var head = '토이저러스' + (T.place ? ' · ' + escapeHtml(T.place) + ' 안' : '');
+    if (!T.lotte) {
+      return '<div class="pm-card-sub">' +
+        '<h4>' + head + '</h4>' +
+        '<p class="pm-card-note">같은 건물에 <b>' + escapeHtml(T.name) + '</b>' + (T.place ? ' (' + escapeHtml(T.place) + ' 안)' : '') +
+          '이 있습니다. 점포 재고는 롯데마트 도와센터 조회가 연결되면 같은 자리에 표시됩니다.</p></div>';
     }
+    var when = lotteClock(T.lotte.at);
+    return '<div class="pm-card-sub">' +
+      '<h4>' + head + '</h4>' +
+      '<div class="pm-card-meta"><span class="chip chip-relay">토이저러스 도와센터 실시간</span>' +
+        (when ? '<span class="chip">조회 ' + when + '</span>' : '') + '</div>' +
+      lotteBody(T.lotte, '토이저러스') + '</div>';
+  }
+
+  function renderLotteCard(s) {
+    if (!el.card) return;
+    var meta = D.brandMeta.mart || { label: "롯데마트", short: "마트", color: "#1f6feb", ink: "#ffffff" };
+    var L = s.lotte || null;
+    var chain = (L && L.chain) || s.martChain || "롯데마트";
+    var dist = s.distance < 1000 ? Math.round(s.distance) + "m" : (s.distance / 1000).toFixed(1) + "km";
+    var subBits = [];
+    if (s.street) subBits.push(s.street);
+    subBits.push(dist);
+    if (s.placeName && !s.toys) subBits.push(s.placeName + " 안");
+    var navLink = "https://map.naver.com/p/search/" + encodeURIComponent(s.name);
+    var whenLabel = lotteClock(L && L.at);
+    var chips = [];
+    if (L) {
+      chips.push('<span class="chip chip-relay">' + (chain === "토이저러스" ? "토이저러스" : "롯데마트") + ' 도와센터 실시간</span>');
+      if (whenLabel) chips.push('<span class="chip">조회 ' + whenLabel + '</span>');
+    }
+    if (s.phone) chips.push('<span class="chip">' + escapeHtml(s.phone) + '</span>');
+
+    var body = L ? lotteBody(L, "이 점포") : "";
+    body += toyBlockHtml(s);
+
     el.card.hidden = false;
     el.card.innerHTML =
       '<div class="pm-card-head">' +
-      '<span class="pm-card-brand" style="background:' + meta.color + ';color:' + (meta.ink || "#ffffff") + '">' + escapeHtml(chain) + '</span>' +
+      '<span class="pm-card-brand" style="background:' + meta.color + ';color:' + (meta.ink || "#ffffff") + '">' + escapeHtml(s.toys && !L ? "토이저러스" : chain) + '</span>' +
       '<div class="pm-card-title"><strong>' + escapeHtml(s.name) + '</strong>' +
       '<span>' + escapeHtml(subBits.join(" · ")) + '</span></div>' +
       '<button type="button" class="pm-card-close" aria-label="닫기">×</button>' +
@@ -968,7 +1088,7 @@ window.PokeMoaMap = (function () {
       chips.join("") +
       '</div>' +
       body +
-      '<p class="pm-card-note">롯데마트 모바일 도와센터(점포 전산)에서 <b>포켓몬</b>을 검색한 결과입니다(조회 ' + escapeHtml(whenLabel) + '). ' +
+      '<p class="pm-card-note">롯데마트 모바일 도와센터(점포 전산)에서 <b>포켓몬</b>을 검색한 결과입니다(조회 ' + escapeHtml(whenLabel || lotteClock(s.toys && s.toys.lotte && s.toys.lotte.at)) + '). ' +
         '도와센터는 매장 판매 상황에 따라 실제와 다를 수 있다고 안내합니다. 방문 전 매장 전화(' + escapeHtml(s.phone || "매장 문의") + ')로 한 번 더 확인하세요.</p>' +
       '<a class="btn btn-sm btn-dark pm-card-link" target="_blank" rel="noopener" href="' + navLink + '">네이버 지도에서 보기</a>';
     el.card.querySelector(".pm-card-close").addEventListener("click", function (e) {
@@ -979,7 +1099,7 @@ window.PokeMoaMap = (function () {
 
   function renderCard(s) {
     if (s && s.emart) { renderEmartCard(s); return; }
-    if (s && s.lotte) { renderLotteCard(s); return; }
+    if (s && (s.lotte || (s.toys && s.toys.lotte))) { renderLotteCard(s); return; }
     if (!el.card) return;
     var meta = D.brandMeta[s.brand] || { label: s.brand, color: "#1b2a4a", short: "?" };
     var dist = s.distance < 1000 ? Math.round(s.distance) + "m" : (s.distance / 1000).toFixed(1) + "km";
@@ -1388,6 +1508,32 @@ window.PokeMoaMap = (function () {
         street: (g && g.street) || s.addr || "",
         phone: (g && g.phone) || "",
         placeUrl: s.url
+      };
+      if (meters(center, row) <= radius + 1) rows.push(row);
+    });
+    /* 토이저러스 전국 13곳 — 카카오 업종 검색(MT1 대형마트)에 잡히지 않아(업종이 완구점)
+       지도에서 통째로 빠지던 매장이다. data.js 에 넣어 둔 확인 좌표로 항상 세우고,
+       같은 건물 롯데마트가 함께 조회되면 mergeToys() 가 그 마커에 '토이저러스 함께' 로 붙인다. */
+    (D.toysrusBranches || []).forEach(function (t) {
+      var lat = Number(t.lat);
+      var lng = Number(t.lng);
+      if (!isFinite(lat) || !isFinite(lng)) return;
+      var row = {
+        id: "toysrus:" + t.code,
+        type: "offline",
+        name: t.name,
+        brand: "mart",
+        martChain: "토이저러스",
+        shop: "offline",
+        place: "mart",
+        official: true,
+        lat: lat,
+        lng: lng,
+        street: t.addr || "",
+        toysrus: true,
+        lotteCode: t.code || "",
+        placeName: t.place || "",
+        placeUrl: "https://company.lottemart.com/mobiledowa/"
       };
       if (meters(center, row) <= radius + 1) rows.push(row);
     });
@@ -1953,11 +2099,74 @@ window.PokeMoaMap = (function () {
     return null;
   }
 
+  /* data.js 좌표표로 세워 둔 토이저러스 행(같은 건물 롯데마트가 없는 곳) */
+  function toyRowByCode(code, name) {
+    var list = st.all || [];
+    for (var i = 0; i < list.length; i++) {
+      if (!list[i].toysrus) continue;
+      if (code && list[i].lotteCode === String(code)) return list[i];
+      if (name && list[i].name === name) return list[i];
+    }
+    return null;
+  }
+
+  function lotteData(s) {
+    return {
+      code: s.code,
+      chain: s.chain || "롯데마트",
+      total: s.total,
+      stockCount: s.stockCount,
+      cardItems: s.cardItems || [],
+      cardStock: s.cardStock || 0,
+      at: s.at || Date.now()
+    };
+  }
+
+  /* 토이저러스 점포 — 같은 건물 롯데마트 마커가 있으면 그 카드에 두 점포 재고를 나란히 붙이고,
+     없으면(아울렛·몰에 롯데마트가 없는 곳) 토이저러스 단독 매장으로 그린다. */
+  function attachToy(s) {
+    var host = null;
+    if (s.hostRowId) {
+      for (var i = 0; i < st.all.length; i++) if (st.all[i].id === s.hostRowId) { host = st.all[i]; break; }
+    }
+    if (!host) {
+      host = nearestMartRow({ brand: "mart", lat: s.lat, lng: s.lng, placeName: s.place || "" }, st.all);
+    }
+    var info = {
+      code: s.code,
+      name: s.name,
+      chain: "토이저러스",
+      place: s.place || "",
+      lat: s.lat,
+      lng: s.lng,
+      street: s.street || "",
+      distance: s.distance
+    };
+    if (host) {
+      host.toys = Object.assign({}, host.toys || {}, info, { lotte: lotteData(s) });
+      return;
+    }
+    var own = toyRowByCode(s.code, s.name);
+    if (!own) {
+      own = lotteRow(s);
+      own.distance = st.center ? meters(st.center, own) : s.distance;
+      st.all.push(own);
+    }
+    own.martChain = "토이저러스";
+    own.toysrus = true;
+    if (s.place && !own.placeName) own.placeName = s.place;
+    own.lotte = lotteData(s);
+  }
+
   function applyLotte(payload, quiet) {
-    /* 이전 조회 결과를 먼저 걷어 낸다(지도를 다시 그리지 않고 값만 정리) */
+    /* 이전 조회 결과를 먼저 걷어 낸다(지도를 다시 그리지 않고 값만 정리).
+       토이저러스는 좌표표로 세운 행이라 지우지 않고, 붙였던 재고만 걷어 낸다. */
     if (st.all && st.all.length) {
       st.all = st.all.filter(function (s) { return s.source !== "lotte"; });
-      st.all.forEach(function (s) { if (s.lotte) delete s.lotte; });
+      st.all.forEach(function (s) {
+        if (s.lotte) delete s.lotte;
+        if (s.toys && s.toys.lotte) delete s.toys.lotte;
+      });
     }
     if (!payload) {
       st.lottePayload = null;
@@ -1968,21 +2177,14 @@ window.PokeMoaMap = (function () {
     st.lottePayload = payload;
     var list = (payload.stores || []).slice();
     list.forEach(function (s) {
+      if (s.chain === "토이저러스") { attachToy(s); return; }
       var row = findStoreRow(s.rowId, s.code);
       if (!row) {
         row = lotteRow(s);
         row.distance = st.center ? meters(st.center, row) : s.distance;
         st.all.push(row);
       }
-      row.lotte = {
-        code: s.code,
-        chain: s.chain || "롯데마트",
-        total: s.total,
-        stockCount: s.stockCount,
-        cardItems: s.cardItems || [],
-        cardStock: s.cardStock || 0,
-        at: s.at || Date.now()
-      };
+      row.lotte = lotteData(s);
     });
     st.lotte = {
       ok: !!payload.ok,

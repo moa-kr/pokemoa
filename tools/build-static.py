@@ -198,6 +198,7 @@ def load_data():
         "movers": extract(src, "kreamMovers", cache),
         "kream_checked": extract(src, "KREAM_CHECKED", cache),
         "new_releases": extract(src, "newReleases", cache),
+        "toysrus": extract(src, "toysrusBranches", cache),
         "site": extract(src, "SITE", cache),
     }
     cfg = json.loads((ROOT / "assets/config/site-config.json").read_text(encoding="utf-8"))
@@ -505,6 +506,12 @@ def sets_index_page():
 
 
 # ------------------------------------------------------------------ 가이드 페이지
+def _region_label(addr):
+    """주소 첫 토막을 지역명으로 — 2026년 통합된 전남광주통합특별시는 짧게 광주로 적는다."""
+    head = (addr or "").split(" ")[0]
+    return "광주" if head.startswith("전남광주") else head
+
+
 def guide_price():
     path = "guides/price-channels.html"
     ch = DATA["channels"]
@@ -529,6 +536,17 @@ def guide_price():
         )
 
     detail = "".join(_channel_block(c) for c in ch)
+    toys = DATA.get("toysrus") or []
+    toy_rows = "".join(
+        "<tr><td><strong>%s</strong></td><td>%s</td><td>%s</td><td>%s</td></tr>"
+        % (
+            _region_label(t.get("addr") or ""),
+            e(t["name"]),
+            e(t.get("place") or "—"),
+            e(t.get("addr") or ""),
+        )
+        for t in toys
+    )
     body = f"""<h1>포켓몬 카드 정가 구매처 비교 — 30th CELEBRATION 기준 6개 채널</h1>
 <p class="lead">같은 박스라도 채널마다 배송비·판매 단위·추첨 조건이 다릅니다. 30th CELEBRATION(1팩 3,500원·1박스 70,000원)을 기준으로 포켓몬스토어, SSG, G마켓, 티씨지박스, 이마트·롯데마트 등 마트, 편의점 4사의 조건을 정리했습니다.</p>
 
@@ -550,6 +568,14 @@ def guide_price():
 
 <h2>채널별 자세히</h2>
 {detail}
+
+<h2>토이저러스 매장 — 전국 {len(toys)}곳</h2>
+<p>토이저러스는 롯데마트 계열이라 매장 목록·재고를 롯데마트 모바일 도와센터에서 같이 볼 수 있습니다. 아래는 도와센터 매장 목록(2026-11-26)과 카카오 장소 검색으로 주소·좌표를 확인한 전국 {len(toys)}곳입니다. 같은 건물에 롯데마트가 있으면 「동네에서 찾기」 지도에서 마커가 하나로 묶이고 매장 카드에 두 점포 재고가 나란히 나오며, 아울렛·몰처럼 롯데마트가 없는 건물은 토이저러스 단독 매장으로 표시됩니다.</p>
+<div class="table-scroll"><table>
+<caption>도와센터 매장 목록 기준 · 위치는 2026-11-26 확인</caption>
+<thead><tr><th>지역</th><th>매장</th><th>같은 건물</th><th>주소</th></tr></thead>
+<tbody>{toy_rows}</tbody></table></div>
+<p class="note">매장은 생기거나 없어질 수 있고, 같은 건물 표기도 건물 사정에 따라 달라집니다. 방문 전 토이저러스·롯데마트 고객센터로 영업 여부를 확인하세요. 포켓몬 카드 재고는 「동네에서 찾기」 지도에서 점포별로 조회합니다.</p>
 
 <h2>상황별로 고르는 법</h2>
 <dl class="defs">
@@ -608,6 +634,32 @@ def guide_cvs():
         ("공인 카드샵", copy["arrivalShopDays"]),
     ]
     arr_rows = "".join(f"<tr><td><strong>{e(n)}</strong></td><td>{e(d)}</td></tr>" for n, d in arrival)
+    toys = DATA.get("toysrus") or []
+    mart_rows = "".join(
+        f"<tr><td><strong>{e(n)}</strong></td><td>{e(how)}</td><td>{e(shown)}</td></tr>"
+        for n, how, shown in [
+            (
+                "이마트",
+                "이마트 앱이 쓰는 점포 재고 API를 같은 방식으로 직접 조회",
+                "카드 상품 9종의 점포별 수량·품절·수량 비공개·오늘 휴무",
+            ),
+            (
+                "롯데마트",
+                "롯데마트 모바일 도와센터(점포 전산)를 중계 서버로 조회",
+                "점포별 포켓몬 상품 재고 — 카드(TCG) 상품이 있으면 이름·가격·수량, 없으면 ‘카드 상품 없음’",
+            ),
+            (
+                "토이저러스",
+                f"같은 도와센터(롯데마트 계열) 점포 전산 + 확인한 전국 {len(toys)}곳 좌표",
+                "같은 건물에 롯데마트가 있으면 한 마커에 ‘토이저러스 함께’, 없으면 단독 매장으로 표시",
+            ),
+            (
+                "홈플러스",
+                "공개된 점포 재고 API 없음",
+                "매장 위치만 — 방문 전 매장 고객센터로 확인",
+            ),
+        ]
+    )
     sc = DATA["shortcuts"]
     sc_cards = "".join(
         f'<a class="card-link" href="{e(s["url"])}" target="_blank" rel="noopener"><span class="t">{e(s["label"])}</span>'
@@ -636,7 +688,13 @@ def guide_cvs():
 <tr><td><strong>이마트24</strong></td><td>이마트24 앱에서 상품·매장 확인</td><td>재고·품절, 수량 비공개 매장은 ‘매장 문의’</td></tr>
 <tr><td><strong>세븐일레븐</strong></td><td>매장 위치만 안내(재고 미지원)</td><td>재고 없음 — 방문 전 매장 전화</td></tr>
 </tbody></table></div>
-<p class="note">세븐일레븐은 정책상 재고 조회를 제공하지 않아 포켓몬카드모아도 <strong>매장 위치만</strong> 보여 줍니다. 이마트는 30주년 기념팩·어비스아이·인페르노X·닌자스피너·니힐제로·메가심포니아·메가브레이브·로켓단의 영광·열풍의 아레나 9종의 점포별 재고를 확인합니다(롯데마트·홈플러스·토이저러스는 매장 위치만).</p>
+<p class="note">세븐일레븐은 정책상 재고 조회를 제공하지 않아 포켓몬카드모아도 <strong>매장 위치만</strong> 보여 줍니다. 이마트는 30주년 기념팩·어비스아이·인페르노X·닌자스피너·니힐제로·메가심포니아·메가브레이브·로켓단의 영광·열풍의 아레나 9종의 점포별 재고를 확인합니다.</p>
+
+<h2>대형마트·토이저러스는 어떻게 확인하나</h2>
+<div class="table-scroll"><table>
+<thead><tr><th>채널</th><th>확인 방법</th><th>포켓몬카드모아 표시</th></tr></thead>
+<tbody>{mart_rows}</tbody></table></div>
+<p class="note">롯데마트·토이저러스는 로그인 없이 열리는 <strong>롯데마트 모바일 도와센터(점포 전산)</strong>를 중계 서버가 대신 읽어 점포별 재고를 보여 줍니다. 도와센터는 해외 IP를 막아 한국 네트워크 중계가 필요하고, 조회한 포켓몬 상품 중 카드(TCG) 상품이 없으면 ‘카드 상품 없음’과 함께 완구·문구 등 재고 수만 적습니다(2026-11-26 서울·경기 점포 실측 — 부스터 상품은 아직 없고 완구·카드용품만 있습니다). 토이저러스는 카카오 업종 검색(대형마트)에 잡히지 않아 <strong>확인한 전국 {len(toys)}곳 좌표</strong>로 표시하고, 롯데마트·롯데몰·아울렛 안에 있으면 같은 건물의 롯데마트 마커에 <strong>‘토이저러스 함께’</strong>로 묶어 하나의 매장 카드에서 두 점포 재고를 나란히 보여 줍니다.</p>
 
 <h2>채널별 참고 입고 요일</h2>
 <p>{e(copy["arrivalLead"])} 아래 요일은 현장 제보를 정리한 참고값입니다.</p>

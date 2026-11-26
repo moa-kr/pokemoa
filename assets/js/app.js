@@ -676,7 +676,8 @@
     if (!L) return "";
     var when = L.at ? new Date(L.at) : null;
     var whenLabel = when ? String(when.getHours()).padStart(2, "0") + ":" + String(when.getMinutes()).padStart(2, "0") : "";
-    var title = "롯데마트 도와센터 조회" + (whenLabel ? " " + whenLabel : "") +
+    var who = (L.chain === "토이저러스") ? "토이저러스" : "롯데마트";
+    var title = who + " 도와센터 조회" + (whenLabel ? " " + whenLabel : "") +
       (L.total ? " · 확인한 포켓몬 상품 " + L.total + "종 중 재고 " + L.stockCount + "종" : "");
     if (L.cardItems && L.cardItems.length) {
       var inStock = L.cardItems.filter(function (c) { return Number(c.stock) > 0; });
@@ -686,6 +687,21 @@
       return '<span class="chip chip-lotte" title="' + escapeHtml(title) + '">' + escapeHtml(text) + "</span>";
     }
     return '<span class="chip chip-lotte is-none" title="' + escapeHtml(title) + '">카드 상품 없음</span>';
+  }
+
+  /* 같은 건물 토이저러스 점고 — 롯데마트 목록 항목에 배지·칩으로 붙인다 */
+  function toyChipHtml(s) {
+    var T = s.toys;
+    if (!T) return "";
+    var tip = "같은 건물에 " + T.name + (T.place ? " (" + T.place + " 안)" : "") + "이 있습니다";
+    var tail = "";
+    var L = T.lotte;
+    if (L) {
+      tail = (L.cardItems && L.cardItems.length)
+        ? (L.cardStock ? " · 카드 " + L.cardStock + "종" : " · 카드 품절")
+        : " · 카드 상품 없음";
+    }
+    return '<span class="chip chip-toys" title="' + escapeHtml(tip) + '">토이저러스' + escapeHtml(tail) + "</span>";
   }
 
   function productTagsHtml(s) {
@@ -777,7 +793,7 @@
       var sLabel = s.emart
         ? (s.emartState === "in" ? "재고 있음" : s.emartState === "undisclosed" ? "수량 비공개" : "품절")
         : (s.offline
-          ? (s.lotte ? "도와센터 조회" : (s.brand === "vending" ? "공식 설치 지점" : s.brand === "cardshop" ? "공인 카드샵" : "매장 확인"))
+          ? ((s.lotte || (s.toys && s.toys.lotte)) ? "도와센터 조회" : (s.brand === "vending" ? "공식 설치 지점" : s.brand === "cardshop" ? "공인 카드샵" : "매장 확인"))
           : (policyOnlyBrand(s.brand) ? "위치 안내" : (!s.relay && s.status === "none" ? "미조회" : statusText[s.status])));
       var item = document.createElement("li");
       var btn = document.createElement("button");
@@ -805,6 +821,7 @@
             : (s.relay
               ? '<span class="chip chip-relay">실시간 ' + (s.relayQty || 0) + '개</span>'
               : '<span class="chip chip-check">수량 미확인</span>')))) +
+        toyChipHtml(s) +
         (s.street ? "<small>" + escapeHtml(s.street) + "</small>" : "") +
         "</span>" +
         productTagsHtml(s);
