@@ -335,9 +335,13 @@ window.PokeMoMoaLotte = (function () {
           }
         });
         /* 마커가 없는 점포는 위치를 확인해 반경 안이면 따로 세운다.
-           토이저러스는 좌표표(data.js)를 쓰고, 같은 건물 롯데마트가 있으면 그 마커에 붙인다 */
+           토이저러스는 좌표표(data.js)를 쓰므로 카카오 호출이 없다 — 반경 안 13곳을 다 본다.
+           표에 없는 점포는 카카오 키워드 검색이 필요해 8곳까지만 본다(세션 캐시). */
         var unmatched = pairs.filter(function (p) { return !p.row; }).map(function (p) { return p.store; });
-        var geoJobs = unmatched.slice(0, 12).map(function (st) {
+        var others = unmatched.filter(function (st) { return !isToy(st.name); }).slice(0, 8);
+        var geoJobs = unmatched.filter(function (st) { return isToy(st.name); })
+          .concat(others)
+          .map(function (st) {
           return geocode(st.name).then(function (geo) {
             if (!geo || !center) return null;
             var d = meters(center, geo);
