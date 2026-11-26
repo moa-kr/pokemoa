@@ -1,0 +1,234 @@
+/* =========================================================================
+   포켓몬카드모아 — 정적 상세 페이지(확장팩 도감·가이드) 공용 스타일
+   단일 페이지 앱(style.css)과 분리해 두어, 앱 자산을 고쳐도 도감 페이지가
+   흔들리지 않게 합니다. 색은 브랜드(네이비 #101f3c + 옐로 #ffcb05)만 씁니다.
+   ========================================================================= */
+:root {
+  --navy: #101f3c;
+  --navy-2: #1b3159;
+  --yellow: #ffcb05;
+  --yellow-soft: #fff4c7;
+  --paper: #f5f7fb;
+  --card: #ffffff;
+  --line: #e3e8f1;
+  --line-2: #cfd8e6;
+  --text: #1a2233;
+  --muted: #5b6b85;
+  --amber: #a8730a;
+  --radius: 14px;
+  --shadow: 0 1px 2px rgba(16, 31, 60, 0.06), 0 8px 24px rgba(16, 31, 60, 0.06);
+}
+
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--text);
+  font-family: "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 16px;
+  line-height: 1.65;
+  word-break: keep-all;
+}
+
+a { color: var(--navy-2); text-decoration: underline; text-decoration-color: var(--line-2); text-underline-offset: 3px; }
+a:hover { color: var(--navy); text-decoration-color: var(--navy); }
+
+.wrap { width: 100%; max-width: 980px; margin: 0 auto; padding: 0 20px; }
+
+/* ---------------------------------------------------------------- 헤더 */
+.site-head {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: var(--navy);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.site-head .wrap {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 58px;
+  flex-wrap: wrap;
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+.brand { display: inline-flex; align-items: center; gap: 9px; text-decoration: none; }
+.brand strong { color: #fff; font-size: 16px; letter-spacing: -0.01em; }
+.brand span { display: block; color: #8298bd; font-size: 10px; letter-spacing: 0.16em; }
+.site-nav { display: flex; gap: 14px; margin-left: auto; flex-wrap: wrap; }
+.site-nav a {
+  color: #c8d5ea;
+  font-size: 13px;
+  text-decoration: none;
+  padding: 4px 2px;
+  border-bottom: 2px solid transparent;
+}
+.site-nav a:hover { color: #fff; border-bottom-color: var(--yellow); }
+
+/* ---------------------------------------------------------------- 본문 */
+main { padding: 26px 0 56px; }
+
+.crumbs { font-size: 12.5px; color: var(--muted); margin: 0 0 14px; }
+.crumbs a { color: var(--muted); text-decoration: none; }
+.crumbs a:hover { color: var(--navy); text-decoration: underline; }
+.crumbs .sep { margin: 0 6px; opacity: 0.6; }
+
+h1 {
+  margin: 0 0 10px;
+  font-size: 27px;
+  line-height: 1.32;
+  letter-spacing: -0.02em;
+}
+h1 .code {
+  display: inline-block;
+  vertical-align: 3px;
+  margin-left: 6px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: var(--navy);
+  color: var(--yellow);
+  font-size: 12.5px;
+  letter-spacing: 0.04em;
+}
+.lead { margin: 0 0 22px; color: var(--muted); font-size: 15.5px; }
+
+h2 {
+  margin: 34px 0 12px;
+  font-size: 20px;
+  letter-spacing: -0.01em;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--navy);
+  display: inline-block;
+}
+h3 { margin: 22px 0 8px; font-size: 16px; }
+p { margin: 0 0 12px; }
+ul, ol { margin: 0 0 12px; padding-left: 20px; }
+li { margin: 3px 0; }
+
+.panel {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 18px 18px 6px;
+  margin: 0 0 18px;
+}
+.panel > :last-child { margin-bottom: 12px; }
+
+/* 핵심 수치 */
+.facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin: 0 0 18px;
+}
+.facts div { background: var(--card); padding: 12px 14px; }
+.facts dt, .facts .k { display: block; color: var(--muted); font-size: 11.5px; letter-spacing: 0.03em; }
+.facts .v { display: block; font-size: 15.5px; font-weight: 700; margin-top: 2px; }
+.facts .v small { font-weight: 400; color: var(--muted); font-size: 12px; }
+
+@media (min-width: 720px) {
+  .facts { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+/* 표 */
+.table-scroll { overflow-x: auto; margin: 0 0 16px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--card); }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+caption { caption-side: top; text-align: left; padding: 10px 14px 2px; color: var(--muted); font-size: 12.5px; }
+th, td { padding: 9px 12px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+thead th { background: #eef2f9; color: var(--navy); font-size: 12.5px; letter-spacing: 0.02em; white-space: nowrap; }
+tbody tr:last-child td { border-bottom: 0; }
+td.num, th.num { white-space: nowrap; font-variant-numeric: tabular-nums; }
+td.right, th.right { text-align: right; }
+
+.chip {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: #eef2f9;
+  border: 1px solid var(--line-2);
+  color: var(--navy-2);
+  font-size: 11.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.chip.hot { background: var(--yellow-soft); border-color: #f0d98a; color: var(--amber); }
+
+.note {
+  background: #f8fafd;
+  border-left: 3px solid var(--yellow);
+  padding: 10px 14px;
+  border-radius: 0 10px 10px 0;
+  color: #3d4a61;
+  font-size: 14px;
+  margin: 0 0 16px;
+}
+.note strong { color: var(--navy); }
+
+/* 링크 카드 묶음 */
+.cards { display: grid; grid-template-columns: 1fr; gap: 10px; margin: 0 0 18px; }
+@media (min-width: 640px) { .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 900px) { .cards { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.card-link {
+  display: block;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 13px 14px;
+  text-decoration: none;
+  color: var(--text);
+  box-shadow: var(--shadow);
+}
+.card-link:hover { border-color: var(--navy); color: var(--navy); }
+.card-link .t { display: block; font-weight: 700; font-size: 14.5px; }
+.card-link .s { display: block; color: var(--muted); font-size: 12.5px; margin-top: 3px; }
+
+.cta {
+  display: inline-block;
+  margin: 4px 8px 12px 0;
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: var(--navy);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+}
+.cta:hover { background: var(--navy-2); color: #fff; }
+.cta.ghost { background: #fff; color: var(--navy); border: 1px solid var(--line-2); }
+.cta.ghost:hover { border-color: var(--navy); }
+
+/* 목록형 정의 */
+dl.defs { margin: 0 0 16px; }
+dl.defs dt { font-weight: 700; margin-top: 12px; }
+dl.defs dd { margin: 2px 0 0; color: #3d4a61; }
+
+/* FAQ */
+details.qa {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin: 0 0 10px;
+}
+details.qa summary { cursor: pointer; font-weight: 700; }
+details.qa p { margin: 8px 0 0; color: #3d4a61; }
+
+/* ---------------------------------------------------------------- 푸터 */
+.site-foot { background: var(--navy); color: #c8d5ea; padding: 26px 0 30px; font-size: 13px; }
+.site-foot a { color: #dbe5f5; }
+.site-foot h5 { margin: 0 0 6px; color: #7f94ba; font-size: 10.5px; letter-spacing: 0.14em; text-transform: uppercase; }
+.site-foot ul { list-style: none; padding: 0; margin: 0 0 14px; display: flex; flex-wrap: wrap; gap: 6px 16px; }
+.site-foot .fine { color: #8298bd; font-size: 12px; line-height: 1.7; }
+.site-foot .fine a { color: #a9bcd9; }
+
+/* 인쇄·접근성 */
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
