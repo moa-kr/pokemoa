@@ -1089,7 +1089,8 @@ window.PokeMoaMap = (function () {
       '</div>' +
       body +
       '<p class="pm-card-note">롯데마트 모바일 도와센터(점포 전산)에서 <b>포켓몬</b>을 검색한 결과입니다(조회 ' + escapeHtml(whenLabel || lotteClock(s.toys && s.toys.lotte && s.toys.lotte.at)) + '). ' +
-        '도와센터는 매장 판매 상황에 따라 실제와 다를 수 있다고 안내합니다. 방문 전 매장 전화(' + escapeHtml(s.phone || "매장 문의") + ')로 한 번 더 확인하세요.</p>' +
+        '도와센터는 매장 판매 상황에 따라 실제와 다를 수 있다고 안내합니다. ' +
+        (s.phone ? '방문 전 매장 전화(' + escapeHtml(s.phone) + ')로 한 번 더 확인하세요.' : '방문 전 매장에 한 번 더 확인하세요.') + '</p>' +
       '<a class="btn btn-sm btn-dark pm-card-link" target="_blank" rel="noopener" href="' + navLink + '">네이버 지도에서 보기</a>';
     el.card.querySelector(".pm-card-close").addEventListener("click", function (e) {
       e.stopPropagation();
