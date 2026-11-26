@@ -276,7 +276,7 @@ window.PokeMoaMap = (function () {
       s.products = [];
       out.push(s);
     }
-    return mergeToys(out);
+    return out;
   }
 
   /* --------------------------------------------- 토이저러스 건물 묶기 */
@@ -1717,8 +1717,8 @@ window.PokeMoaMap = (function () {
     Promise.all([convReq, offReq, shopReq]).then(function (res) {
       clearTimeout(softTimer);
       if (seq !== st.seq) return;
-      st.all = prepare(res[0].concat(res[1] || []), center, "live")
-        .concat(prepare(builtinOffline(center, radius), center, "live"));
+      st.all = mergeToys(prepare(res[0].concat(res[1] || []), center, "live")
+        .concat(prepare(builtinOffline(center, radius), center, "live")));
       st.source = "live";
       st.lastError = null;
       st.pendingLive = false;
@@ -1740,8 +1740,8 @@ window.PokeMoaMap = (function () {
     var rows = snapshotList();
     /* 새로 추가한 시·군·구는 스냅샷이 없다 — 빈 배열이어도 그대로 두고(오류 아님) 안내만 바꾼다 */
     st.snapshotEmpty = rows.length === 0;
-    st.all = prepare(rows, center, "snapshot")
-      .concat(prepare(builtinOffline(center, st.radius), center, "snapshot"));
+    st.all = mergeToys(prepare(rows, center, "snapshot")
+      .concat(prepare(builtinOffline(center, st.radius), center, "snapshot")));
     st.source = "snapshot";
     st.lastError = reason;
     st.loading.data = false;
@@ -2144,6 +2144,9 @@ window.PokeMoaMap = (function () {
     };
     if (host) {
       host.toys = Object.assign({}, host.toys || {}, info, { lotte: lotteData(s) });
+      /* 좌표표로 따로 세워 둔 토이저러스 행이 남아 있으면 지운다(같은 건물에 마커 둘 금지) */
+      var twin = toyRowByCode(s.code, s.name);
+      if (twin) st.all = st.all.filter(function (x) { return x !== twin; });
       return;
     }
     var own = toyRowByCode(s.code, s.name);
