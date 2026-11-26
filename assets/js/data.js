@@ -622,8 +622,8 @@ window.POKEMOA_DATA = (function () {
 
   var weekdayGuide = [
     { day: "월", focus: "온라인 공지 확인", detail: "공식 스토어·카드샵 재입고 알림을 켜두고, 주말에 빠진 물량이 풀리는지 확인", place: "온라인" },
-    { day: "화", focus: "대형마트 완구코너", detail: "오전에 진열이 도는 편이라 점심 전 방문이 유리", place: "마트" },
-    { day: "수", focus: "마트·토이저러스", detail: "수·목 오전 진열 빈도가 높다는 후기가 많음(공식 아님)", place: "마트" },
+    { day: "화", focus: "이마트·롯데마트 등 완구코너", detail: "오전에 진열이 도는 편이라 점심 전 방문이 유리", place: "마트" },
+    { day: "수", focus: "이마트·롯데마트·토이저러스", detail: "수·목 오전 진열 빈도가 높다는 후기가 많음(공식 아님)", place: "마트" },
     { day: "목", focus: "카드샵·자판기", detail: "주말 물량을 미리 받는 곳이 있어 카드샵 문의 가치가 큼", place: "카드샵" },
     { day: "금", focus: "편의점 주말 물량", detail: "퇴근 시간 이후 빠르게 소진 · 오전~오후 초반이 승부", place: "편의점" },
     { day: "토", focus: "오픈런 주의", detail: "인기 매장은 대기 발생 · 방문 전 전화로 재고 확인", place: "전체" },
@@ -1947,7 +1947,7 @@ window.POKEMOA_DATA = (function () {
     /* 이마트(대형마트) — 이마트24(편의점)와 다른 브랜드다. 노란 사인에 검은 글자가 기본이라
        이마트24(#f5b100)와 헷갈리지 않도록 조금 더 진한 노랑(#ffc400)을 쓴다. */
     emart: { label: "이마트", short: "이마트", color: "#ffc400", ink: "#2b2200", soft: "#fff8d9" },
-    mart: { label: "대형마트", short: "대형마트", color: "#1f6feb", ink: "#ffffff", soft: "#e6effd" },
+    mart: { label: "이마트·롯데마트 등", short: "마트", color: "#1f6feb", ink: "#ffffff", soft: "#e6effd" },
     artbox: { label: "아트박스", short: "아트박스", color: "#ff4d8d", ink: "#ffffff", soft: "#ffe9f1" },
     vending: { label: "공식 자판기", short: "자판기", color: "#7c4dff", ink: "#ffffff", soft: "#f0eaff" },
     cardshop: { label: "공인 카드샵", short: "카드샵", color: "#12854a", ink: "#ffffff", soft: "#e4f5ec" }
@@ -2173,7 +2173,7 @@ window.POKEMOA_DATA = (function () {
   /* 2026-11-18 확인. 편의점 4사와 달리 **재고는 공개 데이터가 없어** 모두
      '확인 필요(방문·매장 문의)' 또는 '공식 설치 지점'으로만 표시한다. */
   var offlineBrands = [
-    { id: "mart", label: "대형마트", short: "마트" },
+    { id: "mart", label: "이마트·롯데마트 등", short: "마트" },
     { id: "artbox", label: "아트박스", short: "아트" },
     { id: "vending", label: "공식 자판기", short: "자판" },
     { id: "cardshop", label: "공인 카드샵", short: "카드샵" }

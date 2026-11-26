@@ -769,7 +769,7 @@
       btn.setAttribute("data-store", s.id);
       btn.innerHTML =
         '<span class="s-top">' +
-        '<span class="s-brand" style="background:' + b.color + ';color:' + (b.ink || "#ffffff") + '">' + b.short + "</span>" +
+        '<span class="s-brand" style="background:' + b.color + ';color:' + (b.ink || "#ffffff") + '">' + ((s.brand === "mart" && s.martChain) ? s.martChain : b.short) + "</span>" +
         '<span class="s-name">' + s.name + "</span>" +
         '<span class="s-dist">' + dist + "</span>" +
         "</span>" +
@@ -1884,7 +1884,7 @@
             if (c.in) ebits.push("재고 " + c.in + "곳");
             if (c.none) ebits.push("품절 " + c.none + "곳");
             if (c.check) ebits.push("비공개 " + c.check + "곳");
-            return ebits.length ? "대형마트 · " + ebits.join(" · ") : "반경 안 점포 없음";
+            return ebits.length ? "이마트 · " + ebits.join(" · ") : "반경 안 점포 없음";
           }
           var bits = [];
           if (c.in) bits.push("재고 " + c.in + "곳");

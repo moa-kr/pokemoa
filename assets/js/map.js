@@ -54,7 +54,22 @@ window.PokeMoaMap = (function () {
   /* 오프라인 판매처(마트·아트박스·공식 자판기·공인 카드샵) — 편의점 4사와 함께 지도에 올린다.
      재고 공개 데이터가 없어 모두 '매장 확인' 또는 '공식 설치 지점'으로만 표시한다. */
   var OFFLINE_IDS = ["mart", "artbox", "vending", "cardshop"];
-  var OFFLINE_LABEL = { mart: "대형마트", artbox: "아트박스", vending: "공식 자판기", cardshop: "공인 카드샵" };
+  var OFFLINE_LABEL = { mart: "이마트·롯데마트 등", artbox: "아트박스", vending: "공식 자판기", cardshop: "공인 카드샵" };
+  /* 마트는 업종이 아니라 체인이 이름에 드러난다(이마트·롯데마트·홈플러스·토이저러스).
+     지도 말풍선·매장 배지에는 '대형마트' 대신 그 매장의 실제 체인명을 적는다. */
+  var MART_CHAIN_RE = [
+    ["이마트", /^이마트/],
+    ["롯데마트", /^롯데마트/],
+    ["홈플러스", /^홈플러스/],
+    ["토이저러스", /^토이저러스/]
+  ];
+  function martChainOf(name) {
+    var n = String(name || "").trim();
+    for (var i = 0; i < MART_CHAIN_RE.length; i++) {
+      if (MART_CHAIN_RE[i][1].test(n)) return MART_CHAIN_RE[i][0];
+    }
+    return "";
+  }
   var OFFLINE_CAP = 26;      /* 마트·아트박스 실시간 검색 결과 상한(편의점 마커를 밀어내지 않게) */
 
   /* 도심(allow20:false) 지역 좌표 — 내 위치가 이 근처면 20km를 막는다 */
@@ -237,7 +252,9 @@ window.PokeMoaMap = (function () {
       source: o.source,
       offline: offline,
       official: !!o.official,
-      placeKind: o.place || ""
+      placeKind: o.place || "",
+      /* 마트 매장의 체인명(이마트·롯데마트·홈플러스·토이저러스) — 화면 표기용 */
+      martChain: o.martChain || ""
     };
   }
 
@@ -490,10 +507,11 @@ window.PokeMoaMap = (function () {
         '<i class="pm-dot is-in"></i>' +
         "<b>" + b.short + "</b><span>재고 있음" + (n ? " · " + n + "종" : "") + "</span></span>";
     } else if (s.offline && (s.brand === "mart" || s.brand === "artbox")) {
-      /* 오프라인 판매처는 재고 조회 대상이 아니다 — 방문 확인 */
+      /* 오프라인 판매처는 재고 조회 대상이 아니다 — 방문 확인. 마트는 체인명을 그대로 적는다 */
+      var offName = (s.brand === "mart" && s.martChain) ? s.martChain : b.short;
       html = '<span class="pm-pill status-' + s.status + ' is-offline" style="--brand:' + b.color + '">' +
         '<i class="pm-dot" style="background:' + b.color + '"></i>' +
-        "<span>" + b.short + " · 매장확인</span></span>";
+        "<span>" + offName + " · 매장확인</span></span>";
     } else if (isPolicyBrand(s.brand)) {
       /* 세븐일레븐 — 재고는 세븐일레븐 정책상 안내하지 않고 매장 위치만 (실패 색 아님) */
       html = '<span class="pm-pill status-check is-policy" style="--brand:' + b.color + '">' +
@@ -823,8 +841,8 @@ window.PokeMoaMap = (function () {
     if (s.brand === "cardshop") {
       return "포켓몬코리아 <b>공식 카드샵 목록</b>(2026-11-18 확인)의 공인 매장입니다. 정가 판매·재고·영업시간은 매장에 문의하세요.";
     }
-    var label = s.brand === "artbox" ? "아트박스" : "대형마트";
-    return "카카오맵 장소 검색으로 찾은 <b>" + label + "</b>입니다. 완구코너 포켓몬 카드 정가 판매와 재고는 매장에 문의해 확인하세요.";
+    var label = s.brand === "artbox" ? "아트박스" : (s.martChain || "이마트·롯데마트·홈플러스·토이저러스");
+    return "카카오맵 장소 검색으로 찾은 <b>" + label + (s.brand === "artbox" ? "" : " 매장") + "</b>입니다. 완구코너 포켓몬 카드 정가 판매와 재고는 매장에 문의해 확인하세요.";
   }
 
   /* ------------------------------------------------ 이마트(대형마트) 카드 */
@@ -892,16 +910,19 @@ window.PokeMoaMap = (function () {
     var meta = D.brandMeta[s.brand] || { label: s.brand, color: "#1b2a4a", short: "?" };
     var dist = s.distance < 1000 ? Math.round(s.distance) + "m" : (s.distance / 1000).toFixed(1) + "km";
     var navLink = "https://map.naver.com/p/search/" + encodeURIComponent(s.name);
-    /* 매장명이 브랜드명뿐이면 부제에서 브랜드를 한 번 더 쓰지 않는다 */
+    /* 매장명이 브랜드명뿐이면 부제에서 브랜드를 한 번 더 쓰지 않는다.
+       마트는 '대형마트' 대신 그 매장의 체인명을 적는다(이마트 포항점 → 이마트). */
+    var cardBrand = (s.brand === "mart" && s.martChain) ? s.martChain : meta.short;
+    var cardLabel = (s.brand === "mart" && s.martChain) ? s.martChain : meta.label;
     var subBits = [];
-    if (s.name.indexOf(meta.label) !== 0) subBits.push(meta.label);
+    if (s.name.indexOf(cardLabel) !== 0) subBits.push(cardLabel);
     if (s.street) subBits.push(s.street);
     subBits.push(dist);
     var subLine = subBits.join(" · ");
     el.card.hidden = false;
     el.card.innerHTML =
       '<div class="pm-card-head">' +
-      '<span class="pm-card-brand" style="background:' + meta.color + ';color:' + (meta.ink || "#ffffff") + '">' + meta.short + "</span>" +
+      '<span class="pm-card-brand" style="background:' + meta.color + ';color:' + (meta.ink || "#ffffff") + '">' + cardBrand + "</span>" +
       '<div class="pm-card-title"><strong>' + s.name + "</strong>" +
       "<span>" + subLine + "</span></div>" +
       '<button type="button" class="pm-card-close" aria-label="닫기">×</button>' +
@@ -1202,6 +1223,7 @@ window.PokeMoaMap = (function () {
       brand: brand,
       shop: "offline",
       place: brand,
+      martChain: brand === "mart" ? martChainOf(p.place_name) : "",
       lat: lat,
       lng: lng,
       street: p.road_address_name || p.address_name || "",
