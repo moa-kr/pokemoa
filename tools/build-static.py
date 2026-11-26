@@ -35,7 +35,8 @@ CSS_V = "2"
 SITE_HOME = BASE + "/"
 OG_IMAGE = BASE + "/assets/img/og-image.png"       # 1200x630 대표 이미지
 SITE_LOGO = BASE + "/assets/img/icons/icon-512.png"  # 512x512 로고
-FIRST_PUBLISHED = "2026-11-26"   # 정적 상세 페이지 최초 공개일
+PUBLISHED_AT = "2026-11-26T10:16:00+09:00"   # 최초 생성 시각(KST, 파일 타임스탬프)
+MODIFIED_AT = "2026-11-26T17:05:00+09:00"    # 이번 생성 시각(KST)
 
 FAVICON = (
     "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E"
@@ -214,8 +215,8 @@ def article_ld(path, headline, description, section=None):
         "description": description,
         "url": url,
         "image": [OG_IMAGE],
-        "datePublished": FIRST_PUBLISHED,
-        "dateModified": LAST_MOD,
+        "datePublished": PUBLISHED_AT,
+        "dateModified": MODIFIED_AT,
         "inLanguage": "ko-KR",
         "author": {"@type": "Organization", "name": SITE_NAME, "url": SITE_HOME},
         "publisher": publisher_ld(),
@@ -255,8 +256,8 @@ def collection_ld(path, name, description, list_items, about_name=None):
             "width": 1200,
             "height": 630,
         },
-        "datePublished": FIRST_PUBLISHED,
-        "dateModified": LAST_MOD,
+        "datePublished": PUBLISHED_AT,
+        "dateModified": MODIFIED_AT,
         "publisher": publisher_ld(),
         "mainEntity": {
             "@type": "ItemList",
