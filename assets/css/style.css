@@ -3330,6 +3330,11 @@ button { font: inherit; color: inherit; cursor: pointer; }
 @media (min-width: 720px) {
   .store-shortcut-grid.is-offline-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
 }
+/* 마트 바로가기는 실제 체인명 4개를 다 적는다(v4.56) — 좁은 2열 칸에서는 이름이 잘리고
+   부제(‘4개 마트 · 지도에서 지점 찾기’)가 말줄임되므로, 모바일에서는 이 칸만 한 줄 전체를 쓴다. */
+@media (max-width: 719px) {
+  .store-shortcut-grid.is-offline-grid > .store-shortcut.is-mart { grid-column: 1 / -1; }
+}
 
 /* 지도 툴바의 오프라인 판매처 칩 */
 .offline-bar {
