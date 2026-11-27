@@ -675,25 +675,30 @@ button { font: inherit; color: inherit; cursor: pointer; }
   font-size: 14px;
   line-height: 1.6;
 }
+/* v4.65 — 밑줄 텍스트 대신 눈에 띄는 알약(배지) 버튼으로: 테두리·배경·아이콘(▲/▼) */
 .map-brief-toggle {
   display: inline-flex;
   align-items: center;
-  gap: 3px;
-  padding: 0;
-  border: 0;
-  background: none;
-  color: var(--navy, #101f3c);
+  gap: 5px;
+  padding: 5px 11px;
+  border: 1px solid #cfdcf0;
+  border-radius: 999px;
+  background: #eef3fb;
+  color: #17325c;
   font: inherit;
-  font-size: 12.5px;
-  font-weight: 700;
-  text-decoration: underline;
-  text-underline-offset: 3px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  text-decoration: none;
   cursor: pointer;
   white-space: nowrap;
+  box-shadow: 0 1px 0 rgba(16, 31, 60, 0.05);
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
-.map-brief-toggle i { font-style: normal; font-size: 11px; transition: transform 0.15s ease; }
-.map-brief-toggle[aria-expanded="true"] i { transform: rotate(180deg); }
-.map-brief-toggle:hover { color: #1b2a8a; }
+.map-brief-toggle i { font-style: normal; font-size: 9px; line-height: 1; }
+.map-brief-toggle[aria-expanded="true"] { background: #e4edfb; border-color: #bccfe9; }
+.map-brief-toggle:hover { background: #dbe7f9; border-color: #a9c0e2; color: #0f2a6b; }
+.map-brief-toggle:focus-visible { outline: 2px solid #2f6df6; outline-offset: 2px; }
 .map-brief-detail { margin: 12px 0 0; }
 .map-brief-detail .demo-notice { margin: 0 0 12px; }
 .map-brief-lead {
@@ -2472,7 +2477,7 @@ body.figure-mode .map-brief-toggle { display: none; }
   .map-page-head .map-brief-summary { font-size: 12.5px; line-height: 1.5; gap: 6px; flex-wrap: nowrap; align-items: center; }
   /* 모바일은 「핵심 1줄」(넘치면 말줌임) + 자세히 보기 — 지도까지 스크롤을 줄인다 */
   .map-page-head .map-brief-summary > span { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .map-brief-toggle { flex: 0 0 auto; font-size: 12px; }
+  .map-brief-toggle { flex: 0 0 auto; font-size: 11.5px; padding: 4px 9px; gap: 4px; }
   .map-brief-detail { margin-top: 10px; }
   .map-brief-lead { font-size: 12.5px; line-height: 1.6; }
   .map-page-head .eyebrow { font-size: 10.5px; margin-bottom: 4px; }
@@ -2589,7 +2594,7 @@ body.figure-mode .map-brief-toggle { display: none; }
  * v3.2 — PokeConv 스타일: 라이트 지도 · 말풍선 마커 · 개소별 보유 카드 중심
  * ========================================================================= */
 
-/* 편의점 4사 재고 조회 진행률 (매장 탐색 0~40% → 실시간 재고 조회 40~100%) */
+/* 매장·재고 조회 진행률 (v4.65 — GS25·CU·이마트24 3사 / 매장 탐색 0~40% → 실시간 재고 조회 40~100%) */
 .brand-progress {
   display: grid;
   gap: 7px;
@@ -2680,7 +2685,8 @@ body.figure-mode .map-brief-toggle { display: none; }
 .bp-row[data-state="info"] .bp-status { color: #3d5474; white-space: normal; overflow: visible; line-height: 1.35; }
 .bp-sum-note { font-style: normal; font-weight: 700; color: #4a5f7d; background: #edf2fa; border-radius: 999px; padding: 1px 6px; font-size: 10.5px; }
 @media (min-width: 900px) {
-  .bp-rows { grid-template-columns: 1fr 1fr; gap: 3px 22px; }
+  /* v4.65 — 진행률 막대가 3사(GS25·CU·이마트24)로 줄어 PC 는 한 줄에 3칸 */
+  .bp-rows { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 3px 22px; }
 }
 .bp-summary {
   display: flex; flex-wrap: wrap; align-items: center; gap: 3px 12px;

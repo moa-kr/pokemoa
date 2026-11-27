@@ -60,24 +60,40 @@
     frames.forEach(function (f) { io.observe(f); });
   })();
 
-  /* ------------------------------------------- 지도 머리글 「자세히 보기 / 접기」(v4.62) */
+  /* ------------------------------- 지도 머리글 「숨기기 ▲ / 자세히 보기 ▼」(v4.62 → v4.65)
+     v4.65 — 기본값을 펼침으로 바꾸고(사용자가 실제 모바일 화면에서 요청), 「숨기기」를 누른
+     선택만 localStorage 에 남겨 다시 열어도 접힌 채로 시작한다. 첫 페인트 전 처리는
+     index.html 의 작은 인라인 스크립트가 맡고, 여기서는 이후 토글·기억을 맡는다. */
   (function mapBriefToggleInit() {
     var btn = $("#mapBriefToggle");
     var detail = $("#mapBriefDetail");
     if (!btn || !detail) return;
     var label = btn.querySelector(".map-brief-toggle-label");
-    function paint(open) {
+    var icon = btn.querySelector("i");
+    var KEY = "pokemoa.mapBriefHidden";
+    function storedHidden() {
+      try { return window.localStorage.getItem(KEY) === "1"; } catch (e) { return false; }
+    }
+    function remember(hidden) {
+      try {
+        if (hidden) window.localStorage.setItem(KEY, "1");
+        else window.localStorage.removeItem(KEY);
+      } catch (e) {}
+    }
+    function apply(open) {
+      if (open) detail.removeAttribute("hidden");
+      else detail.setAttribute("hidden", "");
       btn.setAttribute("aria-expanded", open ? "true" : "false");
-      if (label) label.textContent = open ? "접기" : "자세히 보기";
+      if (label) label.textContent = open ? "숨기기" : "자세히 보기";
+      if (icon) icon.textContent = open ? "▲" : "▼";
     }
     btn.addEventListener("click", function () {
       var open = detail.hasAttribute("hidden");
-      if (open) detail.removeAttribute("hidden");
-      else detail.setAttribute("hidden", "");
-      paint(open);
-      if (open) trackEvent("map_brief_open", { place: "map_head" });
+      apply(open);
+      remember(!open);
+      trackEvent(open ? "map_brief_open" : "map_brief_close", { place: "map_head" });
     });
-    paint(!detail.hasAttribute("hidden"));
+    apply(!storedHidden());
   })();
 
   /* --------------------------------------------------------------- 탭 */
@@ -260,8 +276,8 @@
   }
   var RATE_NOTICE = "⏳ 지금 이용자가 많아 잠시 후(약 1~2분 뒤) 다시 조회해 주세요. 매장 위치는 그대로 보실 수 있습니다.";
 
-  /* ------------------------------------- 편의점 4사 조회 진행률 패널 */
-  /* 매장 탐색(카카오 장소 검색) 0→40%, 실시간 재고 조회 40→100% 를 4사별로 보여 준다.
+  /* ---------------------------- 매장·재고 조회 진행률 패널 (v4.65 — GS25·CU·이마트24 3사) */
+  /* 매장 탐색(카카오 장소 검색) 0→40%, 실시간 재고 조회 40→100% 를 3사별로 보여 준다.
      퍼센트는 실제 응답으로만 올라간다 — 장소 검색은 페이지가 도착할 때마다(map.js 의
      pokemoa:search-progress), 재고는 조회 응답(sources)이 도착할 때(relayRefresh 의
      bpRelayDone) 올린다.
@@ -274,7 +290,10 @@
   var bpSummaryEl = $("#bpSummary");
   var bpToggleEl = $("#bpToggle");
   var bpTitleEl = $("#bpTitle");
-  var BP_BRANDS = ["gs25", "cu", "seven", "emart24", "emart"];
+  /* v4.65 — 진행률 패널(#bpRows·1줄 요약)에는 실제 재고 조회를 하는 GS25·CU·이마트24 3사만
+     표시한다(사용자 요청). 세븐일레븐(위치만)·이마트(대형마트)는 아래 브랜드 칩·지도 마커·
+     매장 목록에서 종전대로 확인할 수 있고, 조회·집계 자체도 그대로다. */
+  var BP_BRANDS = ["gs25", "cu", "emart24"];
   /* 재고 조회는 GS25·CU·이마트24 세 브랜드만 한다. GS25는 우리동네GS 로그인 세션이 있어야
      숫자가 오고, 세션이 없으면 중계가 「GS25 로그인 세션 필요」로 답한다(그때는 매장 위치만 보인다).
      세븐일레븐은 앱·점포 API 가 외부 조회를 403 으로 막아(2026-11-20 확인) 재고는 세븐일레븐 정책상
@@ -429,7 +448,7 @@
       bits.join("");
   }
 
-  /* 4사 진행 막대(#bpRows)를 실제 높이로 접고 펴서 「스르륵」 전환한다.
+  /* 3사 진행 막대(#bpRows)를 실제 높이로 접고 펴서 「스르륵」 전환한다.
      max-height 는 열 때 잰 높이로 잡고, 전환이 끝나면 none 으로 풀어
      뒤에 문구가 두 줄로 늘어도 잘리지 않게 한다. */
   function bpAnimateRows(open, instant) {
@@ -494,7 +513,8 @@
     clearTimeout(bp.collapseTimer);
     bpEl.hidden = false;
     bpEl.setAttribute("data-state", bp.stage === 3 ? "done" : "running");
-    if (bpTitleEl) bpTitleEl.textContent = bp.stage === 3 ? "매장·재고 조회 완료" : "매장·재고 조회 (편의점 4사 · 이마트)";
+    /* 진행 중 제목은 짧게 — 390px 에서 지역·100%·토글과 한 줄에 들어가야 한다(브랜드는 아래 3사 행이 보여 준다) */
+    if (bpTitleEl) bpTitleEl.textContent = bp.stage === 3 ? "매장·재고 조회 완료" : "매장·재고 조회";
     /* 진행 중에는 진행률을 보여 주려고 펼치고, 완료 상태로 다시 띄울 때만 사용자의 선택을 따른다 */
     bpCollapse(bp.stage === 3 && bp.userChoice !== "open");
   }
@@ -593,7 +613,7 @@
     }
     bp.stage = 2;
     if (bpEl) bpEl.setAttribute("data-state", "running");
-    if (bpTitleEl) bpTitleEl.textContent = "편의점 4사 · 이마트 재고 조회";
+    if (bpTitleEl) bpTitleEl.textContent = "매장·재고 조회";
     BP_BRANDS.forEach(function (id) {
       if (!BP_RELAY[id]) return;
       bpSet(id, 40, "최대 매장 조회 중 (최대 25~30초)", "run");
