@@ -2070,6 +2070,7 @@
   var offlineToggle = $("#offlineToggle");
   var offlineNoteEl = $("#offlineNote");
   var offlineCounts = null;
+  var offlineNoteKind = null;   /* 0곳 칩을 눌러 안내를 펼친 오프라인 판매처 종류 */
 
   /* 반경 안에 한 곳도 없는 오프라인 판매처(공식 자판기·공인 카드샵)는 “0곳”만 보여 주면
      고장으로 보인다 — 데이터에는 있는데 반경 밖일 뿐이므로 가장 가까운 곳을 거리와 함께 알려 준다.
@@ -2105,33 +2106,43 @@
       .slice(0, 2);
   }
 
+  function offlineLabel(kind) {
+    var hit = (D.offlineBrands || []).filter(function (b) { return b.id === kind; })[0];
+    return hit ? hit.label : kind;
+  }
+
+  /* 0곳 칩을 눌렀을 때만, 그 종류 하나의 '가장 가까운 곳' 안내를 칩 아래에 펼친다(한 번 더 누르면 닫힘).
+     기본 상태에서 감춰 두어 모바일 첫 화면에서 검색창·지도가 회색 안내에 밀리지 않게 한다(2026-11-27 · 1안). */
   function renderOfflineNote(counts) {
     if (!offlineNoteEl) return;
-    if (filterState.showOffline === false) { offlineNoteEl.hidden = true; offlineNoteEl.textContent = ""; return; }
     var state = (window.PokeMoaMap && window.PokeMoaMap.getState) ? window.PokeMoaMap.getState() : null;
-    var center = state && state.center;
-    if (!center) { offlineNoteEl.hidden = true; return; }
-    var radius = state.radius || filterState.radius || 3000;
-    var kinds = [
-      { id: "vending", label: "공식 자판기" },
-      { id: "cardshop", label: "공인 카드샵" }
-    ];
-    var parts = [];
-    kinds.forEach(function (k) {
-      var c = (counts || {})[k.id];
-      if (!c || c.total !== 0) return;
-      var near = nearestOutside(k.id, center, radius);
-      if (!near.length) return;
-      parts.push(k.label + " " + (radius / 1000) + "km 안 없음 · 가장 가까운 곳 " +
-        near.map(function (p) { return p.name + " " + distLabel(p.dist); }).join(", "));
-    });
-    if (!parts.length) {
+    var kind = offlineNoteKind;
+    var c = kind ? (counts || {})[kind] : null;
+    var open = !!kind && !!c && c.total === 0 && filterState.showOffline !== false && !!(state && state.center);
+    if (!open) {
       offlineNoteEl.hidden = true;
       offlineNoteEl.textContent = "";
+      offlineNoteEl.style.removeProperty("--brand");
       return;
     }
+    var radius = state.radius || filterState.radius || 3000;
+    var head = offlineLabel(kind) + " " + (radius / 1000) + "km 안 없음";
+    var body = "";
+    /* 자판기·카드샵은 전국 좌표를 내장하고 있어 반경 밖 가장 가까운 곳까지 알려 줄 수 있다.
+       마트·아트박스는 카카오 실시간 검색 결과만 있어 반경 밖 지점을 알 수 없으므로 넓혀 보도록 안내한다. */
+    if (kind === "vending" || kind === "cardshop") {
+      var near = nearestOutside(kind, state.center, radius);
+      if (near.length) {
+        body = "가장 가까운 곳 " + near.map(function (p) {
+          return escapeHtml(p.name) + " " + distLabel(p.dist);
+        }).join(", ");
+      }
+    }
+    if (!body) body = "반경을 넓히거나 다른 동네를 검색해 보세요.";
+    var meta = D.brandMeta[kind] || {};
     offlineNoteEl.hidden = false;
-    offlineNoteEl.innerHTML = parts.map(function (t) { return "<span>" + t + "</span>"; }).join("");
+    offlineNoteEl.innerHTML = "<b>" + escapeHtml(head) + "</b><span>" + body + "</span>";
+    if (meta.color) offlineNoteEl.style.setProperty("--brand", meta.color);
   }
 
   function renderOfflineChips(counts, activeBrand, showOffline) {
@@ -2139,23 +2150,28 @@
     if (counts) offlineCounts = counts;
     counts = offlineCounts || {};
     var on = showOffline !== false;
+    /* 오프라인 판매처를 지도·목록에서 감추면 펼쳐 둔 안내도 닫는다 */
+    if (!on) offlineNoteKind = null;
     var list = D.offlineBrands || [];
+    /* 다시 조회해 1곳 이상이 된 종류의 안내는 스스로 닫는다 */
+    if (offlineNoteKind) {
+      var now = counts[offlineNoteKind];
+      if (!now || now.total !== 0) offlineNoteKind = null;
+    }
     offlineChips.innerHTML = list.map(function (b) {
       var meta = D.brandMeta[b.id] || { color: "#1b2a4a" };
       var c = counts[b.id] || { total: 0 };
-      var active = activeBrand === b.id;
-      var title = "";
-      if (c.total === 0) {
-        var near = null;
-        var state = (window.PokeMoaMap && window.PokeMoaMap.getState) ? window.PokeMoaMap.getState() : null;
-        if (state && state.center && (b.id === "vending" || b.id === "cardshop")) {
-          near = nearestOutside(b.id, state.center, state.radius || filterState.radius || 3000)[0];
-        }
-        title = ' title="반경 안에 없습니다' + (near ? " · 가장 가까운 곳 " + near.name + " " + distLabel(near.dist) : "") + '"';
-      }
-      return '<button type="button" class="off-chip' + (active ? " is-active" : "") + (on ? "" : " is-muted") +
-        '" data-offline="' + b.id + '" style="--brand:' + meta.color + '" aria-pressed="' + (active ? "true" : "false") + '"' + title + '>' +
-        '<i class="off-dot" aria-hidden="true"></i><span>' + b.label + "</span><b>" + c.total + "</b></button>";
+      var empty = c.total === 0;
+      var active = !empty && activeBrand === b.id;
+      var open = empty && offlineNoteKind === b.id;
+      var attrs = empty
+        ? ' aria-expanded="' + (open ? "true" : "false") + '" aria-controls="offlineNote" title="' +
+          (open ? "안내 접기" : "가장 가까운 곳 보기") + '"'
+        : ' aria-pressed="' + (active ? "true" : "false") + '"';
+      return '<button type="button" class="off-chip' + (active ? " is-active" : "") + (open ? " is-open" : "") +
+        (on ? "" : " is-muted") + '" data-offline="' + b.id + '" style="--brand:' + meta.color + '"' + attrs + '>' +
+        '<i class="off-dot" aria-hidden="true"></i><span>' + b.label + "</span><b>" + c.total + "</b>" +
+        (empty ? '<i class="off-caret" aria-hidden="true"></i>' : "") + "</button>";
     }).join("");
     renderOfflineNote(counts);
     if (offlineToggle) offlineToggle.checked = on;
@@ -2167,6 +2183,14 @@
       if (!btn) return;
       var next = btn.getAttribute("data-offline");
       if (!next) return;
+      var hit = (offlineCounts || {})[next];
+      /* 반경 안에 한 곳도 없는 종류는 걸러 봐야 빈 목록이라, 필터 대신 '가장 가까운 곳' 안내를 연다 */
+      if (hit && hit.total === 0) {
+        offlineNoteKind = offlineNoteKind === next ? null : next;
+        renderOfflineChips(null, filterState.brand, filterState.showOffline);
+        return;
+      }
+      offlineNoteKind = null;
       if (next === filterState.brand) next = "all";
       filterState.brand = next;
       resetStoreList();
@@ -2243,6 +2267,7 @@
       filterState.stockOnly = false;
       filterState.showOffline = true;
       filterState.radius = 3000;
+      offlineNoteKind = null;   /* 펼쳐 둔 '가장 가까운 곳' 안내도 닫아 기본 상태로 */
       resetStoreList();
       if (sortSelect) sortSelect.value = "stock";
       if (stockToggle) stockToggle.checked = false;
@@ -2255,6 +2280,8 @@
         window.PokeMoaMap.setShowOffline(true);
         window.PokeMoaMap.setRadius(3000);
         window.PokeMoaMap.closeCard();
+      } else {
+        renderOfflineChips(null, "all", true);
       }
       lastRememberRadius(3000);
       toast("필터를 초기화했습니다.");
