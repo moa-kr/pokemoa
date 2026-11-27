@@ -2943,7 +2943,7 @@
       '<div class="box-links">' + links.join("") + "</div>" +
       (s.storeMemo ? '<p class="box-memo"><b>확인 메모</b> — ' + escapeHtml(s.storeMemo) + "</p>" : "") +
       '<div class="box-store-head"><h4>정가 구매처</h4><span>' + (s.stores || []).length +
-      "곳 · " + escapeHtml((D.STORE_CHECK || "") + " 확인") + "</span></div>" +
+      "곳 · " + escapeHtml((fmtKoDate(D.STORE_CHECK) || "확인 시점") + " 확인") + "</span></div>" +
       '<div class="box-store-grid">' + stores + "</div>";
 
     var dexBtn = boxBoard.querySelector("[data-box-dex]");

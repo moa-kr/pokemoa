@@ -2042,12 +2042,12 @@ window.POKEMOA_DATA = (function () {
       query: "어비스아이",
       state: "품절 표시",
       stateKind: "out",
-      stateNote: "포켓몬스토어 45,000원 · SOLD OUT 표시 (2026-11-18 확인)"
+      stateNote: "포켓몬스토어 45,000원 · SOLD OUT 표시 (11월 18일 확인)"
     },
     sv11b: {
       product: "https://www.pokemonstore.co.kr/pages/product/product-detail.html?productNo=131326182",
       query: "블랙볼트",
-      stateNote: "포켓몬스토어 40,000원으로 등록 (2026-11-18 확인)"
+      stateNote: "포켓몬스토어 40,000원으로 등록 (11월 18일 확인)"
     },
     sv10: {
       query: "로켓단의 영광",
@@ -2056,17 +2056,17 @@ window.POKEMOA_DATA = (function () {
     sv9a: {
       product: "https://www.pokemonstore.co.kr/pages/product/product-detail.html?productNo=130382695",
       query: "열풍의 아레나",
-      stateNote: "포켓몬스토어 30,000원으로 등록 (2026-11-18 확인)"
+      stateNote: "포켓몬스토어 30,000원으로 등록 (11월 18일 확인)"
     },
     sv9: {
       product: "https://www.pokemonstore.co.kr/pages/product/product-detail.html?productNo=128841940",
       query: "배틀 파트너즈",
-      stateNote: "포켓몬스토어 30,000원으로 등록 (2026-11-18 확인)"
+      stateNote: "포켓몬스토어 30,000원으로 등록 (11월 18일 확인)"
     },
     sv8a: {
       product: "https://www.pokemonstore.co.kr/pages/product/product-detail.html?productNo=124381031",
       query: "테라스탈 페스타 ex",
-      stateNote: "포켓몬스토어 50,000원으로 등록 (2026-11-18 확인)"
+      stateNote: "포켓몬스토어 50,000원으로 등록 (11월 18일 확인)"
     },
     sv8: {
       query: "초전 브레이커",
@@ -2077,7 +2077,7 @@ window.POKEMOA_DATA = (function () {
       query: "스타터 세트 ex",
       state: "품절 표시",
       stateKind: "out",
-      stateNote: "포켓몬스토어 17,000원 · SOLD OUT 표시 (2026-11-18 확인)",
+      stateNote: "포켓몬스토어 17,000원 · SOLD OUT 표시 (11월 18일 확인)",
       gmarketState: "17,000원 판매 중",
       gmarketKind: "in"
     }
