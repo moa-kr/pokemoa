@@ -1,6 +1,7 @@
 /* =========================================================================
  * 포켓몬카드모아(PokemonCardMoa) — 데이터 계층
- * 모든 가격·일정은 2026-11-17 기준 공개 자료를 정리한 값입니다.
+ * 가격·일정은 공개 자료를 정리한 값이고, KREAM 리셀 시세만 SITE.kreamCheckedAt 확인 시점 기준입니다.
+ * 화면에는 기준일을 박아 두지 않고, 오늘 날짜는 app.js 가 KST 로 그립니다(v4.61).
  * 지도 매장 위치는 카카오맵 장소 검색(Places) 결과를 쓰고, 실시간 조회가 막힐 때만
  * 예전에 수집해 둔 실제 좌표 스냅샷(OpenStreetMap, 2026-11-17)으로 대체합니다.
  * 재고 수량은 편의점 앱에서 실시간으로 조회한 실제 값만 쓰고, 재고 0은 「없음」, 확인되지 않은 매장은 「미조회」입니다.
@@ -12,7 +13,7 @@ window.POKEMOA_DATA = (function () {
     name: "포켓몬카드모아",
     nameEn: "PokemonCardMoa",
     tagline: "포켓몬 카드의 정가·입고·재고를 한 곳에 모아",
-    dataDate: "2026-11-17",
+    kreamCheckedAt: "2026-11-17",   /* KREAM 리셀 시세를 마지막으로 확인한 날 */
     dataTime: "11:00",
     siteUrl: "https://pokemoa.example"
   };
@@ -369,7 +370,7 @@ window.POKEMOA_DATA = (function () {
       unit: "팩",
       total: "132종(기본 98종)",
       summary:
-        "로켓단 카드군이 메인인 세트. 정가는 30,000원이지만 2026-11-17 KREAM 시세가 세트 가운데 가장 크게 붙었습니다.",
+        "로켓단 카드군이 메인인 세트. 정가는 30,000원이지만 KREAM 시세가 세트 가운데 가장 크게 붙었습니다.",
       official: "https://pokemoncard.co.kr/card/785",
       kream: [{ label: "KREAM 한글판", price: 41000, url: "https://kream.co.kr/products/627583" }],
       dexNote:
@@ -2012,7 +2013,7 @@ window.POKEMOA_DATA = (function () {
     },
     {
       q: "리셀가는 어느 정도면 비싼 건가요?",
-      a: "정가 기준으로 계산하세요. 박스 70,000원은 팩당 3,500원입니다. 2026-11-17 KREAM 미개봉 시세는 슈링크 76,000원(팩당 3,800원, +9%), 논슈링크 72,000원(팩당 3,600원, +3%)이고 배송비는 별도입니다. 배송비를 더한 총액은 정가보다 약 7~16% 높습니다. 가이드 탭의 계산기에 금액을 넣으면 바로 환산됩니다."
+      a: "정가 기준으로 계산하세요. 박스 70,000원은 팩당 3,500원입니다. KREAM 미개봉 시세는 슈링크 76,000원(팩당 3,800원, +9%), 논슈링크 72,000원(팩당 3,600원, +3%)이고 배송비는 별도입니다. 배송비를 더한 총액은 정가보다 약 7~16% 높습니다. 가이드 탭의 계산기에 금액을 넣으면 바로 환산됩니다."
     },
     {
       q: "확장팩만 사면 바로 대전할 수 있나요?",
@@ -2607,7 +2608,7 @@ window.POKEMOA_DATA = (function () {
       name: "확장팩 「30th CELEBRATION」", type: "확장팩 · 한글판",
       price: "1팩 3,500원 / 1박스 70,000원", config: "1팩 6장 · 1박스 20팩(120장) · 176종(기본 103종)",
       url: "https://pokemoncard.co.kr/card/960",
-      note: "전 세계 동시 발매. KREAM 미개봉 1박스는 2026-11-17 기준 72,000~76,000원입니다."
+      note: "전 세계 동시 발매. KREAM 미개봉 1박스는 72,000~76,000원선입니다(시세 확인 시점 기준)."
     },
     {
       date: "2026-08-21", status: "발매", kind: "done",
@@ -2714,7 +2715,7 @@ window.POKEMOA_DATA = (function () {
     { label: "편의점 입고", text: "편의점 판매 일정 보도(10/9 세계일보 · 10/20 TCG뉴스 정리)", url: "https://tcgnews.kr/article/34" },
     { label: "SSG 판매 조건", text: "SSG 공식인증샵 상품 페이지 (70,000원 + 배송비 3,000원)", url: "https://www.ssg.com/item/itemView.ssg?itemId=1000881834004" },
     { label: "수록 카드", text: "30th CELEBRATION 카드 목록 (176종 · FUR 2종 · SAR 10종 · AR 20종 · 복각 30종)", url: "https://www.tcgheart.com/set/30th-celebration-korean" },
-    { label: "KREAM 시세", text: "KREAM 미개봉 1박스 (2026-11-17 확인 · 한글판 · 슈링크 76,000원 / 논슈링크 72,000원 · 배송비·수수료 별도)", url: "https://kream.co.kr/search?keyword=30th%20CELEBRATION" }
+    { label: "KREAM 시세", text: "KREAM 미개봉 1박스 (한글판 · 슈링크 76,000원 / 논슈링크 72,000원 · 배송비·수수료 별도 · 확인 시점 기준)", url: "https://kream.co.kr/search?keyword=30th%20CELEBRATION" }
   ];
 
   return {

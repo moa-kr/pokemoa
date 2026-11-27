@@ -2383,16 +2383,16 @@
 
     if (compareSub) {
       compareSub.innerHTML = deck
-        ? "정가 " + won(s.boxPrice) + "(" + s.total + ")를 2026-11-17 KREAM 즉시구매 최저가와 비교한 값입니다."
+        ? "정가 " + won(s.boxPrice) + "(" + s.total + ")를 " + kreamCheckedLabel() + " KREAM 즉시구매 최저가와 비교한 값입니다."
         : "정가 기준 1박스 " + won(s.boxPrice) + " = " + unit + "당 " + won(Math.round(s.boxPrice / packs)) +
-          ". 아래는 2026-11-17 KREAM 한글판 1박스 즉시구매 최저가를 정가와 비교한 값입니다(배송비·검수 수수료 별도).";
+          ". 아래는 " + kreamCheckedLabel() + " KREAM 한글판 1박스 즉시구매 최저가를 정가와 비교한 값입니다(배송비·검수 수수료 별도).";
     }
     if (compareNote) {
       var links = (s.kream || []).map(function (k, i) {
         return '<a href="' + k.url + '" target="_blank" rel="noopener">' + k.label + "</a>";
       }).join(" · ");
       compareNote.innerHTML =
-        "KREAM 시세는 2026-11-17 확인 기준 즉시구매 최저가입니다(한글판 " + (deck ? "스타터 세트" : "1박스") +
+        "KREAM 시세는 " + kreamCheckedLabel() + " 확인 기준 즉시구매 최저가입니다(한글판 " + (deck ? "스타터 세트" : "1박스") +
         "). 배송비(빠른배송 5,000원 · 일반배송 3,000원)와 검수 수수료는 별도이고, 시점과 박스 상태(슈링크 여부)에 따라 달라집니다. " +
         links;
     }
@@ -3886,6 +3886,83 @@
       apply();
     }
   }
+
+  /* ------------------------------------------------- 기준일 자동 표시 (v4.61)
+     「데이터 기준일 2026-11-17」처럼 화면에 박혀 있던 날짜를 없앱니다.
+       ① 푸터·헤더의 기준일 배지(footerDataDate·headerDate)는 오늘(KST) 날짜로 그립니다.
+       ② 기준 시점이 꼭 필요한 곳(도감·시세 비교)은 데이터의 실제 확인일(SITE.kreamCheckedAt)을 씁니다.
+       ③ 모아 어드민(원격 설정) 문구에 옛 날짜가 남아 있어도 화면에는 ISO 날짜를 그대로 내보내지 않습니다.
+     KST 는 브라우저 시간대와 무관하게 UTC+9 로 계산합니다(kstNow). */
+  function fmtYmd(t) { return t.y + "-" + pad2(t.m) + "-" + pad2(t.d); }
+  function fmtMd(t) { return pad2(t.m) + "-" + pad2(t.d); }
+
+  /* "2026-11-17" → "11월 17일" (해가 다르면 "2025년 12월 3일") */
+  function fmtKoDate(iso) {
+    var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(iso || ""));
+    if (!m) return "";
+    var today = kstNow();
+    var year = Number(m[1]) === today.y ? "" : m[1] + "년 ";
+    return year + Number(m[2]) + "월 " + Number(m[3]) + "일";
+  }
+
+  /* 시세 확인일 라벨 — 데이터에 값이 없으면 어색한 날짜 대신 "확인 시점" */
+  function kreamCheckedLabel() {
+    return fmtKoDate(D && D.SITE && D.SITE.kreamCheckedAt) || "확인 시점";
+  }
+
+  /* 화면 문구에 남은 옛 기준일·확인일 조각을 걷어내는 규칙 */
+  var STALE_DATE_RULES = [
+    [/\s*\(\s*\d{4}-\d{2}-\d{2}\s*접속 확인\s*\)/g, ""],
+    [/\s*\(\s*\d{4}-\d{2}-\d{2}\s*\)/g, ""],
+    [/\s*데이터\s*기준일?\s*\d{4}-\d{2}-\d{2}\s*\.?\s*$/g, ""],
+    [/\s*데이터\s*기준일?\s*\d{4}-\d{2}-\d{2}\.?/g, ""],
+    [/\d{4}-\d{2}-\d{2}\s*확인\s*기준/g, "확인 시점 기준"],
+    [/\d{4}-\d{2}-\d{2}\s*(KREAM)/g, "$1"],
+    [/KREAM\s*\d{4}-\d{2}-\d{2}/g, "KREAM"]
+  ];
+  var STALE_DATE_HINT = /데이터\s*기준|\d{4}-\d{2}-\d{2}/;
+
+  function applyFreshness() {
+    var today = kstNow();
+    var badges = {
+      footerDataDate: "오늘 " + fmtYmd(today),
+      headerDate: "오늘 " + fmtMd(today)
+    };
+    Object.keys(badges).forEach(function (key) {
+      $$('[data-copy="' + key + '"]').forEach(function (el) {
+        if (el.textContent !== badges[key]) el.textContent = badges[key];
+      });
+    });
+    $$("[data-copy],[data-copy-html]").forEach(function (el) {
+      var key = el.getAttribute("data-copy") || el.getAttribute("data-copy-html");
+      if (badges[key]) return;
+      var isHtml = el.hasAttribute("data-copy-html");
+      var before = isHtml ? el.innerHTML : el.textContent;
+      if (!before || !STALE_DATE_HINT.test(before)) return;
+      var after = before;
+      STALE_DATE_RULES.forEach(function (rule) { after = after.replace(rule[0], rule[1]); });
+      after = after.replace(/\s{2,}/g, " ").trim();
+      if (!after || after === before) return;
+      if (isHtml) el.innerHTML = after;
+      else el.textContent = after;
+    });
+  }
+
+  /* 추첨 타임라인의 「현재」 줄은 날짜를 오늘로 맞춥니다(지난 일정으로 접히지 않게). */
+  function refreshNowMoment() {
+    var li = $("#panel-schedule .timeline li.now");
+    if (!li) return;
+    var ymd = fmtYmd(kstNow());
+    li.setAttribute("data-end", ymd);
+    var date = li.querySelector(".t-date");
+    if (date && date.textContent !== ymd) date.textContent = ymd;
+  }
+
+  applyFreshness();
+  refreshNowMoment();
+  document.addEventListener("moa:site-config-applied", applyFreshness);
+  /* 로더가 같은 이벤트에서 문구를 먼저 다시 칠하므로 한 박자 뒤에 한 번 더 맞춘다. */
+  document.addEventListener("moa:route-rendered", function () { setTimeout(applyFreshness, 0); });
 
   /* --------------------------------------------------------------- 초기화 */
   buildCalendar();

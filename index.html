@@ -102,7 +102,7 @@
         {
           "@type": "Question",
           "name": "리셀가는 어느 정도면 비싼 건가요?",
-          "acceptedAnswer": { "@type": "Answer", "text": "박스 70,000원은 팩당 3,500원입니다. 2026-11-17 KREAM 미개봉 시세는 슈링크 76,000원(팩당 3,800원, +9%), 논슈링크 72,000원(팩당 3,600원, +3%)이고 배송비는 별도입니다." }
+          "acceptedAnswer": { "@type": "Answer", "text": "박스 70,000원은 팩당 3,500원입니다. KREAM 미개봉 시세는 슈링크 76,000원(팩당 3,800원, +9%), 논슈링크 72,000원(팩당 3,600원, +3%)이고 배송비는 별도입니다." }
         }
       ]
     }
@@ -151,8 +151,9 @@
     </nav>
 
     <div class="header-actions">
-      <!-- 「데이터 기준」 배지는 화면에서 숨김(style.css) — 모아 어드민 문구 편집 대상이라 마크업은 남겨 둡니다. -->
-      <span class="header-date" data-copy="headerDate">데이터 기준 11-17</span>
+      <!-- 「데이터 기준」 배지는 화면에서 숨김(style.css) — 모아 어드민 문구 편집 대상이라 마크업은 남겨 두고,
+           날짜는 app.js 가 오늘(KST)로 그립니다(v4.61 — 박제된 날짜 없음). -->
+      <span class="header-date" data-copy="headerDate">오늘</span>
       <!-- 앱 설치(PWA) — pwa.js 가 설치 가능한 브라우저에서만 보여 줍니다(기본 숨김).
            폰 폭에서는 헤더가 이미 꽉 차 있어 하단 탭바 위 알약으로 떠 있습니다(style.css). -->
       <button type="button" class="btn header-install" id="appInstallBtn" data-state="hidden"
@@ -225,7 +226,7 @@
         <div>
           <span class="eyebrow" data-copy="pricingEyebrow">정가 구매처 현황</span>
           <h2 id="channels-title" data-section-title>70,000원에 살 수 있는 곳, 채널별 조건까지</h2>
-          <p data-copy-html="pricingDesc">정가는 모든 채널이 같지만 배송비·판매 단위·추첨 여부가 다릅니다. 결제 전에 총액과 팩당 단가를 확인하세요. 가격은 2026-11-17 확인 기준입니다.</p>
+          <p data-copy-html="pricingDesc">정가는 모든 채널이 같지만 배송비·판매 단위·추첨 여부가 다릅니다. 결제 전에 총액과 팩당 단가를 확인하세요. 가격은 확인 시점 기준입니다.</p>
         </div>
         <a class="head-link" href="#boxStores" data-copy="pricingLink">다른 박스 정가 구매처 →</a>
       </div>
@@ -350,7 +351,7 @@
         <div>
           <span class="eyebrow" data-copy="boxesEyebrow">다른 확장팩 · 박스 정가 구매처</span>
           <h2 id="box-stores-title" data-section-title>30th 말고 다른 박스, 정가로 사는 곳</h2>
-          <p data-copy-html="boxesDesc">30th CELEBRATION을 뺀 8개 박스의 <b>공식 정가·구성</b>과 <b>KREAM 참고 시세</b>를 박스별로 모았습니다. 위 칩에서 박스를 고르면 아래 구매처 목록이 그 박스 기준으로 바뀝니다. 금액은 공식 정가와 2026-11-17 KREAM 시세이고, 실제 재고·결제 금액은 판매처 페이지에서 확인하세요.</p>
+          <p data-copy-html="boxesDesc">30th CELEBRATION을 뺀 8개 박스의 <b>공식 정가·구성</b>과 <b>KREAM 참고 시세</b>를 박스별로 모았습니다. 위 칩에서 박스를 고르면 아래 구매처 목록이 그 박스 기준으로 바뀝니다. 금액은 공식 정가와 KREAM 시세이고, 실제 재고·결제 금액은 판매처 페이지에서 확인하세요.</p>
         </div>
         <a class="head-link" href="#channels" data-copy="boxesLink">30th CELEBRATION 구매처 →</a>
       </div>
@@ -361,7 +362,7 @@
         <p class="box-fallback">박스 목록을 불러오는 중입니다…</p>
       </div>
 
-      <p class="src-note mt-16" data-copy="boxesSource">출처: 포켓몬 카드 게임 공식 제품 정보(정가·구성), KREAM 한글판 1박스 즉시구매 최저가(2026-11-17), 포켓몬 스토어 · G마켓 포켓몬카드공식인증샵 · 네이버 브랜드스토어 · SSG · 티씨지박스 · 롯데ON 판매처 페이지(2026-11-18 접속 확인). 재고와 가격은 시점·판매처에 따라 달라지므로 구매 전 판매처 페이지에서 확인하세요.</p>
+      <p class="src-note mt-16" data-copy="boxesSource">출처: 포켓몬 카드 게임 공식 제품 정보(정가·구성), KREAM 한글판 1박스 즉시구매 최저가, 포켓몬 스토어 · G마켓 포켓몬카드공식인증샵 · 네이버 브랜드스토어 · SSG · 티씨지박스 · 롯데ON 판매처 페이지. 재고와 가격은 시점·판매처에 따라 달라지므로 구매 전 판매처 페이지에서 확인하세요.</p>
     </section>
 
     <!-- ------------------------------ 오프라인 · 자판기 정가 구매처 (v4.8) -->
@@ -435,7 +436,7 @@
         <p class="arrival-note" data-copy="arrivalNote">※ 현장·제보 기준 참고 요일이며, 매장·물류 사정에 따라 미입고 또는 요일이 다를 수 있습니다. 방문 전 매장 확인 권장.</p>
       </aside>
 
-      <p class="src-note mt-16">출처: 포켓몬코리아 <a href="https://www.pokemonkorea.co.kr/card_vending_machine" target="_blank" rel="noopener">자판기 안내</a>(전국 178곳) · <a href="https://www.pokemonkorea.co.kr/pokemon_cardshop" target="_blank" rel="noopener">공식 카드샵 목록</a>(16곳) 2026-11-18 확인, 아트박스 매장·재고 조회 <a href="https://www.poom.co.kr" target="_blank" rel="noopener">POOM</a>. 이마트·롯데마트·홈플러스 위치는 「동네에서 찾기」 지도에서 카카오 장소 검색으로, 토이저러스는 확인한 전국 13곳 좌표로 보여 줍니다(같은 건물 롯데마트는 ‘토이저러스 함께’). 재고·운영 여부는 시점·매장에 따라 달라지므로 방문 전 확인하세요.</p>
+      <p class="src-note mt-16">출처: 포켓몬코리아 <a href="https://www.pokemonkorea.co.kr/card_vending_machine" target="_blank" rel="noopener">자판기 안내</a>(전국 178곳) · <a href="https://www.pokemonkorea.co.kr/pokemon_cardshop" target="_blank" rel="noopener">공식 카드샵 목록</a>(16곳) 11월 확인, 아트박스 매장·재고 조회 <a href="https://www.poom.co.kr" target="_blank" rel="noopener">POOM</a>. 이마트·롯데마트·홈플러스 위치는 「동네에서 찾기」 지도에서 카카오 장소 검색으로, 토이저러스는 확인한 전국 13곳 좌표로 보여 줍니다(같은 건물 롯데마트는 ‘토이저러스 함께’). 재고·운영 여부는 시점·매장에 따라 달라지므로 방문 전 확인하세요.</p>
     </section>
 
 
@@ -532,7 +533,7 @@
           <span class="tip-num">3</span>
           <div>
             <h4 data-copy="tip3Title">팩당 단가로 판단</h4>
-            <p data-copy="tip3Body">리셀 박스는 팩당 단가로 환산해 정가 3,500원과 비교하세요. KREAM 슈링크 박스(2026-11-17) 76,000원은 팩당 3,800원입니다.</p>
+            <p data-copy="tip3Body">리셀 박스는 팩당 단가로 환산해 정가 3,500원과 비교하세요. KREAM 슈링크 박스 76,000원은 팩당 3,800원입니다.</p>
           </div>
         </div>
       </div>
@@ -955,9 +956,9 @@
             <div class="t-title">CU 매장 입고 시작</div>
             <p class="t-body">10/7부터 점포별 예약 발주 → 10/24부터 매장 입고</p>
           </li>
-          <li class="now" data-end="2026-11-17">
+          <li class="now">
             <span class="dot"></span>
-            <span class="t-date">2026-11-17</span><span class="t-tag">진행 중</span>
+            <span class="t-date">오늘</span><span class="t-tag">진행 중</span>
             <div class="t-title">다음 추첨·재입고 공지 대기</div>
             <p class="t-body">새 회차 공지는 포켓몬 카드 게임 공지와 30주년 특설 페이지에서 확인</p>
           </li>
@@ -1373,7 +1374,7 @@
 
     <div class="panel-card">
       <h3 data-copy="compareTitle">정가 vs 리셀 — 팩당 단가로 비교하기</h3>
-      <p class="panel-sub" id="compareSub">정가 기준 1박스 70,000원 = 팩당 3,500원. 아래는 2026-11-17 KREAM 한글판 1박스 즉시구매 최저가를 정가와 비교한 값입니다(배송비·검수 수수료 별도).</p>
+      <p class="panel-sub" id="compareSub">정가 기준 1박스 70,000원 = 팩당 3,500원. 아래는 11월 17일 KREAM 한글판 1박스 즉시구매 최저가를 정가와 비교한 값입니다(배송비·검수 수수료 별도).</p>
       <div class="table-scroll">
         <table class="compare-table">
           <thead>
@@ -1385,7 +1386,7 @@
           </tbody>
         </table>
       </div>
-      <p class="src-note mt-8" id="compareNote">KREAM 시세는 2026-11-17 확인 기준 즉시구매 최저가입니다(한글판 1박스). <a href="https://kream.co.kr/products/1072895" target="_blank" rel="noopener">KREAM 슈링크 박스</a></p>
+      <p class="src-note mt-8" id="compareNote">KREAM 시세는 11월 17일 확인 기준 즉시구매 최저가입니다(한글판 1박스). <a href="https://kream.co.kr/products/1072895" target="_blank" rel="noopener">KREAM 슈링크 박스</a></p>
 
       <div class="calc">
         <h4><span data-copy="calcTitle">리셀 프리미엄 계산기</span> <span class="calc-set" id="calcSetName">· 30th CELEBRATION</span></h4>
@@ -1499,7 +1500,7 @@
         </details>
         <details class="faq-item">
           <summary><span class="q-mark">Q</span>리셀가는 어느 정도면 비싼 건가요?<span class="plus">+</span></summary>
-          <div class="faq-answer"><p>정가 기준으로 계산하세요. 박스 70,000원은 팩당 3,500원입니다. 2026-11-17 KREAM 미개봉 시세는 슈링크 76,000원(팩당 3,800원, +9%), 논슈링크 72,000원(팩당 3,600원, +3%)이고, 배송비 3,000~5,000원을 더한 총액은 정가보다 약 7~16% 높습니다. 76,000원을 위 계산기에 넣으면 바로 환산됩니다.</p></div>
+          <div class="faq-answer"><p>정가 기준으로 계산하세요. 박스 70,000원은 팩당 3,500원입니다. KREAM 미개봉 시세는 슈링크 76,000원(팩당 3,800원, +9%), 논슈링크 72,000원(팩당 3,600원, +3%)이고, 배송비 3,000~5,000원을 더한 총액은 정가보다 약 7~16% 높습니다. 76,000원을 위 계산기에 넣으면 바로 환산됩니다.</p></div>
         </details>
         <details class="faq-item">
           <summary><span class="q-mark">Q</span>확장팩만 사면 바로 대전할 수 있나요?<span class="plus">+</span></summary>
@@ -1511,7 +1512,7 @@
       </div>
     </section>
 
-    <p class="src-note">자료 출처 — 정가·구성: <a href="https://pokemoncard.co.kr/card/960" target="_blank" rel="noopener">포켓몬 카드 게임 공식 제품 정보</a> · 수록 카드: <a href="https://www.tcgheart.com/set/30th-celebration-korean" target="_blank" rel="noopener">30th Celebration 카드 목록</a> · 시세: <a href="https://kream.co.kr/search?keyword=30th%20CELEBRATION" target="_blank" rel="noopener">KREAM</a> 2026-11-17 확인(미개봉 1박스, 슈링크·논슈링크, 배송비·수수료 별도). 포켓몬카드모아는 포켓몬코리아와 무관한 비공식 정보 사이트입니다.</p>
+    <p class="src-note">자료 출처 — 정가·구성: <a href="https://pokemoncard.co.kr/card/960" target="_blank" rel="noopener">포켓몬 카드 게임 공식 제품 정보</a> · 수록 카드: <a href="https://www.tcgheart.com/set/30th-celebration-korean" target="_blank" rel="noopener">30th Celebration 카드 목록</a> · 시세: <a href="https://kream.co.kr/search?keyword=30th%20CELEBRATION" target="_blank" rel="noopener">KREAM</a> 11월 17일 확인(미개봉 1박스, 슈링크·논슈링크, 배송비·수수료 별도). 포켓몬카드모아는 포켓몬코리아와 무관한 비공식 정보 사이트입니다.</p>
 
     <!-- -------------------------------------------------- 관리자 문의 안내 -->
     <div class="inquiry-cta">
@@ -1628,7 +1629,7 @@
           </span>
           <span class="brand-text"><strong data-copy="siteTitle">포켓몬카드모아</strong><span data-copy="subtitle">POKEMON CARD MOA</span></span>
         </a>
-        <p data-copy="footerText">포켓몬 카드의 정가 구매처, 추첨·입고 일정, 주변 매장 재고, 수록 카드 정보를 한 곳에 모은 비공식 정보 사이트입니다. 데이터 기준일 2026-11-17.</p>
+        <p data-copy="footerText">포켓몬 카드의 정가 구매처, 추첨·입고 일정, 주변 매장 재고, 수록 카드 정보를 한 곳에 모은 비공식 정보 사이트입니다.</p>
       </div>
 
       <div class="footer-col">
@@ -1702,7 +1703,7 @@
 
     <div class="footer-bottom">
       <span data-copy="footerCopyright">© 2026 포켓몬카드모아. 비공식 팬 정보 사이트.</span>
-      <span><span data-copy="footerDataDate">데이터 기준 2026-11-17</span> · <a href="sitemap.xml">sitemap</a></span>
+      <span><span data-copy="footerDataDate">오늘</span> · <a href="sitemap.xml">sitemap</a></span>
     </div>
   </div>
 </footer>
@@ -1735,7 +1736,7 @@
     </ul>
 
     <h4>데이터에 대해</h4>
-    <p>가격과 일정은 공개된 공식 상품 정보와 보도를 2026-11-17 기준으로 정리했습니다. 지도의 매장 위치·이름은 카카오맵 실제 장소 데이터이고, <strong>매장별 재고는 편의점 앱에서 실시간으로 조회한 실제 수량만</strong> 표시하고, 확인되지 않은 매장은 「미조회」로 둡니다(샘플·추정 수량 없음). <strong>세븐일레븐 정책상 재고는 확인하지 않고 매장 위치만</strong> 안내합니다.</p>
+    <p>가격과 일정은 공개된 공식 상품 정보와 보도를 정리한 값이고, 리셀 시세는 확인 시점을 함께 적었습니다. 지도의 매장 위치·이름은 카카오맵 실제 장소 데이터이고, <strong>매장별 재고는 편의점 앱에서 실시간으로 조회한 실제 수량만</strong> 표시하고, 확인되지 않은 매장은 「미조회」로 둡니다(샘플·추정 수량 없음). <strong>세븐일레븐 정책상 재고는 확인하지 않고 매장 위치만</strong> 안내합니다.</p>
 
     <h4>운영 원칙</h4>
     <p>정가보다 비싼 구매를 부추기지 않습니다. 리셀 시세를 단정하지 않고, 정가라는 기준선과 계산 방법을 제공하는 데 집중합니다. 광고와 제휴 링크가 있는 경우 본문과 구분해 표시합니다.</p>
@@ -1861,11 +1862,11 @@
   </div>
 </template>
 
-<script src="assets/js/data.js?v=144"></script>
+<script src="assets/js/data.js?v=145"></script>
 <script src="assets/js/emart.js?v=141"></script>
 <script src="assets/js/lottemart.js?v=4"></script>
-<script src="assets/js/map.js?v=147"></script>
-<script src="assets/js/app.js?v=147"></script>
+<script src="assets/js/map.js?v=148"></script>
+<script src="assets/js/app.js?v=148"></script>
 <!-- GS25 팜사이즈 원더 피규어 — 안내 팝업·상품 전환·주변 GS25 재고 조회 (data.js 의 figure) -->
 <script src="assets/js/figure.js?v=141"></script>
 <!-- 공식 콜라보 — assets/data/collabs.json 을 읽어 일정·소식 > 공식 콜라보 칸을 그립니다. -->

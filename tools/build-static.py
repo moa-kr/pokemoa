@@ -26,8 +26,9 @@ from jsparse import extract  # noqa: E402
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 BASE = "https://moa-kr.github.io/pokemoa"
 SITE_NAME = "포켓몬카드모아"
-DATA_DATE = "2026-11-17"          # data.js 가격·일정 기준일
-LAST_MOD = "2026-11-26"           # 이번에 생성한 정적 페이지의 lastmod
+KREAM_CHECKED = "2026-11-17"      # KREAM 리셀 시세 확인일 — data.js SITE.kreamCheckedAt 과 같아야 한다
+KREAM_CHECKED_KO = "11월 17일"     # 위 날짜의 화면 표기
+LAST_MOD = "2026-11-27"           # 이번에 생성한 정적 페이지의 lastmod
 GA_ID = "G-LWRMBRD0X9"
 CSS_V = "2"
 
@@ -36,7 +37,7 @@ SITE_HOME = BASE + "/"
 OG_IMAGE = BASE + "/assets/img/og-image.png"       # 1200x630 대표 이미지
 SITE_LOGO = BASE + "/assets/img/icons/icon-512.png"  # 512x512 로고
 PUBLISHED_AT = "2026-11-26T10:16:00+09:00"   # 최초 생성 시각(KST, 파일 타임스탬프)
-MODIFIED_AT = "2026-11-26T17:05:00+09:00"    # 이번 생성 시각(KST)
+MODIFIED_AT = "2026-11-27T14:35:00+09:00"    # 이번 생성 시각(KST)
 
 FAVICON = (
     "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E"
@@ -159,7 +160,7 @@ def foot(path):
     <h5>가이드</h5>
     <ul>{guide_links}</ul>
     <p class="fine">
-      {SITE_NAME}는 포켓몬·포켓몬코리아와 무관한 비공식 정보 사이트입니다. 가격·일정은 공개 자료를 정리한 값이며 데이터 기준일 {DATA_DATE}이고, 시세는 확인 시점에 따라 달라집니다.
+      {SITE_NAME}는 포켓몬·포켓몬코리아와 무관한 비공식 정보 사이트입니다. 가격·일정은 공개 자료를 정리한 값이고, 리셀 시세는 확인 시점을 기준으로 적었습니다.
       매장 위치는 카카오맵, 편의점 재고는 각 사 앱 조회값입니다. 구매 판단과 결과는 이용자에게 있습니다.<br>
       <a href="{r}">홈</a> · <a href="{r}privacy.html">개인정보처리방침</a> · <a href="{r}terms.html">이용약관</a> · <a href="{r}sitemap.xml">사이트맵</a>
     </p>
@@ -395,7 +396,7 @@ def price_section(s):
         + "</tbody></table></div>"
     )
     out.append(
-        '<p class="note">시세는 KREAM 한글판 공개 최근 체결가(데이터 기준 ' + DATA_DATE + ')이고 배송비·수수료는 빠진 값입니다. '
+        '<p class="note">시세는 KREAM 한글판 공개 최근 체결가(확인 시점 기준)이고 배송비·수수료는 빠진 값입니다. '
         "박스를 뜯을지, 원하는 카드 1장을 싱글카드로 살지 계산할 때 이 표를 기준선으로 쓰세요.</p>"
     )
     return "".join(out)
@@ -490,7 +491,7 @@ def set_page(s, idx):
 <h2>함께 보는 확장팩</h2>
 <div class="cards">{rel_cards}
 <a class="card-link" href="./"><span class="t">확장팩 도감 전체</span><span class="s">9개 세트의 발매일·정가·시세를 한 표로</span></a></div>
-<p class="note">이 페이지의 숫자는 공개 자료를 정리한 값이고 기준일은 {DATA_DATE}입니다. 카드 수록 정보는 공식 카드 목록이 최종 기준입니다.</p>
+<p class="note">이 페이지의 숫자는 공개 자료를 정리한 값이고, 리셀 시세는 확인 시점 기준입니다. 카드 수록 정보는 공식 카드 목록이 최종 기준입니다.</p>
 """
     ld = [
         breadcrumb_ld(path, [("포켓몬카드모아", "../"), ("확장팩 도감", "sets/"), (s["short"], None)]),
@@ -557,7 +558,7 @@ def sets_index_page():
 
 <h2>9개 세트 비교표</h2>
 <div class="table-scroll"><table>
-<caption>정가 대비 = 박스 정가를 0%로 본 KREAM 한글판 최근 체결 차이 · 기준일 {DATA_DATE} · 좁은 화면에서는 표를 좌우로 넘겨 보세요</caption>
+<caption>정가 대비 = 박스 정가를 0%로 본 KREAM 한글판 최근 체결 차이 · 좁은 화면에서는 표를 좌우로 넘겨 보세요</caption>
 <thead><tr><th>세트</th><th class="num">발매일</th><th class="num">수록</th><th class="num right">1팩 정가</th><th class="num right">1박스 정가</th><th class="num right">KREAM</th><th class="num right">정가 대비</th></tr></thead>
 <tbody>{''.join(rows)}</tbody></table></div>
 <p class="note">스타터 세트는 팩이 아니라 카드 60장이 고정된 구축덱이라 ‘1박스 정가’ 칸에 세트 가격을 적었습니다.</p>
@@ -660,7 +661,7 @@ def guide_price():
 
 <h2>6개 채널 한눈에</h2>
 <div class="table-scroll"><table>
-<caption>가격은 30th CELEBRATION 박스 1개 기준 · 데이터 기준일 {DATA_DATE}</caption>
+<caption>가격은 30th CELEBRATION 박스 1개 기준</caption>
 <thead><tr><th>채널</th><th class="num">가격</th><th>조건</th></tr></thead>
 <tbody>{rows}</tbody></table></div>
 
@@ -693,7 +694,7 @@ def guide_price():
 <a class="card-link" href="../sets/"><span class="t">확장팩 도감 전체</span><span class="s">9개 세트 정가·시세 비교</span></a>
 </div>
 <p><a class="cta" href="../#home">홈에서 정가 보드 보기</a><a class="cta ghost" href="../#map">내 주변 매장 찾기</a></p>
-<p class="note">판매 조건·가격은 채널 사정에 따라 바뀝니다. 결제 전 장바구니 총액(배송비 포함)과 판매자명을 꼭 확인하세요. 데이터 기준일 {DATA_DATE}.</p>
+<p class="note">판매 조건·가격은 채널 사정에 따라 바뀝니다. 결제 전 장바구니 총액(배송비 포함)과 판매자명을 꼭 확인하세요.</p>
 """
     ld = [
         breadcrumb_ld(path, [("포켓몬카드모아", "../"), ("가이드", "guides/"), ("정가 구매처 비교", None)]),
@@ -965,7 +966,7 @@ def guide_faq():
 <tr><td>세트 수록</td><td>176종(기본 103종)</td></tr>
 <tr><td>확정 봉입</td><td>팩마다 30주년 피카츄 1장 + 기본 에너지 1장</td></tr>
 <tr><td>피카츄 30종</td><td>017~046번 · 30명의 일러스트레이터</td></tr>
-<tr><td>KREAM 미개봉</td><td>슈링크 76,000원 · 논슈링크 72,000원 (2026-11-17)</td></tr>
+<tr><td>KREAM 미개봉</td><td>슈링크 76,000원 · 논슈링크 72,000원 ({KREAM_CHECKED_KO} 확인)</td></tr>
 </tbody></table></div>
 
 <h2>이 답의 근거</h2>
@@ -1059,7 +1060,7 @@ def guides_index_page():
 # ------------------------------------------------------------------ 빌드
 def sitemap(paths):
     fixed = [
-        ("", "2026-11-26", "daily", "1.0"),
+        ("", "2026-11-27", "daily", "1.0"),
         ("privacy.html", "2026-11-18", "yearly", "0.3"),
         ("terms.html", "2026-11-18", "yearly", "0.3"),
     ]

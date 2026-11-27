@@ -51,6 +51,15 @@ window.PokeMoaMap = (function () {
   var POLICY_LOCATION_ONLY = { seven: 1 };
   var POLICY_NOTICE = "세븐일레븐 앱에서 확인";
   function isPolicyBrand(b) { return !!POLICY_LOCATION_ONLY[b]; }
+
+  /* 내장 좌표 스냅샷의 수집일 — 화면에는 "11월 17일 수집"처럼 읽히게 적는다(v4.61). */
+  function fmtSnapshotDate(iso) {
+    var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(iso || ""));
+    if (!m) return "";
+    var now = new Date(Date.now() + 9 * 3600 * 1000);
+    var year = Number(m[1]) === now.getUTCFullYear() ? "" : m[1] + "년 ";
+    return year + Number(m[2]) + "월 " + Number(m[3]) + "일 수집";
+  }
   /* 오프라인 판매처(마트·아트박스·공식 자판기·공인 카드샵) — 편의점 4사와 함께 지도에 올린다.
      재고 공개 데이터가 없어 모두 '매장 확인' 또는 '공식 설치 지점'으로만 표시한다. */
   var OFFLINE_IDS = ["mart", "artbox", "vending", "cardshop"];
@@ -1304,7 +1313,7 @@ window.PokeMoaMap = (function () {
   }
 
   function pushData() {
-    st.snapshotLabel = (D.osmSnapshot && D.osmSnapshot.fetchedAt) || "";
+    st.snapshotLabel = fmtSnapshotDate((D.osmSnapshot && D.osmSnapshot.fetchedAt) || "");
     emit("pokemoa:data", {
       stores: st.visible,
       loading: st.loading.data || st.loading.tiles,
