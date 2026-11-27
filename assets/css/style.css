@@ -2630,6 +2630,7 @@ body.figure-mode .map-brief-toggle { display: none; }
   cursor: pointer;
 }
 .bp-toggle:hover { color: var(--ink); background: #e8eef8; }
+.bp-rows-wrap { overflow: hidden; transition: max-height 0.34s cubic-bezier(0.4, 0, 0.2, 1); }
 .bp-rows { list-style: none; margin: 0; padding: 0; display: grid; gap: 5px; }
 .bp-rows[hidden] { display: none; }
 .bp-row {
@@ -2688,6 +2689,18 @@ body.figure-mode .map-brief-toggle { display: none; }
 .bp-summary[hidden] { display: none; }
 .bp-sum-item { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
 .bp-sum-item b { color: var(--ink); font-weight: 800; }
+
+/* v4.63 — 조회 100% 완료 뒤 1줄 요약 바(자동 접힘). 진행 중에는 종전처럼 펼쳐 둔다. */
+.brand-progress.is-collapsed { gap: 3px; padding: 9px 12px 10px; }
+.brand-progress.is-collapsed .bp-toggle { background: #eef3fb; color: #2f4a76; }
+.brand-progress.is-collapsed .bp-summary {
+  display: flex; flex-wrap: nowrap; overflow: hidden;
+  font-size: 10.5px;
+  -webkit-mask-image: linear-gradient(90deg, #000 0, #000 88%, transparent 100%);
+  mask-image: linear-gradient(90deg, #000 0, #000 88%, transparent 100%);
+  animation: bp-sum-fade 0.3s ease both;
+}
+@keyframes bp-sum-fade { from { opacity: 0; transform: translateY(-2px); } to { opacity: 1; transform: none; } }
 
 /* 편의점 4사별 현황 요약 바 */
 .brand-summary {
@@ -2928,22 +2941,29 @@ body.figure-mode .map-brief-toggle { display: none; }
   .brand-summary { grid-template-columns: repeat(6, minmax(0, 1fr)); }
 }
 @media (max-width: 679px) {
+  /* 조회 완료 뒤 접힌 바 — 제목·100%·펼치기만 한 줄에 남기고 지역 표기는 감춘다 */
+  .brand-progress.is-collapsed .bp-region { display: none; }
+  .brand-progress.is-collapsed { padding: 8px 10px 9px; }
+  .brand-progress.is-collapsed .bp-title { font-size: 11.5px; }
+  .brand-progress.is-collapsed .bp-toggle { padding: 3px 8px; }
+
+  /* v4.63 — 브랜드 칩은 가로 스크롤 대신 2행 × 3열(2×3)로 6개를 한눈에 */
   .brand-summary {
-    display: flex;
-    gap: 7px;
-    overflow-x: auto;
-    overflow-y: hidden;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
     padding: 10px;
-    scrollbar-width: none;
-    -webkit-overflow-scrolling: touch;
+    overflow: visible;
+    -webkit-mask-image: none;
+    mask-image: none;
   }
-  .brand-summary::-webkit-scrollbar { display: none; }
-  .bs-card { flex: 0 0 auto; min-width: 104px; padding: 8px 10px; }
-  .brand-summary {
-    -webkit-mask-image: linear-gradient(90deg, #000 0, #000 92%, transparent 100%);
-    mask-image: linear-gradient(90deg, #000 0, #000 92%, transparent 100%);
-  }
-  .bs-count { font-size: 17px; }
+  .bs-card { min-width: 0; padding: 6px 8px; gap: 1px; }
+  .bs-head { gap: 5px; }
+  .bs-name { font-size: 10.5px; }
+  .bs-count { font-size: 15px; line-height: 1.05; }
+  .bs-count small { font-size: 9px; }
+  .bs-sub { font-size: 9px; line-height: 1.25; }
+  .bs-all .bs-sub { -webkit-line-clamp: 2; line-height: 1.25; }
   .map-toolbar { padding: 12px 10px; }
   .sort-row { gap: 8px; }
   .select-sort { flex: 1 1 128px; }

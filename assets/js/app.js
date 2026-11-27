@@ -267,6 +267,7 @@
      bpRelayDone) 올린다.
      응답이 없으면 100%로 닫으면서 「미연동 · 매장 위치만」처럼 상태를 분명히 적는다. */
   var bpEl = $("#brandProgress");
+  var bpRowsWrapEl = $("#bpRowsWrap");
   var bpRowsEl = $("#bpRows");
   var bpOverallEl = $("#bpOverall");
   var bpRegionEl = $("#bpRegion");
@@ -290,7 +291,11 @@
     active: false,
     quiet: true,     /* 첫 자동 조회 때는 패널을 띄우지 않는다 */
     expanded: true,
-    userCollapsed: false,
+    /* 사용자가 직접 고른 상태 — null 이면 아무것도 고르지 않은 것(조회가 끝나면 1줄로 접는다).
+       "open" 이면 펼친 채로, "closed" 면 접은 채로 둔다. 한 번 고르면 같은 방문 안에서
+       다음 조회에도 그 선택을 지킨다(진행 중에는 진행률을 보여 주려고 항상 펼친다). */
+    userChoice: null,
+    rowsTimer: null,
     searchDone: false,
     counts: null,
     sourceLabel: "",
@@ -424,12 +429,43 @@
       bits.join("");
   }
 
-  function bpCollapse(on) {
+  /* 4사 진행 막대(#bpRows)를 실제 높이로 접고 펴서 「스르륵」 전환한다.
+     max-height 는 열 때 잰 높이로 잡고, 전환이 끝나면 none 으로 풀어
+     뒤에 문구가 두 줄로 늘어도 잘리지 않게 한다. */
+  function bpAnimateRows(open, instant) {
+    var wrap = bpRowsWrapEl, rows = bpRowsEl;
+    if (!wrap || !rows) return;
+    var reduce = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+    var dur = (instant || reduce) ? 0 : 340;
+    clearTimeout(bp.rowsTimer);
+    wrap.style.transitionDuration = dur + "ms";
+    if (open) {
+      rows.hidden = false;
+      rows.removeAttribute("aria-hidden");
+      var h = rows.offsetHeight;
+      if (!h) { wrap.style.maxHeight = "none"; return; }
+      wrap.style.maxHeight = "0px";
+      void wrap.offsetHeight;                       /* 되감기 방지용 재배치 */
+      wrap.style.maxHeight = h + "px";
+      bp.rowsTimer = setTimeout(function () { wrap.style.maxHeight = "none"; }, dur + 40);
+    } else {
+      var h2 = rows.offsetHeight;
+      wrap.style.maxHeight = (h2 || 0) + "px";
+      void wrap.offsetHeight;
+      wrap.style.maxHeight = "0px";
+      rows.setAttribute("aria-hidden", "true");
+      /* 전환이 끝난 뒤에야 DOM 에서도 감춘다(포커스·스크린리더가 접힌 행에 닿지 않게) */
+      bp.rowsTimer = setTimeout(function () { rows.hidden = true; }, dur + 40);
+    }
+  }
+
+  function bpCollapse(on, opts) {
     bp.expanded = !on;
-    if (bpRowsEl) bpRowsEl.hidden = !!on;
+    if (bpEl) bpEl.classList.toggle("is-collapsed", !!on);
+    bpAnimateRows(!on, !!(opts && opts.instant));
     if (bpSummaryEl) bpSummaryEl.hidden = !on;
     if (bpToggleEl) {
-      bpToggleEl.textContent = on ? "자세히" : "접기";
+      bpToggleEl.textContent = on ? "펼치기" : "접기";
       bpToggleEl.setAttribute("aria-expanded", on ? "false" : "true");
     }
   }
@@ -445,9 +481,9 @@
     if (bpTitleEl) bpTitleEl.textContent = "매장·재고 조회 완료";
     bpRenderSummary();
     clearTimeout(bp.collapseTimer);
-    /* 끝난 뒤에도 4사 % 막대와 결과 문구를 그대로 남긴다(자동으로 접지 않는다).
-       사용자가 직접 '접기'를 누른 경우에만 접힌 상태를 지킨다. */
-    bpCollapse(!!bp.userCollapsed);
+    /* 조회가 100% 끝나면 1줄 요약 바로 스르륵 접어 지도를 위로 올린다.
+       사용자가 직접 펼쳐 둔 경우("open")에는 그 선택을 지켜 펼친 채로 둔다. */
+    bpCollapse(bp.userChoice !== "open");
   }
 
   function bpShow(force) {
@@ -459,7 +495,8 @@
     bpEl.hidden = false;
     bpEl.setAttribute("data-state", bp.stage === 3 ? "done" : "running");
     if (bpTitleEl) bpTitleEl.textContent = bp.stage === 3 ? "매장·재고 조회 완료" : "매장·재고 조회 (편의점 4사 · 이마트)";
-    bpCollapse(bp.stage === 3 && !!bp.userCollapsed);
+    /* 진행 중에는 진행률을 보여 주려고 펼치고, 완료 상태로 다시 띄울 때만 사용자의 선택을 따른다 */
+    bpCollapse(bp.stage === 3 && bp.userChoice !== "open");
   }
 
   function bpLabel(regionId, origin) {
@@ -474,7 +511,6 @@
   function bpReset(regionId, origin) {
     clearTimeout(bp.collapseTimer);
     bp.stage = 1;
-    bp.userCollapsed = false;
     bp.searchDone = false;
     bp.counts = null;
     bp.sourceLabel = "";
@@ -588,7 +624,8 @@
 
   if (bpToggleEl) {
     bpToggleEl.addEventListener("click", function () {
-      bp.userCollapsed = bp.expanded;   /* 펼쳐져 있으면 → 접기 */
+      /* 펼쳐져 있으면 → 접기("closed"), 접혀 있으면 → 펼치기("open") */
+      bp.userChoice = bp.expanded ? "closed" : "open";
       bpCollapse(bp.expanded);
     });
   }
