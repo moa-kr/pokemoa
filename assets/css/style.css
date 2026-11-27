@@ -671,7 +671,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
   gap: 4px 10px;
   margin: 0;
   color: var(--muted);
-  max-width: 720px;
+  max-width: 860px;
   font-size: 14px;
   line-height: 1.6;
 }
@@ -2469,8 +2469,10 @@ body.figure-mode .map-brief-toggle { display: none; }
   .map-page-head { padding-bottom: 4px; }
   .map-page-head h1 { font-size: 21px; line-height: 1.3; }
   .map-page-head > p:not(.map-brief-summary) { display: none; }
-  .map-page-head .map-brief-summary { font-size: 12.5px; line-height: 1.5; gap: 2px 8px; }
-  .map-brief-toggle { font-size: 12px; }
+  .map-page-head .map-brief-summary { font-size: 12.5px; line-height: 1.5; gap: 6px; flex-wrap: nowrap; align-items: center; }
+  /* 모바일은 「핵심 1줄」(넘치면 말줌임) + 자세히 보기 — 지도까지 스크롤을 줄인다 */
+  .map-page-head .map-brief-summary > span { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .map-brief-toggle { flex: 0 0 auto; font-size: 12px; }
   .map-brief-detail { margin-top: 10px; }
   .map-brief-lead { font-size: 12.5px; line-height: 1.6; }
   .map-page-head .eyebrow { font-size: 10.5px; margin-bottom: 4px; }
