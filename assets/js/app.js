@@ -1992,7 +1992,7 @@
     var allSub = !all.total
       ? "주변 매장을 찾는 중"
       : preQuery
-        ? "위치 확인 · ‘내 위치로 찾기’로 재고 조회"
+        ? "위치 확인 · ‘내 위치로 찾기’로 조회"
         : allBits.join(" · ");
     var html = '<button type="button" class="bs-card bs-all' + (activeBrand === "all" ? " is-active" : "") + '" data-brand="all">' +
       '<span class="bs-head"><span class="bs-name">전체</span></span>' +
