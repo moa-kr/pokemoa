@@ -1992,7 +1992,7 @@
     var allSub = !all.total
       ? "주변 매장을 찾는 중"
       : preQuery
-        ? (all.total + "곳 위치 확인 · ‘내 위치로 찾기’로 재고 조회")
+        ? "위치 확인 · ‘내 위치로 찾기’로 재고 조회"
         : allBits.join(" · ");
     var html = '<button type="button" class="bs-card bs-all' + (activeBrand === "all" ? " is-active" : "") + '" data-brand="all">' +
       '<span class="bs-head"><span class="bs-name">전체</span></span>' +
@@ -2021,7 +2021,7 @@
           if (c.in) bits.push("재고 " + c.in + "곳");
           if (c.none) bits.push("없음 " + c.none + "곳");
           if (!preQuery && c.check) bits.push("미조회 " + c.check + "곳");
-          if (!bits.length && c.total) return preQuery ? "위치 " + c.total + "곳" : "재고 조회 전";
+          if (!bits.length && c.total) return preQuery ? "위치 확인" : "재고 조회 전";
           return bits.length ? bits.join(" · ") : "표시할 매장 없음";
         })() + "</span></button>";
     });
