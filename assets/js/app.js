@@ -3922,6 +3922,10 @@
   ];
   var STALE_DATE_HINT = /데이터\s*기준|\d{4}-\d{2}-\d{2}/;
 
+  /* 배지에 날짜·기준일이 적혀 있으면(또는 비어 있으면) 오늘 날짜로 바꾸고,
+     어드민에서 직접 쓴 날짜 없는 문구는 그대로 둔다. */
+  var BADGE_AUTO = /데이터\s*기준|오늘|\d{2,4}\s*[-./]\s*\d{1,2}|^\s*$/;
+
   function applyFreshness() {
     var today = kstNow();
     var badges = {
@@ -3930,7 +3934,9 @@
     };
     Object.keys(badges).forEach(function (key) {
       $$('[data-copy="' + key + '"]').forEach(function (el) {
-        if (el.textContent !== badges[key]) el.textContent = badges[key];
+        var saved = (el.textContent || "").trim();
+        var next = BADGE_AUTO.test(saved) ? badges[key] : saved;
+        if (el.textContent !== next) el.textContent = next;
       });
     });
     $$("[data-copy],[data-copy-html]").forEach(function (el) {
