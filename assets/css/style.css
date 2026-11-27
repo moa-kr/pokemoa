@@ -709,7 +709,10 @@ button { font: inherit; color: inherit; cursor: pointer; }
   line-height: 1.65;
 }
 /* 피규어 모드에서는 GS25 단독 안내(notice-figure)가 반드시 보여야 해 접힘을 풀고 토글은 숨간다 */
-body.figure-mode .map-brief-detail { display: block; }
+/* v4.65 — 사용자가 「숨기기」를 눌러 hidden 이 남아 있어도(전역 `[hidden]{display:none!important}`)
+   피규어 모드에서는 GS25 단독 안내가 보이도록 상세를 펼친다. */
+body.figure-mode .map-brief-detail,
+body.figure-mode .map-brief-detail[hidden] { display: block !important; }
 body.figure-mode .map-brief-toggle { display: none; }
 
 .demo-notice {
