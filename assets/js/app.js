@@ -30,6 +30,56 @@
       .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   }
 
+  /* ------------------------------------------------- 쿠팡 파트너스 위젯 지연 로딩 (v4.62, 2026-11-27)
+     iframe 3개(coupa.ng)가 각 4~5초 걸려 첫 로딩(load 이벤트)을 8~9초대로 늘리던 문제.
+     `loading="lazy"` 만으로는 화면에서 멀어도 먼저 받아 버려서, src 를 data-aff-src 로
+     미뤄 두고 IntersectionObserver 로 화면 200px 앞에 왔을 때만 붙인다.
+     탭을 바꿔 패널이 보이면 브라우저가 교차 상태를 다시 계산하므로 따로 호출할 필요가 없다. */
+  (function affiliateLazyLoad() {
+    var frames = $$("iframe[data-aff-src]");
+    if (!frames.length) return;
+    function hydrate(f) {
+      var src = f.getAttribute("data-aff-src");
+      if (!src || f.getAttribute("src")) return;
+      f.removeAttribute("data-aff-src");
+      f.setAttribute("src", src);
+      var slot = f.parentNode;
+      if (slot && slot.classList) slot.classList.add("is-loaded");
+    }
+    if (!("IntersectionObserver" in window)) {
+      frames.forEach(hydrate);
+      return;
+    }
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (!en.isIntersecting && !en.intersectionRatio) return;
+        hydrate(en.target);
+        io.unobserve(en.target);
+      });
+    }, { rootMargin: "200px 0px", threshold: 0.01 });
+    frames.forEach(function (f) { io.observe(f); });
+  })();
+
+  /* ------------------------------------------- 지도 머리글 「자세히 보기 / 접기」(v4.62) */
+  (function mapBriefToggleInit() {
+    var btn = $("#mapBriefToggle");
+    var detail = $("#mapBriefDetail");
+    if (!btn || !detail) return;
+    var label = btn.querySelector(".map-brief-toggle-label");
+    function paint(open) {
+      btn.setAttribute("aria-expanded", open ? "true" : "false");
+      if (label) label.textContent = open ? "접기" : "자세히 보기";
+    }
+    btn.addEventListener("click", function () {
+      var open = detail.hasAttribute("hidden");
+      if (open) detail.removeAttribute("hidden");
+      else detail.setAttribute("hidden", "");
+      paint(open);
+      if (open) trackEvent("map_brief_open", { place: "map_head" });
+    });
+    paint(!detail.hasAttribute("hidden"));
+  })();
+
   /* --------------------------------------------------------------- 탭 */
   var panels = {
     home: $("#panel-home"),
@@ -756,14 +806,19 @@
     });
     if (mapCountEl) {
       /* 항목을 한 덩어리씩 감싸 줄바꿈이 항목 경계에서 일어나게 한다(줄 끝에 '·'만 남지 않게) */
+      /* 0 인 항목은 빼고, 재고를 아직 조회하지 않은 상태면 「재고 0 · 미조회 101」 대신
+         위치만 확인된 상태임을 적는다(v4.62, 2026-11-27) */
+      var pending = Math.max(0, counts.check - offlineN - policyN - emartUnN);
+      var preQuery = counts.in === 0 && counts.none === 0 && pending > 0;
       var mcParts = ['<span class="mc">표시 중 <b>' + list.length + "</b>곳</span>"];
       if (offlineN) mcParts.push('<span class="mc">오프라인 ' + offlineN + "곳</span>");
-      mcParts.push('<span class="mc">재고 ' + counts.in + "</span>");
-      mcParts.push('<span class="mc">미조회 ' + Math.max(0, counts.check - offlineN - policyN - emartUnN) + "</span>");
+      if (counts.in) mcParts.push('<span class="mc">재고 ' + counts.in + "</span>");
+      if (counts.none) mcParts.push('<span class="mc">없음 ' + counts.none + "</span>");
+      if (pending && !preQuery) mcParts.push('<span class="mc">미조회 ' + pending + "</span>");
       if (policyN) mcParts.push('<span class="mc">위치안내 ' + policyN + "</span>");
       if (emartN) mcParts.push('<span class="mc">이마트 ' + emartN + (emartClosedN ? " · 휴무 " + emartClosedN : "") + "</span>");
       if (emartUnN) mcParts.push('<span class="mc">비공개 ' + emartUnN + "</span>");
-      mcParts.push('<span class="mc">없음 ' + counts.none + "</span>");
+      if (preQuery) mcParts.push('<span class="mc">재고는 ‘선택 지역 찾기’ 후</span>');
       mapCountEl.innerHTML = mcParts.join("");
     }
     if (sideSummary) {
@@ -1881,8 +1936,25 @@
       toast("지난번 찾은 ‘" + intent.label + "’ 자리에서 시작합니다.");
     } else if (intent.source === "pinned" && intent.label) {
       toast("고정한 ‘" + intent.label + "’ 자리에서 시작합니다.");
+    } else if (intent.source === "default") {
+      firstVisitHint(region);
     }
     trackEvent("last_location_boot", { source: intent.source, mode: intent.mode, radius_km: filterState.radius / 1000 });
+  }
+
+  /* 처음 온 방문자(지역 고정·저장된 마지막 위치가 없는 경우)에게만 한 번 —
+     기본 지역이 보이는 이유와 다음에 누를 곳을 부드럽게 알려 준다(v4.62, 2026-11-27). */
+  var FIRST_GUIDE_KEY = "pokemoa.firstVisitGuideAt";
+  function firstVisitHint(region) {
+    var seen = "";
+    try { seen = localStorage.getItem(FIRST_GUIDE_KEY) || ""; } catch (e) { seen = ""; }
+    if (seen) return;
+    try { localStorage.setItem(FIRST_GUIDE_KEY, new Date().toISOString()); } catch (e) {}
+    var label = region ? lastRegionLabel(region) : "기본 지역";
+    setTimeout(function () {
+      toast("처음이세요? 지금은 ‘" + label + "’ 기준이에요. ‘📌 이 지역 고정’을 누르면 다음에도 이 동네에서 시작해요.");
+    }, 1600);
+    trackEvent("first_visit_guide", { region: label });
   }
 
   /* 첫 위치: ① 주소에 붙은 ?region=·?lat=&lng= ② 저장된 마지막 검색 위치 ③ 기본(서울 광화문) */
@@ -1892,17 +1964,40 @@
   /* 편의점 4사별 현황 요약 (클릭하면 그 브랜드만 보기 · 한 번 더 누르면 전체)
      이마트(대형마트)는 실제 점포 재고를 직접 조회하므로 같은 줄에 한 칸 더 둔다. */
   var BRAND_ORDER = ["gs25", "cu", "seven", "emart24", "emart"];
+  /* 재고를 아직 한 번도 조회하지 않은 상태(매장 위치만 받은 상태)인지 —
+     이때 「재고 0 · 미조회 101」을 결과처럼 보여 주면 "카드가 없다"로 오해된다(v4.62, 2026-11-27). */
+  function isPreQueryCounts(counts) {
+    if (!counts) return false;
+    var total = 0, answered = 0;
+    ["gs25", "cu", "emart24"].forEach(function (id) {
+      var c = counts[id];
+      if (!c) return;
+      total += c.total || 0;
+      answered += (c.in || 0) + (c.none || 0);
+    });
+    return total > 0 && answered === 0;
+  }
   function renderBrandSummary(counts, activeBrand) {
     if (!brandSummary || !counts) return;
     var all = counts.all || { total: 0, in: 0, check: 0, none: 0 };
     /* 전체에서도 세븐일레븐 위치는 '미조회'와 따로 세어 섞는다 */
     var seven = counts.seven || { total: 0, in: 0, check: 0, none: 0 };
+    var preQuery = isPreQueryCounts(counts);
+    /* 0 인 항목은 칩에서 빼고, 0곳이면 「재고 0 · 미조회 0」 대신 상태를 글로 적는다 */
+    var allBits = [];
+    if (all.in) allBits.push("재고 " + all.in);
+    if (all.none) allBits.push("없음 " + all.none);
+    if (!preQuery && all.check - seven.check > 0) allBits.push("미조회 " + Math.max(0, all.check - seven.check));
+    if (seven.total) allBits.push("위치 " + seven.total);
+    var allSub = !all.total
+      ? "주변 매장을 찾는 중"
+      : preQuery
+        ? (all.total + "곳 위치 확인 · ‘내 위치로 찾기’로 재고 조회")
+        : allBits.join(" · ");
     var html = '<button type="button" class="bs-card bs-all' + (activeBrand === "all" ? " is-active" : "") + '" data-brand="all">' +
       '<span class="bs-head"><span class="bs-name">전체</span></span>' +
       '<strong class="bs-count">' + all.total + '<small>곳</small></strong>' +
-      '<span class="bs-sub">재고 ' + all.in + " · 없음 " + all.none +
-        " · 미조회 " + (all.check - seven.check) +
-        (seven.total ? " · 위치 " + seven.total : "") + "</span></button>";
+      '<span class="bs-sub">' + allSub + "</span></button>";
     BRAND_ORDER.forEach(function (id) {
       var meta = D.brandMeta[id] || { label: id, short: id, color: "#1b2a4a" };
       var c = counts[id] || { total: 0, in: 0, check: 0, none: 0 };
@@ -1925,7 +2020,8 @@
           var bits = [];
           if (c.in) bits.push("재고 " + c.in + "곳");
           if (c.none) bits.push("없음 " + c.none + "곳");
-          if (c.check) bits.push("미조회 " + c.check + "곳");
+          if (!preQuery && c.check) bits.push("미조회 " + c.check + "곳");
+          if (!bits.length && c.total) return preQuery ? "위치 " + c.total + "곳" : "재고 조회 전";
           return bits.length ? bits.join(" · ") : "표시할 매장 없음";
         })() + "</span></button>";
     });

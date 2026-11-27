@@ -1254,7 +1254,8 @@ window.PokeMoaMap = (function () {
         : "매장 위치 · 편의점 4사 " + convN + "곳";
       if (offN) txt += " · 오프라인 " + offN + "곳";
       if (emartN) txt += " · 이마트 " + emartN + "곳";
-      txt += " · 재고는 ‘선택 지역 찾기’ 후";
+      /* 재고를 아직 조회하지 않은 상태 — 「재고 0」이 아니라 다음에 무엇을 하면 되는지 적는다(v4.62) */
+      txt += " · 재고는 ‘내 위치로 찾기’로 조회";
       return { kind: "live", text: txt, action: false };
     }
     var snapKm = Math.round(((D.osmSnapshot || {}).radius || 3000) / 1000);

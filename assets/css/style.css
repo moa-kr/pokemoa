@@ -662,6 +662,51 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .map-page-head h1 { margin: 6px 0 8px; font-size: 27px; letter-spacing: -0.03em; }
 .map-page-head p { margin: 0; color: var(--muted); max-width: 720px; font-size: 14px; }
 
+/* v4.62 — 지도 머리글 「핵심 1줄 + 자세히 보기」（2026-11-27）
+   9줄짜리 설명 문단과 안내 상자를 접어 두고, 지도까지 스크롤을 줄인다. */
+.map-page-head .map-brief-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+  margin: 0;
+  color: var(--muted);
+  max-width: 720px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.map-brief-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--navy, #101f3c);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.map-brief-toggle i { font-style: normal; font-size: 11px; transition: transform 0.15s ease; }
+.map-brief-toggle[aria-expanded="true"] i { transform: rotate(180deg); }
+.map-brief-toggle:hover { color: #1b2a8a; }
+.map-brief-detail { margin: 12px 0 0; }
+.map-brief-detail .demo-notice { margin: 0 0 12px; }
+.map-brief-lead {
+  margin: 0;
+  color: var(--muted);
+  max-width: 720px;
+  font-size: 14px;
+  line-height: 1.65;
+}
+/* 피규어 모드에서는 GS25 단독 안내(notice-figure)가 반드시 보여야 해 접힘을 풀고 토글은 숨간다 */
+body.figure-mode .map-brief-detail { display: block; }
+body.figure-mode .map-brief-toggle { display: none; }
+
 .demo-notice {
   display: flex;
   gap: 10px;
@@ -2423,7 +2468,11 @@ button { font: inherit; color: inherit; cursor: pointer; }
 @media (max-width: 679px) {
   .map-page-head { padding-bottom: 4px; }
   .map-page-head h1 { font-size: 21px; line-height: 1.3; }
-  .map-page-head > p { display: none; }
+  .map-page-head > p:not(.map-brief-summary) { display: none; }
+  .map-page-head .map-brief-summary { font-size: 12.5px; line-height: 1.5; gap: 2px 8px; }
+  .map-brief-toggle { font-size: 12px; }
+  .map-brief-detail { margin-top: 10px; }
+  .map-brief-lead { font-size: 12.5px; line-height: 1.6; }
   .map-page-head .eyebrow { font-size: 10.5px; margin-bottom: 4px; }
   .demo-notice { padding: 10px 12px; margin-bottom: 12px; }
   .demo-notice .notice-long { display: none; }
