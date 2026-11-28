@@ -45,7 +45,7 @@
 <meta name="apple-mobile-web-app-title" content="포켓몬카드모아">
 <link rel="apple-touch-icon" sizes="180x180" href="assets/img/icons/apple-touch-icon-180.png">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%23101f3c'/%3E%3Crect x='7' y='7' width='7.5' height='7.5' rx='2.2' fill='%23ffcb05'/%3E%3Crect x='17.5' y='7' width='7.5' height='7.5' rx='2.2' fill='%23ffcb05' opacity='.7'/%3E%3Crect x='7' y='17.5' width='7.5' height='7.5' rx='2.2' fill='%23ffcb05' opacity='.7'/%3E%3Crect x='17.5' y='17.5' width='7.5' height='7.5' rx='2.2' fill='%23ffcb05'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="assets/css/style.css?v=162">
+<link rel="stylesheet" href="assets/css/style.css?v=163">
 <!-- 카카오맵 JavaScript SDK — autoload=false로 불러 두고 map.js가 kakao.maps.load()로 초기화합니다.
      JavaScript 키 도메인에는 https://moa-kr.github.io 만 등록되어 있어, 그 밖의 주소(미등록 프리뷰)에서는
      지도 대신 내장 좌표 스냅샷 안내가 표시됩니다. -->
@@ -629,61 +629,7 @@
         </button>
       </div>
     </div>
-
-    <!-- ----------------------------------------- GS25 피규어 재고 조회 진행률 -->
-    <div class="figure-progress" id="figureProgress" data-state="idle" role="group" aria-label="GS25 피규어 재고 조회 진행률" hidden>
-      <div class="fgp-head">
-        <span class="fgp-spin" aria-hidden="true"></span>
-        <b class="fgp-title" id="figureProgressTitle">GS25 피규어 재고 조회</b>
-        <span class="fgp-pct" id="figureProgressPct">0%</span>
-      </div>
-      <div class="fgp-bar" id="figureProgressBar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="GS25 피규어 재고 조회 진행률"><i id="figureProgressFill"></i></div>
-      <p class="fgp-note" id="figureProgressNote" role="status" aria-live="polite">주변 GS25 매장을 찾는 중…</p>
-    </div>
-
-    <!-- ------------------------------------------------------ GS25 피규어 안내 띠 -->
-    <section class="figure-strip" id="figureStrip" aria-labelledby="figureStripTitle" hidden>
-      <div class="fs-main">
-        <img class="fs-thumb" src="assets/img/figure/palmsize-wonder-1.jpg" alt="GS25 팜사이즈 원더 1탄 상품 이미지" width="96" height="96" loading="lazy">
-        <div class="fs-copy">
-          <p class="fs-eyebrow"><span class="fs-new">NEW</span> GS25 신상 · 2026.11.20 출시</p>
-          <h2 id="figureStripTitle">포켓몬스터 팜사이즈 원더 피규어</h2>
-          <p class="fs-meta">1탄 6종 · 2탄 8종 · 3탄 6종 = 총 20종 랜덤 · <b>개당 5,800원</b></p>
-          <p class="fs-status" id="figureStockNote" role="status" aria-live="polite">주변 GS25 재고를 조회하려면 ‘재고 조회’를 눌러 주세요.</p>
-        </div>
-        <div class="fs-actions">
-          <button type="button" class="btn btn-dark btn-sm" id="figureQuery">재고 조회</button>
-          <a class="btn btn-ghost btn-sm" id="figureOfficial" href="https://product.woodongs.com/item/gs25/6970834313420" target="_blank" rel="noopener">공식 상품 ↗</a>
-        </div>
-      </div>
-      <ul class="fs-series" id="figureSeries"></ul>
-    </section>
-
-    <div class="brand-progress" id="brandProgress" data-state="idle" role="group" aria-label="GS25·CU·이마트24 매장·재고 조회 진행률" hidden>
-      <div class="bp-head">
-        <span class="bp-title"><span class="bp-spin" aria-hidden="true"></span><b id="bpTitle">GS25·CU·이마트24 매장·재고 조회</b></span>
-        <span class="bp-region" id="bpRegion"></span>
-        <span class="bp-overall" id="bpOverall">0%</span>
-        <button type="button" class="bp-toggle" id="bpToggle" aria-expanded="true" aria-controls="bpRows">접기</button>
-      </div>
-      <div class="bp-rows-wrap" id="bpRowsWrap">
-        <ul class="bp-rows" id="bpRows"></ul>
-      </div>
-      <div class="bp-summary" id="bpSummary" role="status" aria-live="polite" hidden></div>
-    </div>
-
-    <div class="brand-summary" id="brandSummary" role="group" aria-label="편의점 4사별 현황"></div>
-
-    <div class="offline-bar" id="offlineBar" role="group" aria-label="오프라인 판매처 표시">
-      <span class="row-label" data-copy="mapOfflineLabel">오프라인</span>
-      <div class="offline-chips" id="offlineChips"></div>
-      <p class="offline-note" id="offlineNote" role="status" aria-live="polite" hidden></p>
-      <label class="offline-toggle" for="offlineToggle">
-        <input type="checkbox" id="offlineToggle" checked>
-        <span data-copy="mapOfflineToggle">지도에 함께 보기</span>
-      </label>
-    </div>
-
+    <!-- ------------------------ 검색 영역 — 지역·반경·정렬 (v4.66: 진행률·지도보다 위) -->
     <div class="map-toolbar">
       <div class="toolbar-row">
         <span class="row-label" data-copy="mapRegionLabel">지역</span>
@@ -785,6 +731,61 @@
         </label>
       </div>
     </div>
+
+    <!-- ----------------------------------------- GS25 피규어 재고 조회 진행률 -->
+    <div class="figure-progress" id="figureProgress" data-state="idle" role="group" aria-label="GS25 피규어 재고 조회 진행률" hidden>
+      <div class="fgp-head">
+        <span class="fgp-spin" aria-hidden="true"></span>
+        <b class="fgp-title" id="figureProgressTitle">GS25 피규어 재고 조회</b>
+        <span class="fgp-pct" id="figureProgressPct">0%</span>
+      </div>
+      <div class="fgp-bar" id="figureProgressBar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="GS25 피규어 재고 조회 진행률"><i id="figureProgressFill"></i></div>
+      <p class="fgp-note" id="figureProgressNote" role="status" aria-live="polite">주변 GS25 매장을 찾는 중…</p>
+    </div>
+
+    <!-- ------------------------------------------------------ GS25 피규어 안내 띠 -->
+    <section class="figure-strip" id="figureStrip" aria-labelledby="figureStripTitle" hidden>
+      <div class="fs-main">
+        <img class="fs-thumb" src="assets/img/figure/palmsize-wonder-1.jpg" alt="GS25 팜사이즈 원더 1탄 상품 이미지" width="96" height="96" loading="lazy">
+        <div class="fs-copy">
+          <p class="fs-eyebrow"><span class="fs-new">NEW</span> GS25 신상 · 2026.11.20 출시</p>
+          <h2 id="figureStripTitle">포켓몬스터 팜사이즈 원더 피규어</h2>
+          <p class="fs-meta">1탄 6종 · 2탄 8종 · 3탄 6종 = 총 20종 랜덤 · <b>개당 5,800원</b></p>
+          <p class="fs-status" id="figureStockNote" role="status" aria-live="polite">주변 GS25 재고를 조회하려면 ‘재고 조회’를 눌러 주세요.</p>
+        </div>
+        <div class="fs-actions">
+          <button type="button" class="btn btn-dark btn-sm" id="figureQuery">재고 조회</button>
+          <a class="btn btn-ghost btn-sm" id="figureOfficial" href="https://product.woodongs.com/item/gs25/6970834313420" target="_blank" rel="noopener">공식 상품 ↗</a>
+        </div>
+      </div>
+      <ul class="fs-series" id="figureSeries"></ul>
+    </section>
+
+    <div class="brand-progress" id="brandProgress" data-state="idle" role="group" aria-label="GS25·CU·이마트24 매장·재고 조회 진행률" hidden>
+      <div class="bp-head">
+        <span class="bp-title"><span class="bp-spin" aria-hidden="true"></span><b id="bpTitle">GS25·CU·이마트24 매장·재고 조회</b></span>
+        <span class="bp-region" id="bpRegion"></span>
+        <span class="bp-overall" id="bpOverall">0%</span>
+        <button type="button" class="bp-toggle" id="bpToggle" aria-expanded="true" aria-controls="bpRows">접기</button>
+      </div>
+      <div class="bp-rows-wrap" id="bpRowsWrap">
+        <ul class="bp-rows" id="bpRows"></ul>
+      </div>
+      <div class="bp-summary" id="bpSummary" role="status" aria-live="polite" hidden></div>
+    </div>
+
+    <div class="brand-summary" id="brandSummary" role="group" aria-label="편의점 4사별 현황"></div>
+
+    <div class="offline-bar" id="offlineBar" role="group" aria-label="오프라인 판매처 표시">
+      <span class="row-label" data-copy="mapOfflineLabel">오프라인</span>
+      <div class="offline-chips" id="offlineChips"></div>
+      <p class="offline-note" id="offlineNote" role="status" aria-live="polite" hidden></p>
+      <label class="offline-toggle" for="offlineToggle">
+        <input type="checkbox" id="offlineToggle" checked>
+        <span data-copy="mapOfflineToggle">지도에 함께 보기</span>
+      </label>
+    </div>
+
 
     <div class="map-statusbar" id="mapStatusBar">
       <span class="ms-dot" id="mapStatusDot" aria-hidden="true"></span>
