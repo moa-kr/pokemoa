@@ -358,6 +358,17 @@
   }
   bpBuildRows();
 
+  /* [진단용 — 다음 커밋에서 제거] 진행률 엔진 내부 상태 노출 */
+  window.__bpDebug = function () {
+    return {
+      stage: bp.stage, raf: !!bp.raf, reduce: bpReduce,
+      rows: BP_BRANDS.map(function (id) {
+        var r = bp.rows[id];
+        return { id: id, disp: +r.disp.toFixed(2), goal: r.goal, cap: r.cap, state: r.state };
+      })
+    };
+  };
+
   /* ------------------------------ 진행률 패널로 화면 맞추기(사용자가 직접 시작한 조회만) */
   /* 버튼으로 조회를 시작했는데 패널이 머리글에 밀려 화면 밖에 있으면,
      sticky 헤더 바로 아래로 부드럽게 끌어와 「조회 중」임을 알아볼 수 있게 한다.
@@ -423,9 +434,8 @@
       if (!r) return;
       if (r.disp < r.goal) {
         var gap = r.goal - r.disp;
-        /* 간격이 크면 최대 45%/s, 작으면 14%/s — 어떤 단계에서도 뚝 끊기지 않는 속도 */
-        var speed = Math.max(14, Math.min(45, gap * 3.4));
-        var step = Math.min(gap, Math.max(gap * (1 - Math.exp(-dt / 0.3)), dt * speed));
+        /* 지수 접근(시정수 0.28s)을 최소 14%/s·최대 40%/s 로 묶어 어떤 간격에서도 끊기지 않게 */
+        var step = Math.min(gap, Math.max(gap * (1 - Math.exp(-dt / 0.28)), dt * 14), dt * 40);
         r.disp = (gap - step < 0.02) ? r.goal : r.disp + step;
         busy = true;
       } else if (r.disp > r.goal) {
