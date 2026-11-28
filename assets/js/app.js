@@ -358,17 +358,6 @@
   }
   bpBuildRows();
 
-  /* [진단용 — 다음 커밋에서 제거] 진행률 엔진 내부 상태 노출 */
-  window.__bpDebug = function () {
-    return {
-      stage: bp.stage, raf: !!bp.raf, reduce: bpReduce,
-      rows: BP_BRANDS.map(function (id) {
-        var r = bp.rows[id];
-        return { id: id, disp: +r.disp.toFixed(2), goal: r.goal, cap: r.cap, state: r.state };
-      })
-    };
-  };
-
   /* ------------------------------ 진행률 패널로 화면 맞추기(사용자가 직접 시작한 조회만) */
   /* 버튼으로 조회를 시작했는데 패널이 머리글에 밀려 화면 밖에 있으면,
      sticky 헤더 바로 아래로 부드럽게 끌어와 「조회 중」임을 알아볼 수 있게 한다.
@@ -442,8 +431,12 @@
         r.disp = r.goal;               /* 새 조회·되감기는 기다리지 않고 바로 */
         busy = true;
       } else if (r.state === "run" && r.disp < r.cap) {
-        /* 응답을 기다리는 동안에도 조금씩 — 40%·88% 에서 멈칫해 보이지 않게(약 1.6~3.7%/s) */
-        r.disp = Math.min(r.cap, r.disp + dt * Math.max(1.6, (r.cap - r.disp) * 0.06));
+        /* 응답을 기다리는 동안 — 목표와 값을 함께 조금씩 올린다(40% 에서 2.9%/s, 88% 로 갈수록 느리게).
+           값을 혼자 올리면 다음 프레임의 「목표보다 앞서면 되감기」 가지에 걸려 제자리에 머물고,
+           목표만 올리면 두 프레임에 한 번씩만 움직이므로 둘을 같이 민다. */
+        var creep = Math.min(r.cap, r.disp + dt * Math.max(1.6, (r.cap - r.disp) * 0.06));
+        r.goal = creep;
+        r.disp = creep;
         busy = true;
       }
       if (Math.abs(r.painted - r.disp) > 0.005) bpPaintRow(r);

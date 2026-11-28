@@ -122,17 +122,19 @@
     if (!pgVisible()) { pg.raf = null; pg.lastFrame = 0; return; }
     if (pg.value < pg.goal) {
       var gap = pg.goal - pg.value;
-      /* 간격이 크면 최대 45%/s, 작으면 14%/s — 단계가 바뀌는 자리에서도 뚝 끊기지 않게 */
-      var speed = Math.max(14, Math.min(45, gap * 3.4));
-      var step = Math.min(gap, Math.max(gap * (1 - Math.exp(-dt / 0.3)), dt * speed));
+      /* 지수 접근(시상수 0.28s)을 최소 14%/s·최대 40%/s 로 묶어 단계가 바뀌는 자리에서도 뚝 끊기지 않게 */
+      var step = Math.min(gap, Math.max(gap * (1 - Math.exp(-dt / 0.28)), dt * 14), dt * 40);
       pg.value = (gap - step < 0.02) ? pg.goal : pg.value + step;
       busy = true;
     } else if (pg.value > pg.goal) {
       pg.value = pg.goal;
       busy = true;
     } else if (pg.stage !== "done" && pg.stage !== "error" && pg.value < pg.cap) {
-      /* 응답을 기다리는 동안에도 조금씩 — 40%·88% 에서 멈춰 보이지 않게 */
-      pg.value = Math.min(pg.cap, pg.value + dt * Math.max(1.6, (pg.cap - pg.value) * 0.06));
+      /* 응답을 기다리는 동안 — 목표와 값을 함께 조금씩 올려 40%·88% 에서 멈춰 보이지 않게.
+         값을 혼자 올리면 다음 프레임의 「목표보다 앞서면 되감기」 가지에 걸려 제자리에 머문다. */
+      var creep = Math.min(pg.cap, pg.value + dt * Math.max(1.6, (pg.cap - pg.value) * 0.06));
+      pg.goal = creep;
+      pg.value = creep;
       busy = true;
     }
     if (Math.abs(pg.painted - pg.value) > 0.005) pgPaint();
