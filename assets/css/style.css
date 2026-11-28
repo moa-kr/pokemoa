@@ -2667,7 +2667,9 @@ body.figure-mode .map-brief-toggle { display: none; }
   display: block; height: 100%; width: 0;
   border-radius: 999px;
   background: var(--brand, #2f6df6);
-  transition: width 0.35s ease;
+  /* v4.67 — 진행률은 app.js 가 rAF 로 매 프레임 직접 그린다. 여기 전환은 그 프레임 사이를
+     짧게 이어 주는 역할만 한다(길게 잡으면 % 숫자보다 막대가 뒤늦게 따라와 어긋나 보인다). */
+  transition: width 0.1s linear;
 }
 .bp-pct {
   grid-area: pct; text-align: right;
@@ -4424,9 +4426,14 @@ body:not(.figure-mode) .figure-progress { display: none !important; }
   display: block; height: 100%; width: 0;
   border-radius: 999px;
   background: linear-gradient(90deg, #f7c948, #e8a80c);
-  transition: width 0.35s ease;
+  /* v4.67 — figure.js 가 rAF 로 매 프레임 그린다. 전환은 프레임 사이를 짧게 잇는 용도만 */
+  transition: width 0.1s linear;
 }
 .fgp-note { margin: 0; font-size: 12px; line-height: 1.45; color: var(--ink-2); }
+/* 움직임 줄이기 설정에서는 진행률을 보간하지 않고 목표값으로 바로 그린다 */
+@media (prefers-reduced-motion: reduce) {
+  .bp-bar i, .fgp-bar i { transition: none; }
+}
 .figure-progress[data-state="done"] .fgp-bar i { background: var(--green); }
 .figure-progress[data-state="done"] .fgp-pct { color: var(--green); }
 .figure-progress[data-state="error"] .fgp-bar i { background: #c9705a; }

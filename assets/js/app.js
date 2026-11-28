@@ -318,10 +318,11 @@
     searchDone: false,
     counts: null,
     sourceLabel: "",
-    ticker: null,
     collapseTimer: null,
     emartTimer: null,
-    emartSeen: false
+    emartSeen: false,
+    raf: null,
+    lastFrame: 0
   };
 
   function bpMeta(id) { return D.brandMeta[id] || { label: id, color: "#1b2a4a" }; }
@@ -346,7 +347,10 @@
         fill: li ? li.querySelector(".bp-bar i") : null,
         pct: li ? li.querySelector(".bp-pct") : null,
         status: li ? li.querySelector(".bp-status") : null,
-        pctVal: 0,
+        disp: 0,       /* 화면에 그려지는 값(0~100) — rAF 가 goal 로 부드럽게 보간한다 */
+        goal: 0,       /* 실제 이벤트가 정한 목표값 */
+        cap: 40,       /* 응답을 기다리는 동안 천천히 오를 수 있는 한계(탐색 40 · 재고 88) */
+        painted: -1,   /* 마지막으로 그린 값(불필요한 DOM 쓰기를 줄인다) */
         state: "idle",
         text: "대기 중"
       };
@@ -386,51 +390,120 @@
     return (n == null ? "매장 위치만 안내" : "위치 " + n + "곳 확인") + " · 세븐일레븐 정책상 재고 미지원";
   }
 
+  /* ------------------------------- 진행률 애니메이션 (v4.67) */
+  /* v4.66 까지는 2% 씩 380ms 간격(setInterval)으로 올려서, 매장 탐색이 끝나 재고 조회로 넘어가는
+     40% 부근에서 한 번 멈칫하고 다시 차는 느낌이 났다(사용자 지적). 이제 각 행은 이벤트가 정한
+     목표값(goal)만 받고, 화면의 막대·% 숫자는 rAF 로 매 프레임 보간한 값(disp) 하나로 그린다.
+       · 막대와 숫자를 같은 값에서 그리므로 둘이 어긋나지 않고, 0% → 100% 가 한 흐름으로 오른다.
+       · 목표에 가까워지면 느려지되 최소 14%/s 를 두어 작은 간격에서도 멈추지 않고,
+         응답을 기다리는 동안에는 cap(탐색 40% · 재고 88%)까지 조금씩 이어서 오른다.
+       · 100% 는 실제 응답(완료·실패)이 왔을 때만 쓴다. */
+  var BP_CAP_SEARCH = 40, BP_CAP_STOCK = 88;
+  var bpReduce = false;
+  try {
+    bpReduce = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+  } catch (e) {}
+
+  function bpPaintRow(r) {
+    var v = Math.max(0, Math.min(100, r.disp));
+    if (r.fill) r.fill.style.width = v.toFixed(2) + "%";
+    if (r.pct) r.pct.textContent = Math.round(v) + "%";
+    if (r.bar) r.bar.setAttribute("aria-valuenow", String(Math.round(v)));
+    r.painted = v;
+  }
+
+  function bpStepAnim(ts) {
+    var now = typeof ts === "number" ? ts
+      : (window.performance && performance.now ? performance.now() : Date.now());
+    var dt = bp.lastFrame ? Math.min(0.1, (now - bp.lastFrame) / 1000) : 1 / 60;
+    bp.lastFrame = now;
+    var busy = false;
+    BP_BRANDS.forEach(function (id) {
+      var r = bp.rows[id];
+      if (!r) return;
+      if (r.disp < r.goal) {
+        var gap = r.goal - r.disp;
+        /* 간격이 크면 최대 45%/s, 작으면 14%/s — 어떤 단계에서도 뚝 끊기지 않는 속도 */
+        var speed = Math.max(14, Math.min(45, gap * 3.4));
+        var step = Math.min(gap, Math.max(gap * (1 - Math.exp(-dt / 0.3)), dt * speed));
+        r.disp = (gap - step < 0.02) ? r.goal : r.disp + step;
+        busy = true;
+      } else if (r.disp > r.goal) {
+        r.disp = r.goal;               /* 새 조회·되감기는 기다리지 않고 바로 */
+        busy = true;
+      } else if (r.state === "run" && r.disp < r.cap) {
+        /* 응답을 기다리는 동안에도 조금씩 — 40%·88% 에서 멈칫해 보이지 않게(약 1.6~3.7%/s) */
+        r.disp = Math.min(r.cap, r.disp + dt * Math.max(1.6, (r.cap - r.disp) * 0.06));
+        busy = true;
+      }
+      if (Math.abs(r.painted - r.disp) > 0.005) bpPaintRow(r);
+    });
+    bpRenderOverall();
+    if (busy) bp.raf = requestAnimationFrame(bpStepAnim);
+    else { bp.raf = null; bp.lastFrame = 0; }
+  }
+
+  function bpStartAnim() {
+    if (bpReduce) {
+      /* 움직임 줄이기 설정이면 애니메이션 없이 목표값으로 바로 */
+      BP_BRANDS.forEach(function (id) {
+        var r = bp.rows[id];
+        if (!r) return;
+        r.disp = r.goal;
+        if (Math.abs(r.painted - r.disp) > 0.005) bpPaintRow(r);
+      });
+      bpRenderOverall();
+      return;
+    }
+    if (bp.raf) return;
+    bp.lastFrame = 0;
+    bp.raf = requestAnimationFrame(bpStepAnim);
+  }
+
   function bpSet(id, pct, text, state) {
     var r = bp.rows[id];
     if (!r) return;
-    r.pctVal = Math.max(0, Math.min(100, Math.round(pct)));
+    var v = Math.max(0, Math.min(100, Number(pct) || 0));
+    /* 진행 중에는 목표가 뒤로 가지 않는다 — 늦게 도착한 진행률로 막대가 되감기지 않게 */
+    r.goal = (r.state === "run" && state === "run") ? Math.max(r.goal, v) : v;
     if (state) r.state = state;
     if (text != null) r.text = text;
-    if (r.fill) r.fill.style.width = r.pctVal + "%";
-    if (r.pct) r.pct.textContent = r.pctVal + "%";
     if (r.status) r.status.textContent = r.text;
-    if (r.bar) r.bar.setAttribute("aria-valuenow", String(r.pctVal));
     if (r.li) r.li.setAttribute("data-state", r.state);
     bpRenderOverall();
+    bpStartAnim();
+  }
+
+  /* 새 조회를 시작할 때 — 값과 목표를 0 으로 되돌리고 막대를 바로 지운다(되감기 애니메이션 없음) */
+  function bpResetRows() {
+    BP_BRANDS.forEach(function (id) {
+      var r = bp.rows[id];
+      if (!r) return;
+      r.disp = 0; r.goal = 0; r.state = "idle"; r.cap = BP_CAP_SEARCH;
+      bpPaintRow(r);
+    });
+  }
+
+  function bpSetCap(cap) {
+    BP_BRANDS.forEach(function (id) {
+      var r = bp.rows[id];
+      if (r) r.cap = cap;
+    });
   }
 
   function bpOverallPct() {
-    var sum = 0;
-    BP_BRANDS.forEach(function (id) { sum += (bp.rows[id] ? bp.rows[id].pctVal : 0); });
-    return Math.round(sum / BP_BRANDS.length);
-  }
-
-  function bpStopTicker() {
-    if (bp.ticker) { clearInterval(bp.ticker); bp.ticker = null; }
-  }
-
-  function bpStartTicker() {
-    if (bp.ticker) return;
-    /* 조회 응답은 한 번에 오므로, 기다리는 동안만 40%→88% 사이를 부드럽게 올린다.
-       100% 는 실제 응답이 왔을 때만 쓴다. */
-    bp.ticker = setInterval(function () {
-      var moved = false;
-      BP_BRANDS.forEach(function (id) {
-        var r = bp.rows[id];
-        if (!r || r.state !== "run") return;
-        if (r.pctVal < 88) { bpSet(id, Math.min(88, r.pctVal + 2), r.text, "run"); moved = true; }
-      });
-      if (!moved) bpStopTicker();
-    }, 380);
+    var sum = 0, n = 0;
+    BP_BRANDS.forEach(function (id) {
+      var r = bp.rows[id];
+      if (r) { sum += r.disp; n += 1; }
+    });
+    return n ? sum / n : 0;
   }
 
   function bpRenderOverall() {
     var p = bpOverallPct();
-    if (bpOverallEl) bpOverallEl.textContent = p + "%";
-    var running = BP_BRANDS.some(function (id) { return bp.rows[id] && bp.rows[id].state === "run"; });
-    if (!running) bpStopTicker();
-    if (p >= 100 && bp.stage !== 3) bpFinish();
+    if (bpOverallEl) bpOverallEl.textContent = Math.round(p) + "%";
+    if (p >= 99.5 && bp.stage !== 3) bpFinish();
   }
 
   function bpRenderSummary() {
@@ -536,6 +609,7 @@
     bp.sourceLabel = "";
     if (bpRegionEl) bpRegionEl.textContent = bpLabel(regionId, origin);
     if (bpSummaryEl) { bpSummaryEl.hidden = true; bpSummaryEl.innerHTML = ""; }
+    bpResetRows();
     BP_BRANDS.forEach(function (id) {
       if (policyOnlyBrand(id)) { bpSet(id, 0, "매장 위치 확인 중", "run"); return; }
       if (BP_EMART[id]) { bpSet(id, 0, "이마트 점포 확인 중", "run"); return; }
@@ -612,6 +686,7 @@
       bp.sourceLabel = "재고 새로고침";
     }
     bp.stage = 2;
+    bpSetCap(BP_CAP_STOCK);
     if (bpEl) bpEl.setAttribute("data-state", "running");
     if (bpTitleEl) bpTitleEl.textContent = "매장·재고 조회";
     BP_BRANDS.forEach(function (id) {
@@ -621,7 +696,7 @@
     /* 완료되어 접혀 있던 패널도 새 진행이 시작되면 다시 펼쳐 보여 준다 */
     if (manual) { bp.quiet = false; bpShow(true); bpScrollIntoView(); }
     else if (bpEl && !bpEl.hidden) bpCollapse(false);
-    bpStartTicker();
+    bpStartAnim();
   }
 
   function bpRelayFail() {
@@ -697,6 +772,7 @@
     }
     bp.sourceLabel = "실시간 조회 완료";
     bp.stage = 2;
+    bpSetCap(BP_CAP_STOCK);
     /* 세븐일레븐은 재고 조회 대상이 아니다 — 장소 검색으로 잡힌 매장 위치만 확인하고 끝낸다 */
     BP_BRANDS.forEach(function (id) { if (policyOnlyBrand(id)) bpSet(id, 100, bpPolicyText(), "info"); });
     var rs = relayStateNow();
@@ -705,7 +781,7 @@
         if (!BP_RELAY[id]) return;
         bpSet(id, 40, rs === "online" ? "재고 조회 중" : "연결 확인 중", "run");
       });
-      bpStartTicker();
+      bpStartAnim();
     } else {
       bpRelayOff(rs === "error" ? "error" : "off");
     }

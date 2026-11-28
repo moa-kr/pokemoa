@@ -73,8 +73,16 @@
      모르고 기다리게 되므로, 조회를 시작하면 sticky 헤더 바로 아래로 끌어온다(v=110 카드 모드와 같은 방식). */
   var pg = {
     el: null, title: null, note: null, pct: null, bar: null, fill: null,
-    value: 0, stage: "idle", ticker: null, hideTimer: null, scrollTimer: null, wired: false
+    value: 0,        /* 화면에 그려지는 값(0~100) — rAF 가 goal 로 부드럽게 보간한다 */
+    goal: 0,         /* 실제 이벤트가 정한 목표값 */
+    cap: 88,         /* 응답을 기다리는 동안 천천히 오를 수 있는 한계 */
+    stage: "idle", raf: null, lastFrame: 0, painted: -1,
+    hideTimer: null, scrollTimer: null, wired: false
   };
+  var pgReduce = false;
+  try {
+    pgReduce = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+  } catch (e) {}
 
   function pgEnsure() {
     if (!pg.wired) {
@@ -89,22 +97,64 @@
     return pg.el ? pg : null;
   }
   function pgVisible() { return !!(pg.el && !pg.el.hidden); }
+  /* v4.67 — 카드 모드(#brandProgress)와 같은 방식으로 진행률을 rAF 보간한다.
+     예전에는 1% 씩 380ms 간격으로 올려 '매장 찾는 중'에서 '재고 조회 중'으로 넘어가는 40% 부근에서
+     멈짓했다. 이제 막대·% 숫자를 한 값(value)에서 그려 0% → 100% 가 한 흐름으로 오르고,
+     100% 는 실제 응답(완료·상세 실패)이 왔을 때만 쓴다. */
   function pgPaint() {
     if (!pg.el) return;
-    var v = Math.max(0, Math.min(100, Math.round(pg.value)));
-    if (pg.fill) pg.fill.style.width = v + "%";
-    if (pg.pct) pg.pct.textContent = v + "%";
-    if (pg.bar) pg.bar.setAttribute("aria-valuenow", String(v));
+    var v = Math.max(0, Math.min(100, pg.value));
+    if (pg.fill) pg.fill.style.width = v.toFixed(2) + "%";
+    if (pg.pct) pg.pct.textContent = Math.round(v) + "%";
+    if (pg.bar) pg.bar.setAttribute("aria-valuenow", String(Math.round(v)));
+    pg.painted = v;
   }
-  function pgStopTicker() { if (pg.ticker) { clearInterval(pg.ticker); pg.ticker = null; } }
-  function pgTicker(max) {
-    pgStopTicker();
-    pg.ticker = setInterval(function () {
-      if (!pgVisible()) { pgStopTicker(); return; }
-      if (pg.value >= max) { pgStopTicker(); return; }
-      pg.value = Math.min(max, pg.value + 1);
-      pgPaint();
-    }, 380);
+  function pgStopAnim() {
+    if (pg.raf) { cancelAnimationFrame(pg.raf); pg.raf = null; }
+    pg.lastFrame = 0;
+  }
+  function pgStep(ts) {
+    var now = typeof ts === "number" ? ts
+      : (window.performance && performance.now ? performance.now() : Date.now());
+    var dt = pg.lastFrame ? Math.min(0.1, (now - pg.lastFrame) / 1000) : 1 / 60;
+    pg.lastFrame = now;
+    var busy = false;
+    if (!pgVisible()) { pg.raf = null; pg.lastFrame = 0; return; }
+    if (pg.value < pg.goal) {
+      var gap = pg.goal - pg.value;
+      /* 간격이 크면 최대 45%/s, 작으면 14%/s — 단계가 바뀌는 자리에서도 뚝 끊기지 않게 */
+      var speed = Math.max(14, Math.min(45, gap * 3.4));
+      var step = Math.min(gap, Math.max(gap * (1 - Math.exp(-dt / 0.3)), dt * speed));
+      pg.value = (gap - step < 0.02) ? pg.goal : pg.value + step;
+      busy = true;
+    } else if (pg.value > pg.goal) {
+      pg.value = pg.goal;
+      busy = true;
+    } else if (pg.stage !== "done" && pg.stage !== "error" && pg.value < pg.cap) {
+      /* 응답을 기다리는 동안에도 조금씩 — 40%·88% 에서 멈춰 보이지 않게 */
+      pg.value = Math.min(pg.cap, pg.value + dt * Math.max(1.6, (pg.cap - pg.value) * 0.06));
+      busy = true;
+    }
+    if (Math.abs(pg.painted - pg.value) > 0.005) pgPaint();
+    if (busy) pg.raf = requestAnimationFrame(pgStep);
+    else { pg.raf = null; pg.lastFrame = 0; }
+  }
+  function pgAnimate() {
+    if (!pgEnsure()) return;
+    if (pgReduce) {
+      pg.value = pg.goal;
+      if (Math.abs(pg.painted - pg.value) > 0.005) pgPaint();
+      return;
+    }
+    if (pg.raf) return;
+    if (!pgVisible()) return;
+    pg.lastFrame = 0;
+    pg.raf = requestAnimationFrame(pgStep);
+  }
+  /* 진행 중에는 목표가 뒤로 가지 않는다(늦게 도착한 진행률로 막대가 되감기지 않게) */
+  function pgGoal(v) {
+    pg.goal = Math.max(pg.goal, Math.min(100, Number(v) || 0));
+    pgAnimate();
   }
   function pgShow(st, note, from, max, stage) {
     if (!pgEnsure()) return;
@@ -112,47 +162,56 @@
     clearTimeout(pg.hideTimer);
     pg.el.hidden = false;
     pg.el.setAttribute("data-state", st || "running");
-    if (typeof from === "number") pg.value = from;
+    /* 끝난 뒤(완료·실패) 새 조회를 시작할 때만 값을 처음으로 되돌린다.
+       단계가 바뀌는 경우(매장 탐색 → 재고 조회)는 되돌리지 않고 이어서 올린다. */
+    var fresh = pg.stage === "done" || pg.stage === "error" || pg.stage === "idle";
+    if (typeof from === "number") {
+      var v = Math.max(0, Math.min(100, from));
+      if (fresh) { pg.value = v; pg.goal = v; pgPaint(); }
+      else pg.goal = Math.max(pg.goal, v);
+    }
+    if (typeof max === "number") pg.cap = Math.max(pg.goal, Math.min(100, max));
     if (note != null && pg.note) pg.note.textContent = note;
     if (pg.title) pg.title.textContent = "GS25 피규어 재고 조회";
     if (stage) pg.stage = stage;
-    pgPaint();
-    if (st !== "done" && st !== "error") pgTicker(typeof max === "number" ? max : 88);
+    if (st === "done" || st === "error") { if (pg.pct) pg.pct.textContent = Math.round(pg.value) + "%"; }
+    if (st !== "done" && st !== "error") pgAnimate();
   }
   function pgDone(note) {
     if (!pgEnsure()) return;
     /* 조회 중에 카드 모드로 돌아갔으면 피규어 패널을 다시 띄우지 않는다 */
     if (!isActive()) { hideProgress(); return; }
-    pgStopTicker();
-    pg.value = 100;
     pg.stage = "done";
     pg.el.hidden = false;
     pg.el.setAttribute("data-state", "done");
+    pg.cap = 100;
+    pg.goal = 100;              /* 88% 까지 차 있던 막대를 끊김 없이 100% 로 마무리 */
     if (note != null && pg.note) pg.note.textContent = note;
     if (pg.title) pg.title.textContent = "GS25 피규어 재고 조회 완료";
-    pgPaint();
+    pgAnimate();
     clearTimeout(pg.hideTimer);
     pg.hideTimer = setTimeout(hideProgress, 4200);
   }
   function pgFail(note) {
     if (!pgEnsure()) return;
     if (!isActive()) { hideProgress(); return; }
-    pgStopTicker();
-    pg.value = 100;
     pg.stage = "error";
     pg.el.hidden = false;
     pg.el.setAttribute("data-state", "error");
+    pg.cap = 100;
+    pg.goal = 100;
     if (note != null && pg.note) pg.note.textContent = note;
     if (pg.title) pg.title.textContent = "GS25 피규어 재고 조회";
-    pgPaint();
+    pgAnimate();
     clearTimeout(pg.hideTimer);
     pg.hideTimer = setTimeout(hideProgress, 6000);
   }
   function hideProgress() {
-    pgStopTicker();
+    pgStopAnim();
     clearTimeout(pg.hideTimer);
     clearTimeout(pg.scrollTimer);
     pg.stage = "idle";
+    pg.value = 0; pg.goal = 0; pg.cap = 88;
     if (pg.el) pg.el.hidden = true;
   }
   function pgScrollIntoView(delay) {
@@ -1067,8 +1126,8 @@
       var d = (e && e.detail) || {};
       var total = Math.max(1, d.total || 1);
       var done = Math.min(1, (d.resolved || 0) / total);
-      pg.value = Math.max(pg.value, 4 + Math.round(34 * done));
-      pgPaint();
+      /* 0 → 40% 구간은 페이지(편의점 4사)가 도착할 때마다 목표만 올리고, 막대는 rAF 가 이어서 그린다 */
+      pgGoal(4 + 34 * done);
     });
     document.addEventListener("pokemoa:search-done", function () {
       if (!isActive()) return;
